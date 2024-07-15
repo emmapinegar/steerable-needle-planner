@@ -60,7 +60,7 @@ def draw_ptc(ptc):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        fileNames = ["../data/output/test_ptcloud.txt", "../data/input/image_points.txt"]
+        fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt"]
     else:
         fileNames = sys.argv[1:]
 

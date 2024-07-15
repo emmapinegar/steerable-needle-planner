@@ -634,7 +634,7 @@ void PrintState(const State& s, std::ostream& out) {
     const Vec3& p = s.translation();
     const Quat& q = s.rotation();
     out << p[0] << " " << p[1] << " " << p[2] << " "
-        << q.x() << " " << q.y() << " " << q.z() << " " << q.w()
+        << q.w() << " " << q.x() << " " << q.y() << " " << q.z()
         << std::endl;
 }
 

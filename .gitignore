@@ -1,6 +1,9 @@
 # Don't track content of these folders
 data/output/*
 build*/
+external/*
+external/mpt/*
+external/nigh/*
 
 # Compiled source #
 ###################
@@ -24,3 +27,5 @@ build*/
 *.rar
 *.tar
 *.zip
+
+

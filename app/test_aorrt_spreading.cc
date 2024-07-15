@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
     }
 
     Str const start_and_goal_file = "../data/input/start_and_goal_poses.txt";
-    auto [start_p, start_q] = utils::ReadGoal(start_and_goal_file);
+    auto [start_p, start_q] = utils::ReadStart(start_and_goal_file);
 
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->sample_orientation = true;

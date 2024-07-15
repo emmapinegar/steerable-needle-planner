@@ -1,5 +1,46 @@
 # Steerable Needle Planner
 
+#### Update 07/12/2024 by Emma Pinegar
+
+I have made a few changes to the code to fix a few problems which I'll highlight below.
+
+1. I made an install script which you can execute after modifying the permissions by `chmod +x install.sh`. It will install the dependencies, initialize the submodules and install their dependencies, make the required directories, and attempt to build the project. Read through it before you run it to make sure you're ok with the changes. 
+
+2. Adding `#include <mutex>` to [`/external/nigh/src/nigh/impl/locked_nearest.hpp`](/external/nigh/src/nigh/impl/locked_nearest.hpp#L40) between lines 40 and 41. The project will not compile for me without it. You will have to make this change yourself as well because it is part of a submodule
+
+3. Swapping line 82 `auto [start_p, start_q] = utils::ReadGoal(start_and_goal_file);`  in [`./app/test_rrt_spreading.cc`](./app/test_rrt_spreading.cc#L82), [`./app/test_aorrt_spreading.cc`](./app/test_aorrt_spreading.cc#L82), [`./app/test_rcs_spreading.cc`](./app/test_rcs_spreading.cc#L82) to what's below so the spreading versions use the same start as the regular versions.
+
+```
+auto [start_p, start_q] = utils::ReadStart(start_and_goal_file);
+``` 
+
+4. Fixing a bug which broke all of the non spreading versions of the planners in [`./include/impl/needle_validator.h`](./include/impl/needle_validator.h#L88) in `CheckWorkspaceConnected()` by replacing `auto const start_ijk = env->RasToIjk(sp).cast<int>();` with the code below. I have found that reinstalling the repository to document the changes may have resolved the issue. If reasonable goals are claimed to not be in the reachable workspace, checking the IJK to RAS and RAS to IJK conversions is a good place to start. 
+```
+    IdxPoint start_ijk_ = env->RasToIjk(sp);
+    auto const start_ijk = start_ijk_.cast<int>();
+```
+ 
+5. It is not necessarily a problem but the order in which the quaternion parameters are expected to be written when providing the start and goal poses is different from the output in the `./data/output/<>_interp.txt` files. I have made this change in this repository to avoid making a mistake in the future. I fixed it by changing [`./include/impl/needle_utils.hpp`](./include/impl/needle_utils.hpp#L636) in `PrintState()` line 636 from
+```
+    out << p[0] << " " << p[1] << " " << p[2] << " "
+        << q.x() << " " << q.y() << " " << q.z() << " " << q.w()
+        << std::endl;
+```
+
+to
+
+```
+    out << p[0] << " " << p[1] << " " << p[2] << " "
+        << q.w() << " " << q.x() << " " << q.y() << " " << q.z()
+        << std::endl;
+```
+
+
+There was a bug which has not been an issue recently but it seemed to only impact [`./app/test_rcs_spreading.cc`](./app/test_rcs_spreading.cc). The current issue is an assertion fail in [`./external/nigh/src/nigh/impl/kdtree_batch/traversal_so3.hpp`](./external/nigh/src/nigh/impl/kdtree_batch/traversal_so3.hpp#L177) line 177. It's unclear what is causing the underlying failure. 
+
+
+
+
 #### Update 02/14/2022
 
 Extended code for IEEE International Conference on Robotics and Automation (ICRA) 2022 paper *Resolution-Optimal Motion Planning for Steerable Needles (to appear)*. [[arXiv](https://arxiv.org/abs/2110.02907)]
@@ -30,9 +71,13 @@ Automating steerable needle procedures can enable physicians and patients to har
 ### Installing Dependencies on Ubuntu with [apt](http://manpages.ubuntu.com/manpages/bionic/man8/apt.8.html)
 
 ```
-sudo apt install cmake libeigen3-dev libboost-all-dev [python3.8]
-[pip3 install open3d]
+sudo apt install cmake libeigen3-dev libboost-all-dev pip
+pip3 install open3d
 ```
+
+I'm pretty sure the above install of boost did not work for me, I had to install it from their repo. 
+
+
 
 ### Installing Dependencies on macOS with [Homebrew](https://brew.sh/)
 
@@ -100,7 +145,7 @@ cd {YOUR_LOCAL_REPO}/build
 ./app/rcs_star [if_constrain_goal_orientation] [if_multi_threading] [random_seed] [tag]
 ```
 
-For the above test applications, the planner will run for 1 second and collect all solution plans generated. Checkout `include/test_utils.h` for different termination conditions.
+For the above test applications, the planner will run for 1 second and collect all solution plans generated. Checkout [`./include/test_utils.h`](./include/test_utils.h) for different termination conditions.
 
 * Plan from start (with no orientation constraint) to goal regions, using the RRT planner:
 ```
