@@ -86,6 +86,8 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     bool connected = false;
     std::queue<IntPoint> queue;
     auto const start_ijk = env->RasToIjk(sp).cast<int>();
+
+    std::cout << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << std::endl;
     queue.push(start_ijk);
     if constexpr (Init) {
         env->SetWorkspace(start_ijk[0], start_ijk[1], start_ijk[2]);

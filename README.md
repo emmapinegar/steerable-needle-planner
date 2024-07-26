@@ -38,7 +38,7 @@ to
 
 There was a bug which has not been an issue recently but it seemed to only impact [`./app/test_rcs_spreading.cc`](./app/test_rcs_spreading.cc). The current issue is an assertion fail in [`./external/nigh/src/nigh/impl/kdtree_batch/traversal_so3.hpp`](./external/nigh/src/nigh/impl/kdtree_batch/traversal_so3.hpp#L177) line 177. It's unclear what is causing the underlying failure. 
 
-
+New problem during Mac install: The spreading versions get that the planning problem is not valid because the start is allegedly in collision, but the non spreading versions do not have the same issue? This may be documented in the old README. The error is because the quaternions for the start and goal are not facing the proper way, the start is reachable from the goal with the current orientation. 
 
 
 #### Update 02/14/2022
