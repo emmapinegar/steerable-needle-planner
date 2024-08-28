@@ -1,6 +1,7 @@
 # Don't track content of these folders
 data/output/*
 build*/
+debug*/
 external/*
 external/mpt/*
 external/nigh/*
@@ -28,4 +29,7 @@ external/nigh/*
 *.tar
 *.zip
 
+
+# Mac stuff
+.DS_Store
 

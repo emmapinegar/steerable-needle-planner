@@ -44,10 +44,26 @@ namespace unc::robotics::snp {
 
 namespace utils {
 
-template <typename State, bool Init=false>
+/**
 bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& rad_curv, const RealNum& pos_tolerance,
                              const std::vector<IntPoint>& neig, EnvPtr env, BoolArray3& visited, unsigned& max_size)
-{
+
+checks if the workspace between the start (s) and goal are connected and within the limits of the needle
+uses the intersection of the trumpet shaped workspace created by the radius of curvature limit and
+the rugby/olive shaped workspace created by the points from which the goal is still reachable given the start
+
+s: the starting state for the motion planning problem
+goal: the goal state for the motion planning problem
+rad_curv: the radius of curvature limit (?) for the needle
+pos_tolerance: the postion tolerance used for saying not fully reached but "close enough"
+neig: the index increments/decrements to visit a voxel's neighboring voxels for checks
+env: the environment of the motion planning problem
+visited: the voxels visited during the check
+max_size: the maximum number of voxels to visit, used to stop early if things are connected up to that point
+ */
+template <typename State, bool Init=false>
+bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& rad_curv, const RealNum& pos_tolerance,
+                             const std::vector<IntPoint>& neig, EnvPtr env, BoolArray3& visited, unsigned& max_size){
     const Vec3& sp = s.translation();
     const Quat sq = s.rotation().normalized();
     const Vec3 st = (sq * Vec3::UnitZ()).normalized();
@@ -56,6 +72,14 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     const Vec3 unit_sg = sg.normalized();
     const RealNum d = sg.norm();
     const RealNum& voxel_rad = env->VoxelRadius();
+    const RealNum y = sg.dot(st);
+
+    std::cout << "sp: " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
+    std::cout << "sq: " << sq.x() << " " << sq.y() << " " << sq.z() << " " << sq.w() << std::endl;
+    std::cout << "st: " << st[0] << " " << st[1] << " " << st[2] << std::endl;
+    std::cout << "gp: " << gp[0] << " " << gp[1] << " " << gp[2] << std::endl;
+    std::cout << "sg: " << sg[0] << " " << sg[1] << " " << sg[2] << std::endl;
+    std::cout << "y: " << y << std::endl;
 
     RealNum max_h;
     if (2 * rad_curv - pos_tolerance < d) {
@@ -87,7 +111,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     std::queue<IntPoint> queue;
     auto const start_ijk = env->RasToIjk(sp).cast<int>();
 
-    std::cout << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << std::endl;
+    std::cout << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << " voxel rad: " << voxel_rad <<std::endl;
     queue.push(start_ijk);
     if constexpr (Init) {
         env->SetWorkspace(start_ijk[0], start_ijk[1], start_ijk[2]);
@@ -171,17 +195,39 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     return connected;
 }
 
+/**
+bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNum& pos_tolerance,
+                             const RealNum& ang_tolerance, const std::vector<IntPoint>& neig,
+                             EnvPtr env, const RealNum& rad_curv, const RealNum& ins_length,
+                             const RealNum& ang_constraint_rad, const bool constrain_goal_orientation,
+                             BoolArray3& visited, unsigned& max_size)
+
+verifies that the problem is at least potentially possible to solve
+
+start: the starting state for the motion planning problem
+goal: the goal state for the motion planning problem
+pos_tolerance: the postion tolerance used for saying not fully reached but "close enough"
+ang_tolerance: 
+neig: the index increments/decrements to visit a voxel's neighboring voxels for checks
+env: the environment of the motion planning problem
+rad_curv: the radius of curvature limit (?) for the needle
+ins_length: the maximum insertion length
+ang_constraint_rad: 
+constrain_goal_orientation: 
+visited: the voxels visited during the check
+max_size: the maximum number of voxels to visit, used to stop early if things are connected up to that point
+ */
 template <typename State>
 bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNum& pos_tolerance,
                              const RealNum& ang_tolerance, const std::vector<IntPoint>& neig,
                              EnvPtr env, const RealNum& rad_curv, const RealNum& ins_length,
                              const RealNum& ang_constraint_rad, const bool constrain_goal_orientation,
                              BoolArray3& visited, unsigned& max_size) {
-    if (ang_constraint_rad > 0.5*M_PI + EPS) {
-        std::cout << "Using an angular constraint of " << ang_constraint_rad* RAD_TO_DEGREE <<
-                  " (> 90) degrees! Not supported yet!" << std::endl;
-        return false;
-    }
+    // if (ang_constraint_rad > 0.5*M_PI + EPS) {
+    //     std::cout << "Using an angular constraint of " << ang_constraint_rad* RAD_TO_DEGREE <<
+    //               " (> 90) degrees! Not supported yet!" << std::endl;
+    //     return false;
+    // }
 
     const Vec3& start_p = start.translation();
     const Quat start_q = start.rotation().normalized();
@@ -240,6 +286,19 @@ bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNu
     return true;
 }
 
+
+/**
+bool ExceedAngleConstraint(const State& s, const State& start, const RealNum ang_constraint_rad)
+
+Parameters:
+s: the state s being considered
+start: the starting state for the planner
+ang_constraint_rad: the maximum angle for the needle to follow (in radians)
+
+
+Returns:
+bool true if the angle between the z axes of s and start is greater than ang_constraint_rad
+ */
 template <typename State>
 bool ExceedAngleConstraint(const State& s, const State& start, const RealNum ang_constraint_rad) {
     const RealNum diff = DirectionDifference(s.rotation(), start.rotation());
@@ -247,6 +306,23 @@ bool ExceedAngleConstraint(const State& s, const State& start, const RealNum ang
     return (diff > ang_constraint_rad);
 }
 
+/**
+bool ValidFullState(const State& s, const State& start, const State& goal, EnvPtr env,
+                    const RealNum& rad_curv, const bool constrain_goal_orientation)
+
+checks that the state s is collision-free, in the limits of the trumpet workspace, and capable of reaching the goal state
+
+Parameters:
+s: the state s being considered
+start: the starting state for the planner
+goal: the goal state
+env: the planning environment
+rad_curv: the minimum radius of curvature for the needle
+constrain_goal_orientation: should the planner try to reach a goal orientation
+
+Returns:
+bool: true if the state passes all of the checks performed, false otherwise
+ */
 template <typename State>
 bool ValidFullState(const State& s, const State& start, const State& goal, EnvPtr env,
                     const RealNum& rad_curv, const bool constrain_goal_orientation) {
@@ -282,6 +358,26 @@ bool ValidFullState(const State& s, const State& start, const State& goal, EnvPt
     return true;
 }
 
+
+/**
+bool ValidStateWithGoalReachability(const State& s, const State& goal, const RealNum& pos_tolerance,
+                                    const RealNum& ang_tolerance,
+                                    EnvPtr env, const RealNum& rad_curv, const bool constrain_goal_orientation)
+
+checks that the state s is collision-free and capable of reaching the goal state
+
+Parameters:
+s: the state s being considered
+goal: the goal state
+pos_tolerance:
+ang_tolerance: 
+env: the planning environment
+rad_curv: the minimum radius of curvature for the needle
+constrain_goal_orientation: should the planner try to reach a goal orientation
+
+Returns:
+bool: true if the state passes all of the checks performed, false otherwise
+ */
 template <typename State>
 bool ValidStateWithGoalReachability(const State& s, const State& goal, const RealNum& pos_tolerance,
                                     const RealNum& ang_tolerance,
@@ -313,6 +409,23 @@ bool ValidStateWithGoalReachability(const State& s, const State& goal, const Rea
     return true;
 }
 
+/**
+bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& rad_curv,
+                 const RealNum& resolution)
+
+
+
+Parameters:
+from:
+to:
+env: 
+rad_curv:
+resolution:
+
+
+Returns:
+bool:
+ */
 template <typename State>
 bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& rad_curv,
                  const RealNum& resolution) {
@@ -327,13 +440,14 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
     const Quat sq_normalized = from.rotation().normalized();
     const Quat gq_normalized = to.rotation().normalized();
-    const Vec3 st = (sq_normalized*Vec3::UnitZ()).normalized();
-    const Vec3 gt = (gq_normalized*Vec3::UnitZ()).normalized();
-    const RealNum cos_theta = (relative_pos.normalized()).dot(st);
+    const Vec3 st = (sq_normalized*Vec3::UnitZ()).normalized();                                     // the z axis of the start
+    const Vec3 gt = (gq_normalized*Vec3::UnitZ()).normalized();                                     // the z axis of the goal
+    const RealNum cos_theta = (relative_pos.normalized()).dot(st);                                  // cosine of the angle between the start and goal orientation
     Vec3 result_p;
 
+    // checking that there aren't collisions along the path, if the path is relatively straight
     if (cos_theta > 1 - EPS) {
-        for (RealNum l = resolution; l < d; l += resolution) {
+        for (RealNum l = resolution; l < d; l += resolution) {              
             result_p = sp + st * l;
 
             if (!env->CollisionFree(result_p)) {
@@ -343,18 +457,24 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         return true;
     }
 
+    // vector orthogonal to the z axes of the start and goal states
     const Vec3 normal_vec = (st.cross(gt)).normalized();
 
+    // if the orthogonal vector and the vector between the start and goal are orthogonal return false
     if (normal_vec.dot(relative_pos.normalized()) > EPS) {
         return false;
     }
 
+    // if the "distance to the trumpet boundary" is "nonzero" return false
     if (DistanceToTrumpetBoundary(sp, st, gp, rad_curv) > EPS) {
         return false;
     }
 
+    // the radius of one of the circles comprising the rugby/olive shape??
     const RealNum r = 0.5 * d / std::sin(std::acos(cos_theta));
 
+    // normal_vec x st = (st x gt) x st = gt ????
+    // idk wtf this is the center of 
     const Vec3 center = sp + r*(normal_vec.cross(st));
     const RealNum max_angle = std::acos(((gp - center).normalized()).dot((sp - center).normalized()));
     const RealNum angle_step = resolution / r;
@@ -371,6 +491,18 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     return true;
 }
 
+/**
+bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr env, const unsigned& offset=0)
+
+Parameters:
+new_base:
+motion: 
+env:
+offset:
+
+Returns: 
+bool:
+ */
 template <typename State>
 bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr env, const unsigned& offset=0) {
     if (!env) {
@@ -411,6 +543,9 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
     return true;
 }
 
+/**
+
+ */
 template <typename State>
 bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const unsigned& offset=0) {
     if (!env) {
@@ -447,6 +582,23 @@ bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const unsigned& o
     return true;
 }
 
+/**
+std::optional<State> DirectConnecting(const State& s, const State& start, EnvPtr env,
+                                      const RealNum& rad_curv, const RealNum& resolution, const Quat& pi_x)
+
+attempts to connect the start state directly to the state s, checking for collisions along the path
+
+Parameters:
+s:
+start:
+env:
+rad_curv:
+resolution:
+pi_x:
+
+Returns:
+
+ */
 template <typename State>
 std::optional<State> DirectConnecting(const State& s, const State& start, EnvPtr env,
                                       const RealNum& rad_curv, const RealNum& resolution, const Quat& pi_x) {
@@ -474,6 +626,14 @@ std::optional<State> DirectConnecting(const State& s, const State& start, EnvPtr
     return result;
 }
 
+/**
+std::optional<State> DirectConnectingWithoutCollisionCheck(const State& s, const State& start, EnvPtr env,
+                                                           const RealNum& rad_curv, const RealNum& resolution, const Quat& pi_x)
+
+attempts to connect the start state with the state s without checking for collisions along the path
+
+
+ */
 template <typename State>
 std::optional<State> DirectConnectingWithoutCollisionCheck(const State& s, const State& start, EnvPtr env,
                                                            const RealNum& rad_curv, const RealNum& resolution, const Quat& pi_x) {
@@ -491,6 +651,7 @@ std::optional<State> DirectConnectingWithoutCollisionCheck(const State& s, const
     result.rotation() = ((start_state.rotation())*pi_x).normalized();
     return result;
 }
+
 
 inline bool ValidLength(const RealNum& l, const RealNum& max_l) {
     return (l < max_l);

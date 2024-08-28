@@ -417,6 +417,12 @@ class NeedlePRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         return nodePool_;
     }
 
+    /**
+    void solve(Planner& planner, DoneFn done)
+
+
+    
+     */
     template <typename DoneFn>
     void solve(Planner& planner, DoneFn done) {
         MPT_LOG(TRACE) << "worker running";
@@ -435,7 +441,7 @@ class NeedlePRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     Stats::countIteration();
 
                     if (planner.goalCount_.load(std::memory_order_relaxed) >= 1) {
-                        goto unbiasedSamplingLoop;
+                        goto unbiasedSamplingLoop;                                      // GOTO BAD we should change if we can get around it
                     }
 
                     if (uniform01(rng_) < scaledBias) {
@@ -473,6 +479,17 @@ unbiasedSamplingLoop:
         return planner.nn_.nearest(state);
     }
 
+    /**
+    void addSample(Planner& planner, State& randState)
+
+    attempts to add sample to attempt to motion plan, 
+    addition will be successful if the sample is in the connected workspace with 
+    an orientation that is reachable by the existing states in the motion plan
+
+    planner: motion planner for the problem
+    randState: randomly sampled state, potentially includes orientation, to try to add
+
+     */
     void addSample(Planner& planner, State& randState) {
         if (scenario_.collision(randState)) {
             return;

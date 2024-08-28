@@ -32,6 +32,19 @@
 
 namespace unc::robotics::snp {
 
+/**
+bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& rad)
+
+
+
+Parameters:
+sp:
+st:
+gp:
+rad:
+
+Returns:
+ */
 bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& rad) {
     const Vec3 sg = gp - sp;
     const RealNum d = sg.norm();
@@ -46,15 +59,32 @@ bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& ra
     }
 
     const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));
-    const RealNum dist_to_center = Vec2(x - rad, y).norm();
+    const RealNum dist_to_center = Vec2(x - rad, y).norm(); // TODO: change this line to not stop early
 
     return (dist_to_center > rad - EPS);
 }
 
+/**
+bool InTrumpet(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad)
+
+ */
 bool InTrumpet(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad) {
     return InTrumpet(sp, sq.normalized() * Vec3::UnitZ(), gp, rad);
 }
 
+/**
+RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp)
+
+
+
+Parameters:
+sp:
+st:
+gp:
+
+Returns:
+
+ */
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp) {
     const Vec3 sg = gp - sp;
     const RealNum d = sg.norm();
@@ -67,10 +97,19 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp) {
     return 0.5 * d / std::sin(std::acos(cos_theta));
 }
 
+/**
+RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp)
+
+ */
 RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp) {
     return RadiusOfCurvature(sp, sq.normalized() * Vec3::UnitZ(), gp);
 }
 
+/**
+RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
+                          const RealNum& goal_tolerance)
+
+ */
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
                           const RealNum& goal_tolerance)
 {
@@ -90,12 +129,32 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
     return x + tmp;
 }
 
+/** 
+RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp,
+                          const RealNum& goal_tolerance)
+
+*/
 RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp,
                           const RealNum& goal_tolerance)
 {
     return RadiusOfCurvature(sp, sq.normalized() * Vec3::UnitZ(), gp, goal_tolerance);
 }
 
+/**
+RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
+                                  const RealNum& rad, const RealNum& ang_tolerance)
+
+calculates the distance to the center of the center of one of the circles comprising the trumpet boundary
+
+Parameters:
+sp:
+st:
+gp:
+rad:
+ang_tolerance: the "orientation tolerance" which defaults to 0
+
+
+ */
 RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
                                   const RealNum& rad, const RealNum& ang_tolerance)
 {
@@ -109,6 +168,8 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
     const Vec3 tang = st.normalized();
     const RealNum y = sg.dot(tang);
 
+    //std::cout << "tang: " << tang[0] << " " << tang[1] << " " << tang[2] << " y: " << y << std::endl;
+
     if (y > 0) {
         const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));
         Vec2 center(rad * std::cos(ang_tolerance), -rad * std::sin(ang_tolerance));
@@ -120,6 +181,11 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
     return R_INF;
 }
 
+/**
+RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
+                                     const RealNum& rad, const RealNum& ang_tolerance)
+
+ */
 RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
                                      const RealNum& rad, const RealNum& ang_tolerance)
 {
@@ -144,6 +210,11 @@ RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3&
     return R_INF;
 }
 
+/**
+bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
+                        const RealNum& rad, const RealNum& pos_tolerance)
+
+ */
 bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
                         const RealNum& rad, const RealNum& pos_tolerance)
 {
@@ -184,6 +255,12 @@ bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Qu
     return true;
 }
 
+/**
+bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
+                        const RealNum& rad, const RealNum& pos_tolerance,
+                        const RealNum& ang_tolerance)
+
+ */
 bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
                         const RealNum& rad, const RealNum& pos_tolerance,
                         const RealNum& ang_tolerance)
@@ -211,6 +288,10 @@ bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Qu
     return true;
 }
 
+/**
+std::tuple<Vec3, Quat, RealNum> ForwardToCore(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad)
+
+ */
 std::tuple<Vec3, Quat, RealNum> ForwardToCore(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad) {
     const Quat sq_normalized = sq.normalized();
     const Vec3 tang = (sq_normalized*Vec3::UnitZ()).normalized();
@@ -238,24 +319,40 @@ std::tuple<Vec3, Quat, RealNum> ForwardToCore(const Vec3& sp, const Quat& sq, co
     return {result_p, result_q, proceed_ang*r};
 }
 
+/**
+State ForwardTo(const State& from, const State& to, const RealNum& rad)
+
+ */
 template<typename State>
 State ForwardTo(const State& from, const State& to, const RealNum& rad) {
     auto [p, q, dist] = ForwardToCore(from.translation(), from.rotation(), to.translation(), rad);
     return State(q, p);
 }
 
+/**
+State ForwardTo(const State& from, const Vec3& gp, const RealNum& rad)
+
+ */
 template<typename State>
 State ForwardTo(const State& from, const Vec3& gp, const RealNum& rad) {
     auto [p, q, dist] = ForwardToCore(from.translation(), from.rotation(), gp, rad);
     return State(q, p);
 }
 
+/**
+State ForwardTo(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad)
+
+ */
 template<typename State>
 State ForwardTo(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad) {
     auto [p, q, dist] = ForwardToCore(sp, sq, gp, rad);
     return State(q, p);
 }
 
+/**
+std::pair<std::vector<State>, RealNum> ForwardToWithPath(const State& from, const Vec3& gp, const RealNum& rad, const RealNum& step_size)
+
+ */
 template<typename State>
 std::pair<std::vector<State>, RealNum> ForwardToWithPath(const State& from, const Vec3& gp, const RealNum& rad, const RealNum& step_size) {
     std::vector<State> path;
@@ -295,6 +392,11 @@ std::pair<std::vector<State>, RealNum> ForwardToWithPath(const State& from, cons
     return {path, max_ang * r};
 }
 
+/**
+std::tuple<std::vector<State>, RealNum, std::optional<State>> ShortestForwardToWithPath(const State& from, const Vec3& gp, const RealNum& rad,
+                                                     const RealNum& step_size, const RealNum& pos_tolerance)
+
+ */
 template<typename State>
 std::tuple<std::vector<State>, RealNum, std::optional<State>> ShortestForwardToWithPath(const State& from, const Vec3& gp, const RealNum& rad,
                                                      const RealNum& step_size, const RealNum& pos_tolerance)
@@ -369,6 +471,10 @@ std::tuple<std::vector<State>, RealNum, std::optional<State>> ShortestForwardToW
     return {path, curve_portion + straight_portion, State(result_q, result_p)};
 }
 
+/**
+RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq)
+
+ */
 RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq) {
     const Vec3 st = (sq.normalized()*Vec3::UnitZ()).normalized();
     const Vec3 gt = (gq.normalized()*Vec3::UnitZ()).normalized();
@@ -396,11 +502,20 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
     return r * std::acos(cos_alpha);
 }
 
+/**
+RealNum CurveLength(const State& from, const State& to)
+
+ */
 template<typename State>
 RealNum CurveLength(const State& from, const State& to) {
     return CurveLength(from.translation(), from.rotation(), to.translation(), to.rotation());
 }
 
+/**
+std::vector<State> Interpolate(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
+                               const RealNum& rad, const RealNum& step_size)
+
+ */
 template<typename State>
 std::vector<State> Interpolate(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
                                const RealNum& rad, const RealNum& step_size)
@@ -446,6 +561,11 @@ std::vector<State> Interpolate(const Vec3& sp, const Quat& sq, const Vec3& gp, c
     return path;
 }
 
+/**
+std::vector<State> Interpolate(const State& from, const State& to, const RealNum& rad,
+                               const RealNum& step_size)
+
+ */
 template<typename State>
 std::vector<State> Interpolate(const State& from, const State& to, const RealNum& rad,
                                const RealNum& step_size)
@@ -454,6 +574,11 @@ std::vector<State> Interpolate(const State& from, const State& to, const RealNum
                        step_size);
 }
 
+/**
+std::vector<State> AccurateInterpolate(const State& from, const State& to, const RealNum& rad,
+                                       const RealNum& step_size, RealNum* remainder)
+
+ */
 template<typename State>
 std::vector<State> AccurateInterpolate(const State& from, const State& to, const RealNum& rad,
                                        const RealNum& step_size, RealNum* remainder)
@@ -511,6 +636,10 @@ std::vector<State> AccurateInterpolate(const State& from, const State& to, const
     return path;
 }
 
+/**
+std::vector<State> InterpolatePath(const std::vector<State>& path, const RealNum& rad, const RealNum& step_size)
+
+ */
 template<typename State>
 std::vector<State> InterpolatePath(const std::vector<State>& path, const RealNum& rad, const RealNum& step_size) {
     if (path.size() < 2) {
@@ -538,6 +667,10 @@ std::vector<State> InterpolatePath(const std::vector<State>& path, const RealNum
     return fine_path;
 }
 
+/**
+RealNum ShortestDistance(const State& from, const Vec3& gp, const RealNum& rad_curv, const RealNum& pos_tolerance)
+
+ */
 template<typename State>
 RealNum ShortestDistance(const State& from, const Vec3& gp, const RealNum& rad_curv, const RealNum& pos_tolerance) {
     const Vec3& sp = from.translation();
@@ -581,15 +714,27 @@ RealNum ShortestDistance(const State& from, const Vec3& gp, const RealNum& rad_c
     return curve_portion + straight_portion;
 }
 
+/**
+RealNum DirectionDifference(const Vec3& t0, const Vec3& t1)
+
+ */
 RealNum DirectionDifference(const Vec3& t0, const Vec3& t1) {
     const RealNum cos_alpha = std::fmin(1, t0.normalized().dot(t1.normalized()));
     return std::acos(cos_alpha);
 }
 
+/**
+RealNum DirectionDifference(const Quat& q0, const Quat& q1)
+
+ */
 RealNum DirectionDifference(const Quat& q0, const Quat& q1) {
     return DirectionDifference(q0.normalized() * Vec3::UnitZ(), q1.normalized() * Vec3::UnitZ());
 }
 
+/**
+bool IsTheSameState(const State& a, const State& b)
+
+ */
 template<typename State>
 bool IsTheSameState(const State& a, const State& b) {
     const Vec3& ap = a.translation();
@@ -604,6 +749,11 @@ bool IsTheSameState(const State& a, const State& b) {
     return false;
 }
 
+/**
+RealNum DirectionalDistance(const State& from, const State& to, const RealNum& rad,
+                            const RealNum& max_range)
+
+ */
 template<typename State>
 RealNum DirectionalDistance(const State& from, const State& to, const RealNum& rad,
                             const RealNum& max_range)
@@ -629,6 +779,10 @@ RealNum DirectionalDistance(const State& from, const State& to, const RealNum& r
     return max_range + d;
 }
 
+/**
+void PrintState(const State& s, std::ostream& out)
+
+ */
 template<typename State>
 void PrintState(const State& s, std::ostream& out) {
     const Vec3& p = s.translation();
@@ -638,12 +792,21 @@ void PrintState(const State& s, std::ostream& out) {
         << std::endl;
 }
 
+/**
+void PrintPosition(const State& s, std::ostream& out)
+
+ */
 template<typename State>
 void PrintPosition(const State& s, std::ostream& out) {
     const Vec3& p = s.translation();
     out << p[0] << " " << p[1] << " " << p[2] << std::endl;
 }
 
+
+/**
+void PrintPath(const std::vector<State>& path, std::ostream& out, const bool full_state)
+
+ */
 template<typename State>
 void PrintPath(const std::vector<State>& path, std::ostream& out, const bool full_state) {
     for (const State& s : path) {
@@ -656,6 +819,11 @@ void PrintPath(const std::vector<State>& path, std::ostream& out, const bool ful
     }
 }
 
+/**
+bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
+                     const bool full_state, const bool show_log)
+
+ */
 template<typename State>
 bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
                      const bool full_state, const bool show_log)
@@ -678,10 +846,18 @@ bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
     return true;
 }
 
+/**
+double RelativeTime(const TimePoint& start)
+
+ */
 double RelativeTime(const TimePoint& start) {
     return std::chrono::duration_cast<std::chrono::duration<double>>(Clock::now() - start).count();
 }
 
+/**
+double TimeDuration(const Clock::duration& elapsed)
+
+ */
 double TimeDuration(const Clock::duration& elapsed) {
     return std::chrono::duration_cast<std::chrono::duration<double>>(elapsed).count();
 }

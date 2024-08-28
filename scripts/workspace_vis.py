@@ -127,7 +127,7 @@ if __name__=='__main__':
     r_min = 20
     phi_max = np.pi/2
 
-    fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/output/20240726-15-11-38_interp.txt", "../data/output/20240726-15-11-52_interp.txt", "../data/output/20240726-15-12-00_interp.txt", "../data/output/20240726-15-12-34_interp.txt", "../data/output/20240726-15-33-59_interp.txt"]
+    fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/output/20240805-12-05-42_ptcloud.txt", "../data/output/20240805-12-04-50_ptcloud.txt"]
     # fileNames = ["../data/input/goal_regions.txt", "../data/output/20240712-13-31-42_interp.txt", "../data/output/20240712-13-35-44_interp.txt"]
     obstacles_transform = np.array([[0.839844, 0, 0, -177.938],[0, 0.839844, 0, 70.0504],[0, 0, 1, -809.112],[0, 0, 0, 1]]).astype(np.float64)
 
