@@ -109,7 +109,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
 
     bool connected = false;
     std::queue<IntPoint> queue;
-    auto const start_ijk = env->RasToIjk(sp).cast<int>();
+    auto const start_ijk = env->RasToIjk(sp).cast<int>();   // TODO: has something like this changed behavior in debugging?
 
     std::cout << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << " voxel rad: " << voxel_rad <<std::endl;
     queue.push(start_ijk);
@@ -165,7 +165,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
                         RealNum inc_y = relative_p.dot(unit_sg);
                         if (inc_y > -voxel_rad && inc_y < max_h + voxel_rad) {
                             RealNum inc_x = (relative_p - inc_y * unit_sg).norm();
-                            if ((Vec2(inc_x, inc_y) - rugby_center).norm() < rugby_rad + voxel_rad) {
+                            if ((Vec2(inc_x, inc_y) - rugby_center).norm() < rugby_rad + voxel_rad) { // TODO: does this actually fully check the rugby? 
                                 valid = true;
                             }
                         }

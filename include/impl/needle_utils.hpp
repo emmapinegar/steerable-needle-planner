@@ -35,15 +35,17 @@ namespace unc::robotics::snp {
 /**
 bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& rad)
 
-
+Checks if the goal point gp is within the limited trumpet boundary of the start point & z axis, sp & st.
+The trumpet boundary is currently limited to prevent points that required over 90 degrees from being considered.
 
 Parameters:
-sp:
-st:
-gp:
-rad:
+sp: the starting position of the needle & its trumpet
+st: the starting z axis of the needle & its trumpet
+gp: the goal position of the needle to test
+rad: the minimum radius of curvature for the needle
 
 Returns:
+bool: true if the point gp is in the trumpet of the needle, false if it is not
  */
 bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& rad) {
     const Vec3 sg = gp - sp;
@@ -67,6 +69,17 @@ bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& ra
 /**
 bool InTrumpet(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad)
 
+Checks if the goal point gp is within the limited trumpet boundary of the start point & orientation, sp & sq.
+The trumpet boundary is currently limited to prevent points that required over 90 degrees from being considered.
+
+Parameters:
+sp: the starting position of the needle & its trumpet
+sq: the starting orientation (quaternion) of the needle & its trumpet
+gp: the goal position of the needle to test
+rad: the minimum radius of curvature for the needle
+
+Returns:
+bool: true if the point gp is in the trumpet of the needle, false if it is not
  */
 bool InTrumpet(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad) {
     return InTrumpet(sp, sq.normalized() * Vec3::UnitZ(), gp, rad);
@@ -75,15 +88,15 @@ bool InTrumpet(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& ra
 /**
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp)
 
-
+Calculates the radius of curvature required to move from the starting point to the goal point.
 
 Parameters:
-sp:
-st:
-gp:
+sp: the starting point of the needle
+st: the starting z axis of the needle
+gp: the goal point of the needle
 
 Returns:
-
+float: the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
  */
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp) {
     const Vec3 sg = gp - sp;
@@ -91,15 +104,24 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp) {
     const RealNum cos_theta = (sg.normalized()).dot(st.normalized());
 
     if (cos_theta > 1 - EPS) {
-        return R_INF;
+        return R_INF;                                   // special case where needle is moving straight
     }
 
-    return 0.5 * d / std::sin(std::acos(cos_theta));
+    return 0.5 * d / std::sin(std::acos(cos_theta));    // radius of curvature is generally calculated as d/(2sin(theta))
 }
 
 /**
 RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp)
 
+Calculates the radius of curvature required to move from the starting point to the goal point.
+
+Parameters:
+sp: the starting point of the needle
+sq: the starting orientation of the needle
+gp: the goal point of the needle
+
+Returns:
+float: the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
  */
 RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp) {
     return RadiusOfCurvature(sp, sq.normalized() * Vec3::UnitZ(), gp);
@@ -109,6 +131,15 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp) {
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
                           const RealNum& goal_tolerance)
 
+Calculates the radius of curvature required to move from the starting point to the goal point.
+
+Parameters:
+sp: the starting point of the needle
+st: the starting z axis of the needle
+gp: the goal point of the needle
+
+Returns:
+float: the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
  */
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
                           const RealNum& goal_tolerance)
