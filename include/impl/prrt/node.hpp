@@ -46,6 +46,7 @@ class Node {
     Edge<State, Traj> parent_;
     Scalar traj_length_{0};
     Scalar cost_{0};
+    Scalar ang_total_{0};
 
   public:
     template <typename ... Args>
@@ -69,6 +70,14 @@ class Node {
 
     const Scalar& cost() const {
         return cost_;
+    }
+
+    Scalar& ang_total() {
+        return ang_total_;
+    }
+
+    const Scalar& ang_total() const {
+        return ang_total_;
     }
 
     const State& state() const {
