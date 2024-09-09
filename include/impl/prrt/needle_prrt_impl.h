@@ -512,8 +512,11 @@ unbiasedSamplingLoop:
         newState = *propagated;
 
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
+        auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
-        if (!scenario_.valid(newState, newLength)) {
+        std::cout << "angle total: " << newAngle << std::endl;
+
+        if (!scenario_.valid(newState, newLength, newAngle)) {
             return;
         }
 
@@ -524,6 +527,7 @@ unbiasedSamplingLoop:
             Node* newNode = nodePool_.allocate(linkTrajectory(traj), nearNode, newState);
             newNode->length() = newLength;
             newNode->cost() = nearNode->cost() + scenario_.CurveCost(nearNode->state(), newState);
+            newNode->ang_total() = newAngle;
             planner.nn_.insert(newNode);
 
             if (isGoal) {
@@ -531,10 +535,13 @@ unbiasedSamplingLoop:
                 if (scenario_.valid(goalLength)) {
                     auto const& goalCost = newNode->cost() + scenario_.CurveCost(newState, goalState)
                                          + scenario_.FinalStateCost(goalState);
+                    auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+
                     if (goalCost < planner.bestCost_) {
                         Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
+                        goalNode->ang_total() = goalAngle;
                         planner.foundGoal(goalNode);
                     }
                 }
@@ -549,6 +556,7 @@ unbiasedSamplingLoop:
                         (*goalNode)->length() = goalLength;
                         (*goalNode)->cost() = newNode->cost() + scenario_.CurveCost(newNode->state(), goalState)
                                               + scenario_.FinalStateCost(goalState);
+                        (*goalNode)->ang_total() = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
                     }
                 }
             }

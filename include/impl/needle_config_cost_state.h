@@ -51,12 +51,20 @@ class ConfigCostState {
     ConfigCostState(const Eigen::Quaternion<Scalar>& q, const Eigen::Matrix<Scalar, 3, 1>& p) {
         base_.first = {q, p};
         base_.second = 0;
+        // base_.third = 0;
     }
 
     ConfigCostState(const Eigen::Quaternion<Scalar>& q, const Eigen::Matrix<Scalar, 3, 1>& p, const Scalar& c) {
         base_.first = {q, p};
         base_.second = c;
+        // base_.third = 0;
     }
+
+    // ConfigCostState(const Eigen::Quaternion<Scalar>& q, const Eigen::Matrix<Scalar, 3, 1>& p, const Scalar& c, const Scalar& ang) {
+    //     base_.first = {q, p};
+    //     base_.second = c;
+    //     base_.third = ang;
+    // }    
 
     Eigen::Quaternion<Scalar>& rotation() {
         return std::get<0>(base_.first);
@@ -81,6 +89,14 @@ class ConfigCostState {
     const Scalar& cost() const {
         return base_.second;
     }
+
+    // Scalar& total_angle() {
+    //     return base_.third;
+    // }
+
+    // const Scalar& total_angle() const {
+    //     return base_.third;
+    // }    
 
     template <typename Char, typename Traits>
     friend decltype(auto)

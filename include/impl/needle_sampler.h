@@ -136,10 +136,11 @@ std::pair<RealNum, RealNum> SampleInUnitCircle(RNG& rng, Uniform& uniform) {
     return {t, r};
 }
 
+// TODO: does this function need to be changed to work for >90 or >180? 
 template<typename RNG, typename Uniform, typename Normal>
 Vec3 SampleInTrumpet(const RealNum& rad_curv, const RealNum& ins_length, const RealNum& max_r,
                      RNG& rng, Uniform& uniform, Normal& normal) {
-    Vec3 sample;
+    Vec3 sample; 
     bool valid = false;
     Vec2 center(rad_curv, 0);
 

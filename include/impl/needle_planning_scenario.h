@@ -164,6 +164,10 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
         return (validator_.ValidLength(length) && validator_.Valid(s));
     }
 
+    bool valid(const State& s, const Distance& length, const Scalar& angle) const {
+        return validator_.Valid(s, length, angle);
+    }
+
     bool validReachableSpace(const State& s) {
         return validator_.ValidReachableSpace(s);
     }
@@ -282,6 +286,10 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     bool valid(const State& s, const Distance& length) const {
         return validator_.Valid(s, length);
+    }
+
+    bool valid(const State& s, const Distance& length, const Scalar& angle) const {
+        return validator_.Valid(s, length, angle);
     }
 
     bool collision(const State& s) const {

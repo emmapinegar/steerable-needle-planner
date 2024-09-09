@@ -57,11 +57,11 @@ bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& ra
     }
 
     if (y < 0) {
-        return false;
+        return false;           // TODO: change if we want a limit greater than 180
     }
 
     const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));
-    const RealNum dist_to_center = Vec2(x - rad, y).norm(); // TODO: change this line to not stop early
+    const RealNum dist_to_center = Vec2(x - rad, y).norm(); 
 
     return (dist_to_center > rad - EPS);
 }
@@ -137,6 +137,7 @@ Parameters:
 sp: the starting point of the needle
 st: the starting z axis of the needle
 gp: the goal point of the needle
+goal_tolerance: 
 
 Returns:
 float: the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
@@ -176,15 +177,17 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
                                   const RealNum& rad, const RealNum& ang_tolerance)
 
 calculates the distance to the center of the center of one of the circles comprising the trumpet boundary
+currently limited to checking segments of 180 degrees or less
 
 Parameters:
-sp:
-st:
-gp:
-rad:
+sp: the starting position for the needle
+st: the starting z axis for the needle
+gp: the goal position for the needle
+rad: the minimum radius of curvature for the needle
 ang_tolerance: the "orientation tolerance" which defaults to 0
 
-
+Returns:
+float: the distance to the trumpet boundary, negative if the goal position is reachable, positive if the goal position is inside the trumpet boundary
  */
 RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
                                   const RealNum& rad, const RealNum& ang_tolerance)
@@ -201,8 +204,8 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
 
     //std::cout << "tang: " << tang[0] << " " << tang[1] << " " << tang[2] << " y: " << y << std::endl;
 
-    if (y > 0) {
-        const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));
+    if (y > 0) {                                                            
+        const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));                 // TODO: fix this for angles greater than 180
         Vec2 center(rad * std::cos(ang_tolerance), -rad * std::sin(ang_tolerance));
         const RealNum dist_to_center = (Vec2(x, y) - center).norm();
 
@@ -215,7 +218,15 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
 /**
 RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
                                      const RealNum& rad, const RealNum& ang_tolerance)
+Parameters:
+sp: the starting position for the needle
+st: the starting z axis for the needle
+gp: the goal position for the needle
+rad: the minimum radius of curvature for the needle
+ang_tolerance: the "orientation tolerance" which defaults to 0
 
+Returns:
+float: the maximum distance to the trumpet boundary, we can't really say anythin about reachability with this value
  */
 RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
                                      const RealNum& rad, const RealNum& ang_tolerance)
@@ -233,7 +244,7 @@ RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3&
     if (y > 0) {
         const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));
         Vec2 center(rad * std::cos(ang_tolerance), -rad * std::sin(ang_tolerance));
-        const RealNum dist_to_center = (Vec2(-x, y) - center).norm();
+        const RealNum dist_to_center = (Vec2(-x, y) - center).norm();               // this is the difference from the regular calc that makes it the max distance
 
         return rad - dist_to_center;
     }
@@ -750,7 +761,7 @@ RealNum DirectionDifference(const Vec3& t0, const Vec3& t1)
 
  */
 RealNum DirectionDifference(const Vec3& t0, const Vec3& t1) {
-    const RealNum cos_alpha = std::fmin(1, t0.normalized().dot(t1.normalized()));
+    const RealNum cos_alpha = std::fmin(1, t0.normalized().dot(t1.normalized()));           // TODO: is there an easy way I can track the total change in orientation
     return std::acos(cos_alpha);
 }
 

@@ -223,11 +223,11 @@ bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNu
                              EnvPtr env, const RealNum& rad_curv, const RealNum& ins_length,
                              const RealNum& ang_constraint_rad, const bool constrain_goal_orientation,
                              BoolArray3& visited, unsigned& max_size) {
-    // if (ang_constraint_rad > 0.5*M_PI + EPS) {
-    //     std::cout << "Using an angular constraint of " << ang_constraint_rad* RAD_TO_DEGREE <<
-    //               " (> 90) degrees! Not supported yet!" << std::endl;
-    //     return false;
-    // }
+    if (ang_constraint_rad > M_PI + EPS) {
+        std::cout << "Using an angular constraint of " << ang_constraint_rad* RAD_TO_DEGREE <<
+                  " (> 90) degrees! Not supported yet!" << std::endl;
+        return false;
+    }
 
     const Vec3& start_p = start.translation();
     const Quat start_q = start.rotation().normalized();
@@ -369,8 +369,8 @@ checks that the state s is collision-free and capable of reaching the goal state
 Parameters:
 s: the state s being considered
 goal: the goal state
-pos_tolerance:
-ang_tolerance: 
+pos_tolerance: the tolerance for being "close enough" to the goal position
+ang_tolerance: the orientation tolerance
 env: the planning environment
 rad_curv: the minimum radius of curvature for the needle
 constrain_goal_orientation: should the planner try to reach a goal orientation
@@ -785,8 +785,17 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
                                             visited_, max_size_);
     }
 
-    bool Valid(const State& s) const {
+    bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
+
         if (radius_status_ > 0 && utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
+            return false;
+        }
+
+        if (ang_total > ang_constraint_rad_) {
+            return false;
+        }
+
+        if (base::InCollision(s)) {
             return false;
         }
 
@@ -1117,8 +1126,8 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
         return true;
     }
 
-    bool Valid(const State& s, const RealNum& length=0) const {
-        if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
+    bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
+        if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_) || ang_total > ang_constraint_rad_) {
             return false;
         }
 
