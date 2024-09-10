@@ -20,7 +20,7 @@ colorBank = {
 
 
 def plot_pc_o3d():
-    fileNames = ["../data/input/goal_regions.txt", "../data/output/20240710-12-51-42_ptcloud.txt"] #, "../data/input/obstacles.txt"]
+    fileNames = ["../data/input/goal_regions.txt", "../data/output/20240909-15-03-05_interp.txt"] #, "../data/input/obstacles.txt"]
 
     obstacles_transform = np.array([[0.839844, 0, 0, -177.938],[0, 0.839844, 0, 70.0504],[0, 0, 1, -809.112],[0, 0, 0, 1]]).astype(np.float64)
 
@@ -127,15 +127,15 @@ if __name__=='__main__':
     r_min = 20
     phi_max = np.pi/2
 
-    fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/output/20240805-12-05-42_ptcloud.txt", "../data/output/20240805-12-04-50_ptcloud.txt"]
+    fileNames = ["../data/input/obstacles.txt", "../data/input/start_and_goal_poses.txt", "../data/output/20240909-15-03-05_interp.txt"]
     # fileNames = ["../data/input/goal_regions.txt", "../data/output/20240712-13-31-42_interp.txt", "../data/output/20240712-13-35-44_interp.txt"]
     obstacles_transform = np.array([[0.839844, 0, 0, -177.938],[0, 0.839844, 0, 70.0504],[0, 0, 1, -809.112],[0, 0, 0, 1]]).astype(np.float64)
 
-    start_p = np.array([[-105.8713], [158.2018], [-613.2506]])
-    start_q = np.array([[-0.368893], [0], [-0.914127], [0.168198]]) # np.array([[1], [0], [0], [0]]) # w, x, y, z
+    start_p = np.array([[100], [100], [100]])
+    start_q = np.array([[1], [0], [0], [0]]) # np.array([[1], [0], [0], [0]]) # w, x, y, z
 
-    goal_p = np.array([[-54.8324], [139.4900], [-644.0964]])
-    goal_q = np.array([[-0.385233], [0], [-0.920491], [-0.0655092]])
+    goal_p = np.array([[100], [300], [105]])
+    goal_q = np.array([[1], [0], [0], [0]])
 
 
     start = o3d.geometry.TriangleMesh.create_coordinate_frame()

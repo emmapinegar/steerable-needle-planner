@@ -223,11 +223,11 @@ bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNu
                              EnvPtr env, const RealNum& rad_curv, const RealNum& ins_length,
                              const RealNum& ang_constraint_rad, const bool constrain_goal_orientation,
                              BoolArray3& visited, unsigned& max_size) {
-    // if (ang_constraint_rad > 0.5*M_PI + EPS) {
-    //     std::cout << "Using an angular constraint of " << ang_constraint_rad* RAD_TO_DEGREE <<
-    //               " (> 90) degrees! Not supported yet!" << std::endl;
-    //     return false;
-    // }
+    if (ang_constraint_rad > M_PI + EPS) {
+        std::cout << "Using an angular constraint of " << ang_constraint_rad* RAD_TO_DEGREE <<
+                  " (> 90) degrees! Not supported yet!" << std::endl;
+        return false;
+    }
 
     const Vec3& start_p = start.translation();
     const Quat start_q = start.rotation().normalized();
