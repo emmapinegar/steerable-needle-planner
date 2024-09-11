@@ -112,13 +112,17 @@ int main(int argc, char** argv) {
     }
 
     start_q = Quat::FromTwoVectors(Vec3::UnitZ(), (goals[0] - start_p).normalized());
+    std::cout << "parsed start quat" << std::endl;
 
     using Scenario = SpreadingScenario<RealNum>::Type;
     using State = typename Scenario::State;
     using Space = typename Scenario::Space;
 
     State start(start_q, start_p);
+    std::cout << "created start state" << std::endl;
     Scenario scenario(cfg, start);
+    std::cout << "created scenario" << std::endl;
+
     MPT_LOG(INFO) << "start: " << start;
 
     scenario.validator().ProvideGoalPoints(goals);
