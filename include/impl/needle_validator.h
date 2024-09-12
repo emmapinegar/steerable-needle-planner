@@ -868,8 +868,8 @@ class SpreadingValidator : public ValidatorBase<State> {
         return true;
     }
 
-    bool Valid(const State& s, const RealNum& length=0) const {
-        if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
+    bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
+        if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_) || ang_total > ang_constraint_rad_) {
             return false;
         }
 

@@ -484,8 +484,11 @@ unbiasedSamplingLoop:
         newState = *propagated;
 
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
+        auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
-        if (!scenario_.valid(newState, newLength)) {
+        std::cout << "angle total: " << newAngle << std::endl;
+
+        if (!scenario_.valid(newState, newLength, newAngle)) {
             return;
         }
 
@@ -494,10 +497,12 @@ unbiasedSamplingLoop:
 
             Node* newNode = nodePool_.allocate(linkTrajectory(traj), nearNode, newState);
             newNode->length() = newLength;
+            newNode->ang_total() = newAngle;
             planner.nn_.insert(newNode);
 
             if (isGoal) {
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
+                auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 
                 if (!scenario_.valid(goalLength)) {
                     return;
@@ -509,6 +514,7 @@ unbiasedSamplingLoop:
                 else {
                     Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
                     goalNode->length() = goalLength;
+                    goalNode->ang_total() = goalAngle;
                     planner.foundGoal(goalNode);
                 }
             }
