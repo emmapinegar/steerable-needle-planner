@@ -514,7 +514,7 @@ unbiasedSamplingLoop:
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
-        std::cout << "angle total: " << newAngle << std::endl;
+        // std::cout << "angle total: " << newAngle << std::endl;
 
         if (!scenario_.valid(newState, newLength, newAngle)) {
             return;
@@ -542,6 +542,7 @@ unbiasedSamplingLoop:
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
                         goalNode->ang_total() = goalAngle;
+                        std::cout << "angle total: " << goalAngle << std::endl;
                         planner.foundGoal(goalNode);
                     }
                 }
@@ -557,6 +558,7 @@ unbiasedSamplingLoop:
                         (*goalNode)->cost() = newNode->cost() + scenario_.CurveCost(newNode->state(), goalState)
                                               + scenario_.FinalStateCost(goalState);
                         (*goalNode)->ang_total() = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                        std::cout << "angle total: " << (*goalNode)->ang_total() << std::endl;
                     }
                 }
             }
