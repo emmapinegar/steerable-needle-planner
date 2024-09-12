@@ -60,7 +60,7 @@ def draw_ptc(ptc):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240912-11-03-11_interp.txt"]
+        fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240912-11-03-11_interp.txt", "../data/output/20240912-11-18-18_interp.txt", "../data/output/20240912-11-21-50_interp.txt", "../data/output/20240912-11-22-54_interp.txt", "../data/output/20240912-11-22-54_interp.txt", "../data/output/20240912-11-23-49_interp.txt"]
     else:
         fileNames = sys.argv[1:]
 

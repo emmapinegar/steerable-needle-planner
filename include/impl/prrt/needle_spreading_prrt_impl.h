@@ -486,7 +486,7 @@ unbiasedSamplingLoop:
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
-        std::cout << "angle total: " << newAngle << std::endl;
+        // std::cout << "angle total: " << newAngle << std::endl;
 
         if (!scenario_.valid(newState, newLength, newAngle)) {
             return;
@@ -503,6 +503,8 @@ unbiasedSamplingLoop:
             if (isGoal) {
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+
+                std::cout << "angle total: " << goalAngle << std::endl;
 
                 if (!scenario_.valid(goalLength)) {
                     return;
