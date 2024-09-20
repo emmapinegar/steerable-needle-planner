@@ -64,6 +64,7 @@ class Node {
     Scalar traj_length_{0};
     Scalar cost_to_come_{0};
     Scalar cost_to_go_{0};
+    Scalar ang_total_{0};
     bool valid_{false};
 
     unsigned rank_{0};
@@ -123,6 +124,15 @@ class Node {
     const Scalar& costToGo() const {
         return cost_to_go_;
     }
+
+    Scalar& ang_total() {
+        return ang_total_;
+    }
+
+    const Scalar& ang_total() const {
+        return ang_total_;
+    }  
+
 
     Scalar f() const {
         return cost_to_come_ + cost_to_go_;

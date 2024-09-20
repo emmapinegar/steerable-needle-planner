@@ -211,6 +211,14 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
 
         return rad - dist_to_center;
     }
+    else if (y < 0)
+    {
+        const RealNum x = d *std::sin(std::acos(std::fmax(-1, y / d)) + M_PI);
+        Vec2 center(rad * std::cos(ang_tolerance), -rad * std::sin(ang_tolerance));
+        const RealNum dist_to_center = (Vec2(x, y) - center).norm();
+
+        return rad - dist_to_center;
+    }
 
     return R_INF;
 }

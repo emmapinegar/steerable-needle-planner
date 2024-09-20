@@ -225,7 +225,7 @@ bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNu
                              BoolArray3& visited, unsigned& max_size) {
     if (ang_constraint_rad > 1.5*M_PI + EPS) {
         std::cout << "Using an angular constraint of " << ang_constraint_rad* RAD_TO_DEGREE <<
-                  " (> 90) degrees! Not supported yet!" << std::endl;
+                  " (> 270) degrees! Not supported yet!" << std::endl;
         return false;
     }
 
@@ -977,14 +977,28 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
         return valid;
     }
 
-    bool Valid(const State& s) const {
+    bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
         if (radius_status_ > 0 && utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
+            return false;
+        }
+
+        if (!base::ValidLength(length))
+        {
+            return false;
+        }
+
+        if (ang_total > ang_constraint_rad_) {
+            return false;
+        }
+
+        if (base::InCollision(s)) {
             return false;
         }
 
         return utils::ValidStateWithGoalReachability(s, goal_, pos_tolerance_, ang_tolerance_, base::env_,
                 rad_curv_, constrain_goal_orientation_);
     }
+
 
     bool ValidReachableSpace(const State& s) {
         return utils::CheckWorkspaceConnected(s, goal_, rad_curv_, pos_tolerance_, neig_, base::env_, visited_, max_size_);

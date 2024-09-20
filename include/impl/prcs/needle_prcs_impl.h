@@ -528,6 +528,8 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             if (goalStates.size() < 2) {
                 auto const& goalState = goalStates[0];
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
+                auto const goalAngle = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
+                std::cout << "goal angle: " << goalAngle << std::endl;
                 if (scenario_.valid(goalLength)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                          + scenario_.FinalStateCost(goalState);
@@ -535,6 +537,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
+                        goalNode->ang_total() = goalAngle;
                         planner.foundGoal(goalNode);
                     }
 
@@ -605,6 +608,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             node->state() = *propagated;
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
+            node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
         }
 
         const bool inheritValidation = node->valid();
@@ -695,7 +699,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     }
 
     decltype(auto) validNode(Planner& planner, Node* node) {
-        if (!scenario_.valid(node->length())) {
+        if (!scenario_.valid(node->state(), node->length(), node->ang_total())) {
             node->valid() = false;
             return false;
         }
@@ -711,9 +715,9 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             return false;
         }
 
-        if (!scenario_.valid(node->state())) {
-            return false;
-        }
+        // if (!scenario_.valid(node->state())) {
+        //     return false;
+        // }
 
         return true;
     }
@@ -833,7 +837,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     Node* addNewNode(Planner& planner, Node* parent, const unsigned& radIndex, const unsigned& lengthLevel,
                      const unsigned& angleLevel, const unsigned& lengthIndex=0, const unsigned& angleIndex=0) {
         Node* node;
-
+        
         if (bin_.empty()) {
             node = nodePool_.allocate(linkTrajectory(true), parent, parent->state());
         }
