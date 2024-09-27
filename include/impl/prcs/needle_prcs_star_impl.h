@@ -697,7 +697,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     }
 
     decltype(auto) validNode(Planner& planner, Node* node) {
-        if (!scenario_.valid(node->length()) || planner.bestCost_ < node->f() + EPS) {
+        if (!scenario_.valid(node->state(), node->length(), node->ang_total()) || planner.bestCost_ < node->f() + EPS) {
             node->valid() = false;
             return false;
         }
@@ -713,9 +713,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             return false;
         }
 
-        if (!scenario_.valid(node->state())) {
-            return false;
-        }
+        // if (!scenario_.valid(node->state())) {
+        //     return false;
+        // }
 
         return true;
     }
@@ -870,6 +870,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         node->setResolution({lengthLevel, angleLevel}, {radIndex, lengthIndex, angleIndex});
         node->cost() = parent->cost() + scenario_.CurveCost(pState, endState);
         node->costToGo() = scenario_.validator().CostToGo(endState);
+        node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
         planner.queue_.push(node);
         return node;
     }

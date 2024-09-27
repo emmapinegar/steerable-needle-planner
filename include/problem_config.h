@@ -70,7 +70,7 @@ struct ProblemConfig {
     RealNum validity_res = 0.5;
     RealNum cost_res = 0.1;
     // Safe margin for collision detection.
-    RealNum safe_margin = 0.0;
+    RealNum safe_margin = 2.0;
     // Resolution used to reinterpolate the result plan.
     RealNum result_res = 2.0;
     // The probability of sampling goal state directly.
@@ -104,7 +104,7 @@ struct ProblemConfig {
 
     // Termination control.
     // Timeout in milliseconds.
-    SizeType timeout = 1000;
+    SizeType timeout = 100000;
     // Maximum number of nodes in the tree.
     SizeType num_nodes = 10000;
     // Number of plans needed for termination.
@@ -114,7 +114,7 @@ struct ProblemConfig {
     Idx seed = 1;
     bool show_logs = true;
     Str output_file_root = "../data/output/test";
-    Str obstacle_file = "../data/input/obstacles.txt";
+    Str obstacle_file = "../data/input/remind_obstacles.txt";
     Str cost_file = "../data/input/costs.txt";
     Str healpix_file = "../data/input/HEALPix.txt";
 

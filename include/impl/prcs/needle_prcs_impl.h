@@ -522,18 +522,19 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     }
 
     bool checkTerminateCondition(Planner& planner, Node* node) {
-        auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, node->state());
+        auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, node->state()); //TODO: where to heck is this defined
 
         if (isGoal) {
             if (goalStates.size() < 2) {
                 auto const& goalState = goalStates[0];
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                 auto const goalAngle = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
-                std::cout << "goal angle: " << goalAngle << std::endl;
+                
                 if (scenario_.valid(goalLength)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                          + scenario_.FinalStateCost(goalState);
                     if (goalCost < planner.bestCost_) {
+                        std::cout << "goal angle: " << goalAngle << std::endl;
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;

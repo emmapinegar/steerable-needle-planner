@@ -33,6 +33,7 @@
 import sys
 import open3d as o3d
 import copy
+import numpy as np
 
 colorBank = {
     "0": [1, 0.706, 0],
@@ -60,14 +61,25 @@ def draw_ptc(ptc):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240920-12-23-42_interp.txt", "../data/output/20240920-12-26-03_interp.txt", "../data/output/20240920-13-59-05_interp.txt", "../data/output/20240920-14-06-16_interp.txt"]
+        # fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240925-12-25-03_ptcloud.txt", "../data/output/20240925-12-25-03_interp.txt", "../data/output/20240925-12-24-44_ptcloud.txt", "../data/output/20240925-12-24-44_interp.txt", "../data/output/20240925-12-28-14_interp.txt", "../data/output/20240925-12-33-06_interp.txt"]
+        fileNames = ["../data/input/remind_start_and_goal_poses.txt", "../data/input/remind_obstacles.txt", "../data/output/20240927-14-15-27_interp.txt", "../data/output/20240927-14-21-49_interp.txt", "../data/output/20240927-14-25-35_interp.txt", "../data/output/20240927-14-27-41_interp.txt", "../data/output/20240927-14-35-06_interp.txt", "../data/output/20240927-14-38-31_interp.txt"]
     else:
         fileNames = sys.argv[1:]
+
+    obstacles_transform = np.array([[0.2257, 0.1947, 0.0344, -83.7135],[0.1957, -0.2274, 0.0033, 106.4279],[0.0282, 0.0199, -0.2978, 43.7868],[0, 0, 0, 1]]).astype(np.float64)
 
     ptcs = []
     for i in range(len(fileNames)):
         ptcFile = fileNames[i]
         ptc = o3d.io.read_point_cloud(ptcFile, format='xyz')
+        numpoints = np.shape(ptc.points)
+        print(numpoints)
+        if ptcFile.__contains__("obstacle"):
+            ptc.transform(obstacles_transform)
+
+        if numpoints[0] > 100000:
+            ptc = ptc.random_down_sample(0.05)
+
         print("Point cloud {}: ".format(i))
         print(ptc)
         ptcs.append(ptc)

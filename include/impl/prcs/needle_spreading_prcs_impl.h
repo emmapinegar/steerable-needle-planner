@@ -482,12 +482,12 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         Distance scaledRatio = 0;
         std::uniform_real_distribution<Distance> uniform01;
 
-        if(no_ == 0 && planner.addStartRatio_ > 0) {
-            scaledRatio = planner.addStartRatio_ * planner.workers_.size();
-            MPT_LOG(TRACE) << "using scaled add start ratio of " << scaledRatio;
+        // if(no_ == 0 && planner.addStartRatio_ > 0) {
+        //     scaledRatio = planner.addStartRatio_ * planner.workers_.size();
+        //     MPT_LOG(TRACE) << "using scaled add start ratio of " << scaledRatio;
 
-            scenario_.validator().InitHEALPix();
-        }
+        //     // scenario_.validator().InitHEALPix();
+        // }
 
         configTolerance_ = scenario_.validator().ConfigTolerance();
         initNum_ = planner.propagator_.InitialNumberofOrientations();
@@ -573,9 +573,11 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 return;
             }
 
+
             node->state() = *propagated;
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
+            node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
         }
 
         const bool inheritValidation = node->valid();
@@ -589,14 +591,17 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     if (scenario_.valid(goalLength)) {
                         auto const& goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                              + scenario_.FinalStateCost(goalState);
+                        auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());                     
                         Node* goalNode = nodePool_.allocate(linkTrajectory(traj), node, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
+                        goalNode->ang_total() = goalAngle;
                         planner.foundGoal(goalNode);
                     }
                 }
                 else if (!planner.solved() && goalDist < bestDist_) {
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
+                    auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
 
                     if (scenario_.valid(goalLength)) {
                         bestDist_ = goalDist;
@@ -606,6 +611,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                             (*goalNode)->length() = goalLength;
                             (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                                 + scenario_.FinalStateCost(goalState);
+                            (*goalNode)->ang_total() = goalAngle;
                         }
                     }
                 }

@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
         suffix = "_" + suffix;
     }
 
-    Str const start_and_goal_file = "../data/input/start_and_goal_poses.txt";
+    Str const start_and_goal_file = "../data/input/remind_start_and_goal_poses.txt";
     auto [start_p, start_q] = utils::ReadStart(start_and_goal_file);
 
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
@@ -133,6 +133,7 @@ int main(int argc, char** argv) {
     static constexpr bool reportStats = true;
 
     if (cfg->multi_threading) {
+        MPT_LOG(INFO) << "multi-threading enabled";
         using Threads = hardware_concurrency;
         using Algorithm = NeedlePRCS<report_stats<reportStats>, NN, Threads, spreading>;
 
@@ -143,6 +144,7 @@ int main(int argc, char** argv) {
         utils::Run<0>(planner, cfg);
     }
     else {
+        MPT_LOG(INFO) << "single-threading enabled";
         using Threads = single_threaded;
         using Algorithm = NeedlePRCS<report_stats<reportStats>, NN, Threads, spreading>;
 

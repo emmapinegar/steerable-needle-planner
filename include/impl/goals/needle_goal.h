@@ -90,6 +90,11 @@ class NeedleGoalState {
         return goal_;
     }
 
+    /**
+     * performs the correct goal check depending on the planner configuration
+     * this is trigger by something in the planner implementations that calls a function from MPT that checks if a node is near the goal
+     * called by goal_(space, state)
+     */
     std::tuple<bool, Distance, States> operator() (const Space& space, const State& s) const {
         if (cfg_->constrain_goal_orientation) {
             return this->GoalCheckWithOrientation(space, s);
@@ -149,8 +154,9 @@ class NeedleGoalState {
         auto const distToGoal = (pathToGoal.back().translation() - goal_p_).norm();
 
         if (distToGoal > cfg_->goal_pos_tolerance) {
-            std::cout << "Invalid path to goal with err " << distToGoal
-                      << std::endl;
+            // const Vec3& sp = s.translation();
+            // std::cout << "Invalid path to goal with err " << distToGoal << " state: " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
+                    //   << std::endl;
             return {false, R_INF, {pathToGoal.back()}};
         }
 
@@ -171,8 +177,8 @@ class NeedleGoalState {
         auto const distToGoal = (pathToGoal.back().translation() - goal_p_).norm();
 
         if (distToGoal > cfg_->goal_pos_tolerance) {
-            std::cout << "Invalid path to goal with err " << distToGoal
-                      << std::endl;
+            // std::cout << "Invalid path to goal with err " << distToGoal
+            //           << std::endl;
             return {false, R_INF, {pathToGoal.back()}};
         }
 

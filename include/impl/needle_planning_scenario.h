@@ -203,6 +203,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
     }
 
     const Goal& goal() const {
+        // std::cout << "goal: " << goal_ << std::endl;
         return goal_;
     }
 

@@ -522,11 +522,12 @@ unbiasedSamplingLoop:
             }
             else if (!planner.solved() && goalDist < bestDist_) {
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
+                auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 
                 if (!scenario_.valid(goalLength)) {
                     return;
                 }
-
+                // std::cout << "angle total: " << goalAngle << std::endl;
                 bestDist_ = goalDist;
                 planner.foundApproxGoal(newNode, &bestDist_);
             }

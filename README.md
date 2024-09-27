@@ -1,5 +1,11 @@
 # Steerable Needle Planner
 
+#### Update 09/26/2023 by Emma Pinegar
+I have made some adjustments to the code to get things working for angles beyond 90 degrees and points that pass below the initial plane of the needle. I also changed how the angles are tracked to enforce the constraint by making it cumulative instead of the instantaneous angle in case things are oscillating. 
+
+
+
+
 #### Update 07/12/2024 by Emma Pinegar
 
 I have made a few changes to the code to fix a few problems which I'll highlight below.
