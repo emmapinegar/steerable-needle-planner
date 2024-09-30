@@ -112,9 +112,11 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     WorkerPool<Worker, maxThreads> workers_;
 
+    // void foundGoal(Node* node)
+    // Records that a goal has been reached with node.
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
-            MPT_LOG(INFO) << "found solution with cost " << node->cost();
+            MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->parent()->ang_total();
         }
 
         {
@@ -129,6 +131,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         bestDist_ = 0.0;
     }
 
+    // std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool, Distance* dist)
+    // Records that a goal has almost been reached with node.
     std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool,
                                          Distance* dist) {
         {
@@ -148,11 +152,15 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         return {};
     }
 
+    // void addActivateWorker()
+    // Locks and activates a worker. 
     void addActivateWorker() {
         std::lock_guard<std::mutex> lock(activeMutex_);
         numActivateWorkers_++;
     }
 
+    // void removeActivateWorker()
+    // Locks and removes a worker.
     void removeActivateWorker() {
         std::lock_guard<std::mutex> lock(activeMutex_);
         numActivateWorkers_--;
@@ -172,15 +180,21 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         queue_.setLookAhead(scenario.Config()->look_ahead);
     }
 
+    // void setRange(Distance range)
+    // Sets the maximum distance range for the problem. 
     void setRange(Distance range) {
         assert(range > 0);
         maxDistance_ = range;
     }
 
+    // Distance getRange() const
+    // Gets the maximum distance range for the problem. 
     Distance getRange() const {
         return maxDistance_;
     }
 
+    // std::size_t iterations() const
+    // Calculates the number of interations run between all of the workers. 
     std::size_t iterations() const {
         std::size_t sum = 0;
 
@@ -191,6 +205,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         return sum;
     }
 
+    // std::size_t size() const
+    // Calculates the number of nodes created between all of the workers. 
     std::size_t size() const {
         std::size_t sumSize = 0;
 
@@ -201,6 +217,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         return sumSize;
     }
 
+    // void addStart(Args&& ... args)
+    // Adds a starting node to the queue.
     template <typename ... Args>
     void addStart(Args&& ... args) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -466,22 +484,32 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         , rng_(seed) {
     }
 
+    // decltype(auto) space() const
+    // Planning space for the problem.
     decltype(auto) space() const {
         return scenario_.space();
     }
 
+    // decltype(auto) scenario() const
+    // Planning scenario being used. 
     decltype(auto) scenario() const {
         return scenario_;
     }
 
+    // const auto& nodes() const
+    // Nodes that have been added to the closed set. 
     const auto& nodes() const {
         return closed_;
     }
 
+    // const auto& numIterations() const 
+    // Number of iterations the planner has run.
     const auto& numIterations() const {
         return numIterations_;
     }
 
+    // void solve(Planner& planner, DoneFn done)
+    // Solves the motion planning problem.
     template <typename DoneFn>
     void solve(Planner& planner, DoneFn done) {
         MPT_LOG(TRACE) << "worker running";
@@ -525,6 +553,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         MPT_LOG(TRACE) << "worker done";
     }
 
+    // bool checkTerminateCondition(Planner& planner, Node* node)
+    // checks if the node satisfies the termination conditions
     bool checkTerminateCondition(Planner& planner, Node* node) {
         auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, node->state());
 
@@ -532,6 +562,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             if (goalStates.size() < 2) {
                 auto const& goalState = goalStates[0];
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
+                auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
+                // MPT_LOG(INFO) << "goal angle " << goalAngle;
                 if (scenario_.valid(goalLength)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                          + scenario_.FinalStateCost(goalState);
@@ -539,6 +571,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
+                        goalNode->ang_total() = goalAngle;
                         planner.foundGoal(goalNode);
                     }
 
@@ -549,6 +582,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto const goalLength0 = node->length() + snp::CurveLength(node->state(), goalStates[0]);
                 auto const goalLength1 = goalLength0 + snp::CurveLength(goalStates[0], goalStates[1]);
 
+                auto const goalAngle0 = node->ang_total() + DirectionDifference(node->state().rotation(), goalStates[0].rotation());
+                auto const goalAngle1 = goalAngle0 + DirectionDifference(goalStates[0].rotation(), goalStates[1].rotation());
+                // MPT_LOG(INFO) << "goal angle 0 " << goalAngle0 << " goal angle 1 " << goalAngle1;
                 if (scenario_.valid(goalLength1)) {
                     auto const goalCost0 = node->cost() + scenario_.CurveCost(node->state(), goalStates[0]);
                     auto const goalCost1 = goalCost0 + scenario_.CurveCost(goalStates[0], goalStates[1])
@@ -558,10 +594,12 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         Node* transNode = nodePool_.allocate(linkTrajectory(true), node, goalStates[0]);
                         transNode->length() = goalLength0;
                         transNode->cost() = goalCost0;
+                        transNode->ang_total() = goalAngle0;
 
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), transNode, goalStates[1]);
                         goalNode->length() = goalLength1;
                         goalNode->cost() = goalCost1;
+                        goalNode->ang_total() = goalAngle1;
                         planner.foundGoal(goalNode);
                     }
 
@@ -571,7 +609,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         else if (!planner.solved() && goalDist < bestDist_) {
             auto goalState = goalStates[0];
             auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
-
+            auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
+            // MPT_LOG(INFO) << "approximate goal angle " << goalAngle;
             if (scenario_.valid(goalLength)) {
                 bestDist_ = goalDist;
                 auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
@@ -579,6 +618,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     (*goalNode)->length() = goalLength;
                     (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                           + scenario_.FinalStateCost(goalState);
+                    (*goalNode)->ang_total() = goalAngle;
                 }
             }
         }
@@ -586,10 +626,12 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         return false;
     }
 
+    // void process(Planner& planner, Node* node, DoneFn done)
+    // Processes the node, validating and refining if applicable.
     template <typename DoneFn>
     void process(Planner& planner, Node* node, DoneFn done) {
         State from = node->state();
-
+        // MPT_LOG(INFO) << "node state " << from.rotation();
         if (node->parent()) {
             if (planner.bestCost_ < node->parent()->f() + EPS) {
                 recycle(node);
@@ -598,6 +640,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             from = planner.propagator_.ComputeStartPose(node->parent()->state(), node->angleIndex());
+            // MPT_LOG(INFO) << "parent ang " << node->parent()->ang_total() << " node ang " << DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
+            node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation()); // TODO: this may need to go somewhere else
         }
 
         const bool inheritValidation = node->valid();
@@ -657,6 +701,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         }
     }
 
+    // bool similarState(Planner& planner, Node* refNode, State state)
+    // Checks if the state is too similar to a reference node before adding. 
     bool similarState(Planner& planner, Node* refNode, State state) {
         Timer timer(Stats::nearest());
         std::vector<std::pair<NNNode, Distance>> nbh;
@@ -683,6 +729,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         return false;
     }
 
+    // bool similarNode(NN& nn, State state, const Distance rad)
+    // Checks if there is a node within a radius of the provided state.
     template<typename NN>
     bool similarNode(NN& nn, State state, const Distance rad) {
         Timer timer(Stats::nearest());
@@ -696,6 +744,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         return false;
     }
 
+    // decltype(auto) validNode(Planner& planner, Node* node)
+    // Checks if the node is valid. 
     decltype(auto) validNode(Planner& planner, Node* node) {
         if (!scenario_.valid(node->state(), node->length(), node->ang_total()) || planner.bestCost_ < node->f() + EPS) {
             node->valid() = false;
@@ -713,13 +763,12 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             return false;
         }
 
-        // if (!scenario_.valid(node->state())) {
-        //     return false;
-        // }
 
         return true;
     }
 
+    // decltype(auto) validMotion(Planner& planner, Node* node, const State& from)
+    // Checks if the motion from the provided state to the node is a valid motion.
     decltype(auto) validMotion(Planner& planner, Node* node, const State& from) {
         if (node->valid()) {
             return true;
@@ -742,6 +791,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         return false;
     }
 
+    // void block(Planner& planner, Node* node)
+    // unknown action 
     void block(Planner& planner, Node* node) {
         NodeIndices indices = node->indices();
         for (unsigned i = 0; i < planner.propagator_.MaxLengthIndex(); ++i) {
@@ -750,6 +801,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         }
     }
 
+    // void expand(Planner& planner, Node* node)
+    // Expands off of the current node and adds them to the queue for processing.
     void expand(Planner& planner, Node* node) {
         for (auto r_i = 0; r_i < radList_.size(); ++ r_i) {
             if (radList_[r_i] == std::numeric_limits<Distance>::infinity()) {
@@ -763,6 +816,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         }
     }
 
+    // Node* refine(Planner& planner, Node* node, const RefineType& type)
+    // Refines the characterisitcs for the given node?
     Node* refine(Planner& planner, Node* node, const RefineType& type) {
         if (!node->parent()) {
             throw std::runtime_error("[ERROR] Cannot compute finer motion for the root!");
@@ -840,6 +895,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                           newIndices[1], newIndices[2]);
     }
 
+    // Node* addNewNode(Planner& planner, Node* parent, const unsigned& radIndex, const unsigned& lengthLevel, const unsigned& angleLevel, const unsigned& lengthIndex=0, const unsigned& angleIndex=0)
+    // Adds the new node to the queue for processing. 
     Node* addNewNode(Planner& planner, Node* parent, const unsigned& radIndex, const unsigned& lengthLevel,
                      const unsigned& angleLevel, const unsigned& lengthIndex=0, const unsigned& angleIndex=0) {
         const State& pState = parent->state();
@@ -870,11 +927,13 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         node->setResolution({lengthLevel, angleLevel}, {radIndex, lengthIndex, angleIndex});
         node->cost() = parent->cost() + scenario_.CurveCost(pState, endState);
         node->costToGo() = scenario_.validator().CostToGo(endState);
-        node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
+        node->ang_total() = node->parent()->ang_total() + DirectionDifference(pState.rotation(), endState.rotation());
         planner.queue_.push(node);
         return node;
     }
 
+    // void recycle(Node* node)
+    // Recycles the given node. 
     void recycle(Node* node) {
         bin_.push(node);
     }

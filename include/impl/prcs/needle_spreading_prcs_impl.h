@@ -111,7 +111,7 @@ class NeedleSpreadingPRCS : public
 
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
-            MPT_LOG(INFO) << "found solution with cost " << node->cost();
+            MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->ang_total();
         }
 
         {

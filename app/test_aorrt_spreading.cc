@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
                                     needle_diameter,
                                     insertion_length,
                                     angle_constraint_degree));
-    cfg->timeout = 50000;
+    cfg->timeout = 5000;
 
     if (argc > 1) {
         cfg->multi_threading = std::atoi(argv[1]);

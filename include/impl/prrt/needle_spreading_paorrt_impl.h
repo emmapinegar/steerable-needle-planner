@@ -82,7 +82,7 @@ class NeedleSpreadingPAORRT : public
 
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
-            MPT_LOG(INFO) << "found solution";
+            MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->ang_total();
         }
 
         {
@@ -528,7 +528,7 @@ unbiasedSamplingLoop:
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 
-                std::cout << "angle total: " << goalAngle << std::endl;
+                // std::cout << "angle total: " << goalAngle << std::endl;
 
                 if (!scenario_.valid(goalLength)) {
                     return;

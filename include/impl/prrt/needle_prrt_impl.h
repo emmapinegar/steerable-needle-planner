@@ -82,7 +82,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
-            MPT_LOG(INFO) << "found solution with cost " << node->cost();
+            MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->ang_total();
         }
 
         {
@@ -542,7 +542,7 @@ unbiasedSamplingLoop:
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
                         goalNode->ang_total() = goalAngle;
-                        std::cout << "angle total: " << goalAngle << std::endl;
+                        // std::cout << "angle total: " << goalAngle << std::endl;
                         planner.foundGoal(goalNode);
                     }
                 }
@@ -558,7 +558,7 @@ unbiasedSamplingLoop:
                         (*goalNode)->cost() = newNode->cost() + scenario_.CurveCost(newNode->state(), goalState)
                                               + scenario_.FinalStateCost(goalState);
                         (*goalNode)->ang_total() = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
-                        std::cout << "angle total: " << (*goalNode)->ang_total() << std::endl;
+                        // std::cout << "angle total: " << (*goalNode)->ang_total() << std::endl;
                     }
                 }
             }

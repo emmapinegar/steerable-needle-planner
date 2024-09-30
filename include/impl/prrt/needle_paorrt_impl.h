@@ -83,7 +83,7 @@ class NeedlePAORRT : public PlannerBase<NeedlePAORRT<Scenario, maxThreads, repor
 
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
-            MPT_LOG(INFO) << "found solution with cost " << node->cost();
+            MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->ang_total();
         }
 
         {
@@ -557,7 +557,7 @@ unbiasedSamplingLoop:
                                        + scenario_.FinalStateCost(goalState);
                     goalNode->ang_total() = goalAngle;
                     planner.foundGoal(goalNode);
-                    std::cout << "angle total: " << goalAngle << std::endl;
+                    // std::cout << "angle total: " << goalAngle << std::endl;
                 }
             }
             else if (!planner.solved() && goalDist < bestDist_) {

@@ -112,7 +112,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
-            MPT_LOG(INFO) << "found solution with cost " << node->cost();
+            MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->ang_total();
         }
 
         {
@@ -534,7 +534,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                          + scenario_.FinalStateCost(goalState);
                     if (goalCost < planner.bestCost_) {
-                        std::cout << "goal angle: " << goalAngle << std::endl;
+                        // std::cout << "goal angle: " << goalAngle << std::endl;
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;

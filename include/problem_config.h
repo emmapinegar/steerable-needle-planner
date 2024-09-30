@@ -104,7 +104,7 @@ struct ProblemConfig {
 
     // Termination control.
     // Timeout in milliseconds.
-    SizeType timeout = 100000;
+    SizeType timeout = 1000;
     // Maximum number of nodes in the tree.
     SizeType num_nodes = 10000;
     // Number of plans needed for termination.
