@@ -234,6 +234,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     using Base::solveFor;
     using Base::solveUntil;
 
+    // solve(DoneFn doneFn)
+    // Starts solving the problem by starting the workers. 
     template <typename DoneFn>
     std::enable_if_t<std::is_same_v<bool, std::result_of_t<DoneFn()>>>
     solve(DoneFn doneFn) {
@@ -245,23 +247,33 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         workers_.solve(*this, doneFn);
     }
 
+    // bool solved() const
+    // unknown action
     bool solved() const {
         return goalCount_.load(std::memory_order_relaxed);
     }
 
+    // bool approxSolved() const
+    // unknown action
     bool approxSolved() const {
         return (approxRes_ != nullptr);
     }
 
+    // bool exhausted() const
+    // Checks if the planner has exhausted all options.
     bool exhausted() const {
         return (numActivateWorkers_ == 0) && (queue_.empty());
     }
 
+    // std::size_t numPlansFound() const
+    // unknown action
     std::size_t numPlansFound() const {
         return goalCount_.load(std::memory_order_relaxed);
     }
 
   private:
+    // std::pair<Distance, std::size_t> pathCost(const Node* n) const
+    // Calculates the cost and number of nodes of the path from the node to the root of the tree.
     std::pair<Distance, std::size_t> pathCost(const Node* n) const {
         Distance cost = 0;
         std::size_t size = 0;
@@ -279,6 +291,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         return {cost, size};
     }
 
+    // std::tuple<Distance, std::size_t, const Node*> bestSolution() const
+    // Finds he best cost to get to the goal or the approximate cost if the goal has not been reached yet. 
     std::tuple<Distance, std::size_t, const Node*> bestSolution() const {
         Distance bestCost = std::numeric_limits<Distance>::infinity();
         std::size_t bestSize = 0;
@@ -306,6 +320,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         return {bestCost, bestSize, bestGoal};
     }
 
+    // solutionRecur(const Node* node, Fn& fn) const
+    // Links the solution from node back to root.
     template <typename Fn>
     std::enable_if_t< is_trajectory_callback_v< Fn, State, Traj> >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -315,6 +331,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         }
     }
 
+    // solutionRecur(const Node* node, Fn& fn) const
+    // Links the solution from node back to root.
     template <typename Fn>
     std::enable_if_t< is_trajectory_reference_callback_v< Fn, State, Traj > >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -324,6 +342,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         }
     }
 
+    // solutionRecur(const Node* node, Fn& fn) const
+    // Links the solution from node back to root.
     template <typename Fn>
     std::enable_if_t< is_waypoint_callback_v< Fn, State, Traj > >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -335,6 +355,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     }
 
   public:
+    // std::vector<State> solution() const
+    // Gets the path of states that lead to the best solution.
     std::vector<State> solution() const {
         auto [cost, size, n] = bestSolution();
         std::vector<State> path;
@@ -353,6 +375,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         return path;
     }
 
+    // std::vector<std::vector<State>> allSolutions () const
+    // Gets the paths of states for all solutions. 
     std::vector<std::vector<State>> allSolutions () const {
         std::vector<std::vector<State>> paths;
 
@@ -377,6 +401,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         return paths;
     }
 
+    // void solution(Fn fn) const
+    // Gets the solution for the best solution. 
     template <typename Fn>
     void solution(Fn fn) const {
         auto [cost, size, goal] = bestSolution();
@@ -386,6 +412,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         }
     }
 
+    // void printStats() const
+    // Prints the number of nodes in graph, number of solutions, best cost, and number of waypoints. 
     void printStats() const {
         MPT_LOG(INFO) << "nodes in graph: " << nn_.size();
         auto [cost, size, goal] = bestSolution();
@@ -403,11 +431,15 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         }
     }
 
+    // Distance cost() const
+    // Gets the cost of the best solution. 
     Distance cost() const {
         auto [cost, size, n] = bestSolution();
         return cost;
     }
 
+    // std::vector<Distance> allCosts() const
+    // Gets the costs of all solutions. 
     std::vector<Distance> allCosts() const {
         std::vector<Distance> costs;
 
@@ -419,11 +451,15 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         return costs;
     }
 
+    // std::vector<Distance> allCosts() const
+    // unknown action
     const ResultSeq& resultWithTime() const {
         return resultWithTime_;
     }
 
   private:
+    // void visitNodes(Visitor&& visitor, const Nodes& nodes) const
+    // Visits all of the nodes with the visitor. 
     template <typename Visitor, typename Nodes>
     void visitNodes(Visitor&& visitor, const Nodes& nodes) const {
         for (const auto& n : nodes) {
@@ -436,6 +472,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     }
 
   public:
+    // void visitGraph(Visitor&& visitor) const
+    // Visits the nodes in the graph using workers. 
     template <typename Visitor>
     void visitGraph(Visitor&& visitor) const {
         for (const Worker& w : workers_) {

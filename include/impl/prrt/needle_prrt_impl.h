@@ -80,6 +80,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     WorkerPool<Worker, maxThreads> workers_;
 
+    // void foundGoal(Node* node)
+    // Records that a goal has been reached with node.
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
             MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->ang_total();
@@ -98,6 +100,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         bestDist_ = 0.0;
     }
 
+    // std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool, Distance* dist)
+    // Records that a goal has almost been reached with node.
     std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool,
                                          Distance* dist) {
         {
@@ -138,19 +142,27 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         return goalBias_;
     }
 
+    // void setRange(Distance range)
+    // Sets the maximum distance range for the problem.
     void setRange(Distance range) {
         assert(range > 0);
         maxDistance_ = range;
     }
 
+    // Distance getRange() const
+    // Gets the maximum distance range for the problem. 
     Distance getRange() const {
         return maxDistance_;
     }
 
+    // std::size_t size() const
+    // Calculates the number of nodes created between all of the workers.
     std::size_t size() const {
         return nn_.size();
     }
 
+    // void addStart(Args&& ... args)
+    // Adds a starting node to the queue.
     template <typename ... Args>
     void addStart(Args&& ... args) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -161,6 +173,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
     using Base::solveFor;
     using Base::solveUntil;
 
+    // solve(DoneFn doneFn)
+    // Starts solving the problem by starting the workers.
     template <typename DoneFn>
     std::enable_if_t<std::is_same_v<bool, std::result_of_t<DoneFn()>>>
     solve(DoneFn doneFn) {
@@ -172,19 +186,27 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         workers_.solve(*this, doneFn);
     }
 
+    // bool solved() const
+    // unknown action
     bool solved() const {
         return goalCount_.load(std::memory_order_relaxed);
     }
 
+    // bool approxSolved() const
+    // unknown action
     bool approxSolved() const {
         return (approxRes_ != nullptr);
     }
 
+    // std::size_t numPlansFound() const
+    // unknown action
     std::size_t numPlansFound() const {
         return goalCount_.load(std::memory_order_relaxed);
     }
 
   private:
+    // std::pair<Distance, std::size_t> pathCost(const Node* n) const
+    // Calculates the cost and number of nodes of the path from the node to the root of the tree.
     std::pair<Distance, std::size_t> pathCost(const Node* n) const {
         Distance cost = 0;
         std::size_t size = 0;
@@ -202,6 +224,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         return {cost, size};
     }
 
+    // std::tuple<Distance, std::size_t, const Node*> bestSolution() const
+    // Finds he best cost to get to the goal or the approximate cost if the goal has not been reached yet. 
     std::tuple<Distance, std::size_t, const Node*> bestSolution() const {
         Distance bestCost = std::numeric_limits<Distance>::infinity();
         std::size_t bestSize = 0;
@@ -229,6 +253,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         return {bestCost, bestSize, bestGoal};
     }
 
+    // solutionRecur(const Node* node, Fn& fn) const
+    // Links the solution from node back to root.
     template <typename Fn>
     std::enable_if_t< is_trajectory_callback_v< Fn, State, Traj> >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -238,6 +264,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         }
     }
 
+    // solutionRecur(const Node* node, Fn& fn) const
+    // Links the solution from node back to root.
     template <typename Fn>
     std::enable_if_t< is_trajectory_reference_callback_v< Fn, State, Traj > >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -247,6 +275,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         }
     }
 
+    // solutionRecur(const Node* node, Fn& fn) const
+    // Links the solution from node back to root.
     template <typename Fn>
     std::enable_if_t< is_waypoint_callback_v< Fn, State, Traj > >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -258,6 +288,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
     }
 
   public:
+    // std::vector<State> solution() const
+    // Gets the path of states that lead to the best solution.
     std::vector<State> solution() const {
         auto [cost, size, n] = bestSolution();
         std::vector<State> path;
@@ -276,6 +308,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         return path;
     }
 
+    // std::vector<std::vector<State>> allSolutions () const
+    // Gets the paths of states for all solutions.
     std::vector<std::vector<State>> allSolutions () const {
         std::vector<std::vector<State>> paths;
 
@@ -300,6 +334,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         return paths;
     }
 
+    // void solution(Fn fn) const
+    // Gets the solution for the best solution. 
     template <typename Fn>
     void solution(Fn fn) const {
         auto [cost, size, goal] = bestSolution();
@@ -309,6 +345,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         }
     }
 
+    // void printStats() const
+    // Prints the number of nodes in graph, number of solutions, best cost, and number of waypoints. 
     void printStats() const {
         MPT_LOG(INFO) << "nodes in graph: " << nn_.size();
         auto [cost, size, goal] = bestSolution();
@@ -326,11 +364,15 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         }
     }
 
+    // Distance cost() const
+    // Gets the cost of the best solution. 
     Distance cost() const {
         auto [cost, size, n] = bestSolution();
         return cost;
     }
 
+    // std::vector<Distance> allCosts() const
+    // Gets the costs of all solutions. 
     std::vector<Distance> allCosts() const {
         std::vector<Distance> costs;
 
@@ -342,11 +384,15 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         return costs;
     }
 
+    // std::vector<Distance> allCosts() const
+    // unknown action
     const ResultSeq& resultWithTime() const {
         return resultWithTime_;
     }
 
   private:
+    // void visitNodes(Visitor&& visitor, const Nodes& nodes) const
+    // Visits all of the nodes with the visitor. 
     template <typename Visitor, typename Nodes>
     void visitNodes(Visitor&& visitor, const Nodes& nodes) const {
         for (const Node& n : nodes) {
@@ -359,6 +405,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
     }
 
   public:
+    // void visitGraph(Visitor&& visitor) const
+    // Visits the nodes in the graph using workers.
     template <typename Visitor>
     void visitGraph(Visitor&& visitor) const {
         visitNodes(std::forward<Visitor>(visitor), startNodes_);
@@ -405,24 +453,27 @@ class NeedlePRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         , propagator_(scenario.Config()) {
     }
 
+    // decltype(auto) space() const
+    // Planning space for the problem.
     decltype(auto) space() const {
         return scenario_.space();
     }
 
+    // decltype(auto) scenario() const
+    // Planning scenario being used. 
     decltype(auto) scenario() const {
         return scenario_;
     }
 
+    // const auto& nodes() const
+    // Nodes that have been added to the closed set.
     const auto& nodes() const {
         return nodePool_;
     }
 
-    /**
-    void solve(Planner& planner, DoneFn done)
 
-
-    
-     */
+    // void solve(Planner& planner, DoneFn done)
+    // Solves the motion planning problem.
     template <typename DoneFn>
     void solve(Planner& planner, DoneFn done) {
         MPT_LOG(TRACE) << "worker running";
@@ -468,6 +519,8 @@ unbiasedSamplingLoop:
         MPT_LOG(TRACE) << "worker done";
     }
 
+    // void addSample(Planner& planner, std::optional<State>&& sample)
+    // attempts to add sample to attempt to motion plan, 
     void addSample(Planner& planner, std::optional<State>&& sample) {
         if (sample) {
             addSample(planner, *sample);
@@ -479,17 +532,9 @@ unbiasedSamplingLoop:
         return planner.nn_.nearest(state);
     }
 
-    /**
-    void addSample(Planner& planner, State& randState)
 
-    attempts to add sample to attempt to motion plan, 
-    addition will be successful if the sample is in the connected workspace with 
-    an orientation that is reachable by the existing states in the motion plan
-
-    planner: motion planner for the problem
-    randState: randomly sampled state, potentially includes orientation, to try to add
-
-     */
+    // void addSample(Planner& planner, State& randState)
+    // attempts to add sample to attempt to motion plan, 
     void addSample(Planner& planner, State& randState) {
         if (scenario_.collision(randState)) {
             return;
@@ -565,6 +610,8 @@ unbiasedSamplingLoop:
         }
     }
 
+    // decltype(auto) validMotion(const State& a, const State& b)
+    // Checks if the motion from the provided state to the other state is a valid motion.
     decltype(auto) validMotion(const State& a, const State& b) {
         Timer timer(Stats::validMotion());
         return scenario_.link(a, b);
