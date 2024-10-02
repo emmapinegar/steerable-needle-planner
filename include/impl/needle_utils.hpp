@@ -33,19 +33,14 @@
 namespace unc::robotics::snp {
 
 /**
-bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& rad)
-
-Checks if the goal point gp is within the limited trumpet boundary of the start point & z axis, sp & st.
-The trumpet boundary is currently limited to prevent points that required over 90 degrees from being considered.
-
-Parameters:
-sp: the starting position of the needle & its trumpet
-st: the starting z axis of the needle & its trumpet
-gp: the goal position of the needle to test
-rad: the minimum radius of curvature for the needle
-
-Returns:
-bool: true if the point gp is in the trumpet of the needle, false if it is not
+ * Checks if the goal point gp is within the limited trumpet boundary of the start point & z axis, sp & st.
+ * The trumpet boundary is currently limited to prevent points that required over 90 degrees from being considered.
+ * @param sp: the starting position of the needle & its trumpet
+ * @param st: the starting z axis of the needle & its trumpet
+ * @param gp: the goal position of the needle to test
+ * @param rad: the minimum radius of curvature for the needle
+ * 
+ * @returns bool true if the point gp is in the trumpet of the needle, false if it is not
  */
 bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& rad) {
     const Vec3 sg = gp - sp;
@@ -67,36 +62,26 @@ bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& ra
 }
 
 /**
-bool InTrumpet(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad)
-
-Checks if the goal point gp is within the limited trumpet boundary of the start point & orientation, sp & sq.
-The trumpet boundary is currently limited to prevent points that required over 90 degrees from being considered.
-
-Parameters:
-sp: the starting position of the needle & its trumpet
-sq: the starting orientation (quaternion) of the needle & its trumpet
-gp: the goal position of the needle to test
-rad: the minimum radius of curvature for the needle
-
-Returns:
-bool: true if the point gp is in the trumpet of the needle, false if it is not
+ * Checks if the goal point gp is within the limited trumpet boundary of the start point & z axis, sp & st.
+ * The trumpet boundary is currently limited to prevent points that required over 90 degrees from being considered.
+ * @param sp: the starting position of the needle & its trumpet
+ * @param sq: the starting orientation (quaternion) of the needle & its trumpet
+ * @param gp: the goal position of the needle to test
+ * @param rad: the minimum radius of curvature for the needle
+ * 
+ * @returns bool true if the point gp is in the trumpet of the needle, false if it is not
  */
 bool InTrumpet(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad) {
     return InTrumpet(sp, sq.normalized() * Vec3::UnitZ(), gp, rad);
 }
 
 /**
-RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp)
-
-Calculates the radius of curvature required to move from the starting point to the goal point.
-
-Parameters:
-sp: the starting point of the needle
-st: the starting z axis of the needle
-gp: the goal point of the needle
-
-Returns:
-float: the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
+ * Calculates the radius of curvature required to move from the starting point to the goal point.
+ * @param sp: the starting point of the needle
+ * @param st: the starting z axis of the needle
+ * @param gp: the goal point of the needle
+ * 
+ * @returns float the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
  */
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp) {
     const Vec3 sg = gp - sp;
@@ -111,36 +96,25 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp) {
 }
 
 /**
-RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp)
-
-Calculates the radius of curvature required to move from the starting point to the goal point.
-
-Parameters:
-sp: the starting point of the needle
-sq: the starting orientation of the needle
-gp: the goal point of the needle
-
-Returns:
-float: the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
+ * Calculates the radius of curvature required to move from the starting point to the goal point.
+ * @param sp: the starting point of the needle
+ * @param sq: the starting orientation of the needle
+ * @param gp: the goal point of the needle
+ * 
+ * @returns float the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
  */
 RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp) {
     return RadiusOfCurvature(sp, sq.normalized() * Vec3::UnitZ(), gp);
 }
 
 /**
-RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
-                          const RealNum& goal_tolerance)
-
-Calculates the radius of curvature required to move from the starting point to the goal point.
-
-Parameters:
-sp: the starting point of the needle
-st: the starting z axis of the needle
-gp: the goal point of the needle
-goal_tolerance: 
-
-Returns:
-float: the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
+ * Calculates the radius of curvature required to move from the starting point to the goal point.
+ * @param sp: the starting point of the needle
+ * @param st: the starting z axis of the needle
+ * @param gp: the goal point of the needle
+ * @param goal_tolerance: 
+ * 
+ * @returns float the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
  */
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
                           const RealNum& goal_tolerance)
@@ -161,11 +135,15 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
     return x + tmp;
 }
 
-/** 
-RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp,
-                          const RealNum& goal_tolerance)
-
-*/
+/**
+ * Calculates the radius of curvature required to move from the starting point to the goal point.
+ * @param sp: the starting point of the needle
+ * @param sq: the starting orientation of the needle
+ * @param gp: the goal point of the needle
+ * @param goal_tolerance: 
+ * 
+ * @returns float the radius of curvature required to move from the start point to the goal point (d/(2sin(theta)))
+ */
 RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp,
                           const RealNum& goal_tolerance)
 {
@@ -173,21 +151,15 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp,
 }
 
 /**
-RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
-                                  const RealNum& rad, const RealNum& ang_tolerance)
-
-calculates the distance to the center of the center of one of the circles comprising the trumpet boundary
-currently limited to checking segments of 180 degrees or less
-
-Parameters:
-sp: the starting position for the needle
-st: the starting z axis for the needle
-gp: the goal position for the needle
-rad: the minimum radius of curvature for the needle
-ang_tolerance: the "orientation tolerance" which defaults to 0
-
-Returns:
-float: the distance to the trumpet boundary, negative if the goal position is reachable, positive if the goal position is inside the trumpet boundary
+ * Calculates the distance to the center of the center of one of the circles comprising the trumpet boundary
+ * currently limited to checking segments of 180 degrees or less
+ * @param sp: the starting position for the needle
+ * @param st: the starting z axis for the needle
+ * @param gp: the goal position for the needle
+ * @param rad: the minimum radius of curvature for the needle
+ * @param ang_tolerance: the "orientation tolerance" which defaults to 0
+ * 
+ * @returns float the distance to the trumpet boundary, negative if the goal position is reachable, positive if the goal position is inside the trumpet boundary
  */
 RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
                                   const RealNum& rad, const RealNum& ang_tolerance)
@@ -224,17 +196,14 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
 }
 
 /**
-RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
-                                     const RealNum& rad, const RealNum& ang_tolerance)
-Parameters:
-sp: the starting position for the needle
-st: the starting z axis for the needle
-gp: the goal position for the needle
-rad: the minimum radius of curvature for the needle
-ang_tolerance: the "orientation tolerance" which defaults to 0
-
-Returns:
-float: the maximum distance to the trumpet boundary, we can't really say anythin about reachability with this value
+ * Calculates the maximum distance to the trumpet boundary. 
+ * @param sp: the starting position for the needle
+ * @param st: the starting z axis for the needle
+ * @param gp: the goal position for the needle
+ * @param rad: the minimum radius of curvature for the needle
+ * @param ang_tolerance: the "orientation tolerance" which defaults to 0
+ * 
+ * @returns float the maximum distance to the trumpet boundary, we can't really say anythin about reachability with this value
  */
 RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
                                      const RealNum& rad, const RealNum& ang_tolerance)
@@ -261,9 +230,15 @@ RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3&
 }
 
 /**
-bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
-                        const RealNum& rad, const RealNum& pos_tolerance)
-
+ * Checks if the workspace is connected.
+ * @param sp: the starting point of the needle
+ * @param sq: the starting orientation of the needle
+ * @param gp: the goal point of the needle
+ * @param gq: the goal point orientation
+ * @param rad: the radius of curvature
+ * @param pos_tolerance: the position tolerance to determine if it's close enough to the goal
+ * 
+ * @returns bool true if the workspace is connected to a point and the goal is within the limits of the needle, false otherwise
  */
 bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
                         const RealNum& rad, const RealNum& pos_tolerance)
@@ -306,10 +281,16 @@ bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Qu
 }
 
 /**
-bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
-                        const RealNum& rad, const RealNum& pos_tolerance,
-                        const RealNum& ang_tolerance)
-
+ * Checks if the workspace is connected.
+ * @param sp: the starting point of the needle
+ * @param sq: the starting orientation of the needle
+ * @param gp: the goal point of the needle
+ * @param gq: the goal point orientation
+ * @param rad: the radius of curvature
+ * @param pos_tolerance: the position tolerance to determine if it's close enough to the goal
+ * @param ang_tolerance: the orientation tolerance for saying the orientation is close enough
+ * 
+ * @returns bool true if the workspace is connected to a point and the goal is within the limits of the needle, false otherwise
  */
 bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
                         const RealNum& rad, const RealNum& pos_tolerance,
@@ -339,8 +320,13 @@ bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Qu
 }
 
 /**
-std::tuple<Vec3, Quat, RealNum> ForwardToCore(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad)
-
+ * Forwards to the core???
+ * @param sp: the starting point of the needle
+ * @param sq: the starting orientation of the needle
+ * @param gp: the goal point of the needle
+ * @param rad: the radius of curvature
+ * 
+ * @returns Vec3 resulting position, Quat resulting orientation, RealNum arc length traveled
  */
 std::tuple<Vec3, Quat, RealNum> ForwardToCore(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad) {
     const Quat sq_normalized = sq.normalized();

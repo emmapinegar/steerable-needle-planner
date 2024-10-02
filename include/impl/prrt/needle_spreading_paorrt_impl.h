@@ -80,8 +80,10 @@ class NeedleSpreadingPAORRT : public
 
     WorkerPool<Worker, maxThreads> workers_;
 
-    // void foundGoal(Node* node)
-    // Records that a goal has been reached with node.
+    /**
+     * Records that a goal has been reached with node.
+     * @param node: the node reaching the goal
+     */
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
             MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->ang_total();
@@ -96,8 +98,11 @@ class NeedleSpreadingPAORRT : public
         ++goalCount_;
     }
 
-    // std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool, Distance* dist)
-    // Records that a goal has almost been reached with node.
+    /**
+     * Records that a goal has almost been reached with node.
+     * @param node: the node that approximately reached the goal
+     * @param dist: the distance between the node state and the goal state
+     */
     void foundApproxGoal(Node* node, Distance* dist) {
         {
             std::lock_guard<std::mutex> lock(mutex_);
@@ -113,6 +118,11 @@ class NeedleSpreadingPAORRT : public
         }
     }
 
+    /**
+     * Gets the best cost if the goal has been reached, gets the max cost otherwise.
+     * 
+     * @returns Distance the best cost or maximum cost bound to reach the goal
+     */
     Distance costUpperBound() const {
         if (solved()) {
             return bestCost_;
@@ -121,6 +131,10 @@ class NeedleSpreadingPAORRT : public
         return maxCost_;
     }
 
+    /**
+     * Updates the max cost threshold. 
+     * @param newCost: new cost to set as the max cost threshold
+     */
     void updateMaxCost(const Distance& newCost) {
         std::lock_guard<std::mutex> lock(mutex_);
         maxCost_ = std::max(maxCost_, newCost);
@@ -136,36 +150,56 @@ class NeedleSpreadingPAORRT : public
         MPT_LOG(TRACE) << "Using sampler: " << log::type_name<Sampler>();
     }
 
+    /**
+     * Sets the goal sampling bias (if 0 <= bias <= 1).
+     * @param bias: new sampling bias
+     */
     void setGoalBias(Distance bias) {
         assert(0 <= bias && bias <= 1);
         goalBias_ = bias;
     }
 
+    /**
+     * Gets the goal sampling bias.
+     * 
+     * @returns Distance the current goal bias
+     */
     Distance getGoalBias() const {
         return goalBias_;
     }
 
-    // void setRange(Distance range)
-    // Sets the maximum distance range for the problem.
+    /**
+     * Sets the maximum distance range for the problem.
+     * @param range: new maximum distance range
+     */
     void setRange(Distance range) {
         assert(range > 0);
         maxDistance_ = range;
     }
 
-    // Distance getRange() const
-    // Gets the maximum distance range for the problem. 
+    /**
+     * Gets the maximum distance range for the problem. 
+     * 
+     * @returns Distance the current maximum distance range
+     */
     Distance getRange() const {
         return maxDistance_;
     }
 
-    // std::size_t size() const
-    // Calculates the number of nodes created between all of the workers.
+    /**
+     * Calculates the number of nodes created between all of the workers.
+     * 
+     * @returns size_t the number of nodes created
+     */
     std::size_t size() const {
         return nn_.size();
     }
 
-    // void addStart(Args&& ... args)
-    // Adds a starting node to the queue.
+    /**
+     * Adds a starting node to the queue.
+     * @param args:
+     * 
+     */
     template <typename ... Args>
     void addStart(Args&& ... args) {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -176,8 +210,12 @@ class NeedleSpreadingPAORRT : public
     using Base::solveFor;
     using Base::solveUntil;
 
-    // solve(DoneFn doneFn)
-    // Starts solving the problem by starting the workers.
+    /**
+     * Starts solving the problem by starting the workers.
+     * @param doneFn: function that determines when the worker is done
+     * 
+     * @returns 
+     */
     template <typename DoneFn>
     std::enable_if_t<std::is_same_v<bool, std::result_of_t<DoneFn()>>>
     solve(DoneFn doneFn) {
@@ -188,27 +226,40 @@ class NeedleSpreadingPAORRT : public
         workers_.solve(*this, doneFn);
     }
 
-    // bool solved() const
-    // unknown action
+    /**
+     * Unknown action
+     * 
+     * @returns true if the problem has been solved, false otherwise
+     */
     bool solved() const {
         return goalCount_.load(std::memory_order_relaxed);
     }
 
-    // bool approxSolved() const
-    // unknown action
+    /**
+     * Unknown action
+     * 
+     * @returns bool true if the problem has been approximately solved, false otherwise
+     */
     bool approxSolved() const {
         return (approxRes_ != nullptr);
     }
 
-    // std::size_t numPlansFound() const
-    // unknown action
+    /**
+     * Gets the number of plans found.
+     * 
+     * @returns size_t the number of plans found 
+     */
     std::size_t numPlansFound() const {
         return goalCount_.load(std::memory_order_relaxed);
     }
 
   private:
-    // std::pair<Distance, std::size_t> pathCost(const Node* n) const
-    // Calculates the cost and number of nodes of the path from the node to the root of the tree.
+    /**
+     * Calculates the cost and number of nodes of the path from the node to the root of the tree.
+     * @param n: the node to get the cost of 
+     * 
+     * @returns Distance the cost from the start to the node, size_t the number of nodes in the path
+     */
     std::pair<Distance, std::size_t> pathCost(const Node* n) const {
         Distance cost = 0;
         std::size_t size = 0;
@@ -226,8 +277,11 @@ class NeedleSpreadingPAORRT : public
         return {cost, size};
     }
 
-    // std::tuple<Distance, std::size_t, const Node*> bestSolution() const
-    // Finds he best cost to get to the goal or the approximate cost if the goal has not been reached yet. 
+    /**
+     * Finds he best cost to get to the goal or the approximate cost if the goal has not been reached yet. 
+     * 
+     * @returns Distance the cost of the best solution (or approximate), size_t the number of nodes in the solution path, Node the goal with the best cost
+     */
     std::tuple<Distance, std::size_t, const Node*> bestSolution() const {
         Distance bestCost = std::numeric_limits<Distance>::infinity();
         std::size_t bestSize = 0;
@@ -255,8 +309,13 @@ class NeedleSpreadingPAORRT : public
         return {bestCost, bestSize, bestGoal};
     }
 
-    // solutionRecur(const Node* node, Fn& fn) const
-    // Links the solution from node back to root.
+    /**
+     * Links the solution from node back to root.
+     * @param node: node to use to link the solution back to root
+     * @param fn: function to link the solution
+     * 
+     * @returns trajectory callback
+     */
     template <typename Fn>
     std::enable_if_t< is_trajectory_callback_v< Fn, State, Traj> >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -266,8 +325,13 @@ class NeedleSpreadingPAORRT : public
         }
     }
 
-    // solutionRecur(const Node* node, Fn& fn) const
-    // Links the solution from node back to root.
+    /**
+     * Links the solution from node back to root.
+     * @param node: node to use to link the solution back to root
+     * @param fn: function to link the solution
+     * 
+     * @returns trajectory reference callback
+     */
     template <typename Fn>
     std::enable_if_t< is_trajectory_reference_callback_v< Fn, State, Traj > >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -277,8 +341,13 @@ class NeedleSpreadingPAORRT : public
         }
     }
 
-    // solutionRecur(const Node* node, Fn& fn) const
-    // Links the solution from node back to root.
+    /**
+     * Links the solution from node back to root.
+     * @param node: node to use to link the solution back to root
+     * @param fn: function to link the solution
+     * 
+     * @returns waypoint callback
+     */
     template <typename Fn>
     std::enable_if_t< is_waypoint_callback_v< Fn, State, Traj > >
     solutionRecur(const Node* node, Fn& fn) const {
@@ -290,8 +359,11 @@ class NeedleSpreadingPAORRT : public
     }
 
   public:
-    // std::vector<State> solution() const
-    // Gets the path of states that lead to the best solution.
+    /**
+     * Gets the path of states that lead to the best solution.
+     * 
+     * @returns vector<State> the states composing the solution
+     */
     std::vector<State> solution() const {
         auto [cost, size, n] = bestSolution();
         std::vector<State> path;
@@ -310,8 +382,11 @@ class NeedleSpreadingPAORRT : public
         return path;
     }
 
-    // std::vector<std::vector<State>> allSolutions () const
-    // Gets the paths of states for all solutions.
+    /**
+     * Gets the paths of states for all solutions.
+     * 
+     * @returns vector<vector<State>> the vectors of state for all the paths to goal
+     */
     std::vector<std::vector<State>> allSolutions () const {
         std::vector<std::vector<State>> paths;
 
@@ -336,8 +411,10 @@ class NeedleSpreadingPAORRT : public
         return paths;
     }
 
-    // void solution(Fn fn) const
-    // Gets the solution for the best solution. 
+    /**
+     * Gets the solution for the best solution. 
+     * @param fn: function to link the solution
+     */
     template <typename Fn>
     void solution(Fn fn) const {
         auto [cost, size, goal] = bestSolution();
@@ -347,8 +424,9 @@ class NeedleSpreadingPAORRT : public
         }
     }
 
-    // void printStats() const
-    // Prints the number of nodes in graph, number of solutions, best cost, and number of waypoints. 
+    /**
+     * Prints the number of nodes in graph, number of solutions, best cost, and number of waypoints. 
+     */
     void printStats() const {
         MPT_LOG(INFO) << "nodes in graph: " << nn_.size();
         auto [cost, size, goal] = bestSolution();
@@ -366,15 +444,21 @@ class NeedleSpreadingPAORRT : public
         }
     }
 
-    // Distance cost() const
-    // Gets the cost of the best solution. 
+    /**
+     * Gets the cost of the best solution. 
+     * 
+     * @returns Distance the cost of the best solution (or approximate if the goal has not been reached)
+     */
     Distance cost() const {
         auto [cost, size, n] = bestSolution();
         return cost;
     }
 
-    // std::vector<Distance> allCosts() const
-    // Gets the costs of all solutions. 
+    /**
+     * Gets the costs of all solutions.
+     * 
+     * @returns vector<Distance> the costs of each of the paths to the goal
+     */
     std::vector<Distance> allCosts() const {
         std::vector<Distance> costs;
 
@@ -387,8 +471,11 @@ class NeedleSpreadingPAORRT : public
     }
 
   private:
-    // void visitNodes(Visitor&& visitor, const Nodes& nodes) const
-    // Visits all of the nodes with the visitor. 
+    /**
+     * Visits all of the nodes with the visitor. 
+     * @param visitor: visitor worker 
+     * @param nodes: nodes for the worker to visit
+     */
     template <typename Visitor, typename Nodes>
     void visitNodes(Visitor&& visitor, const Nodes& nodes) const {
         for (const Node& n : nodes) {
@@ -401,8 +488,10 @@ class NeedleSpreadingPAORRT : public
     }
 
   public:
-    // void visitGraph(Visitor&& visitor) const
-    // Visits the nodes in the graph using workers.
+    /**
+     * Visits the nodes in the graph using workers.
+     * @param visitor: visitor worker 
+     */
     template <typename Visitor>
     void visitGraph(Visitor&& visitor) const {
         visitNodes(std::forward<Visitor>(visitor), startNodes_);
@@ -453,26 +542,38 @@ class NeedleSpreadingPAORRT<Scenario, maxThreads, reportStats, NNStrategy>::Work
         , propagator_(scenario_.Config()) {
     }
 
-    // decltype(auto) space() const
-    // Planning space for the problem.
+    /**
+     * Planning space for the problem.
+     * 
+     * @returns planning space for the problem
+     */
     decltype(auto) space() const {
         return scenario_.space();
     }
 
-    // decltype(auto) scenario() const
-    // Planning scenario being used. 
+    /**
+     * Planning scenario being used. 
+     * 
+     * @returns planning scenario for the problem
+     */
     decltype(auto) scenario() const {
         return scenario_;
     }
 
-    // const auto& nodes() const
-    // Nodes that have been added to the closed set.
+    /**
+     * Nodes that have been added to the closed set.
+     * 
+     * @returns the node pool 
+     */
     const auto& nodes() const {
         return nodePool_;
     }
 
-    // void solve(Planner& planner, DoneFn done)
-    // Solves the motion planning problem.
+    /**
+     * Solves the motion planning problem.
+     * @param planner: planner for the problem 
+     * @param done: the function that determines when the planner is done
+     */
     template <typename DoneFn>
     void solve(Planner& planner, DoneFn done) {
         MPT_LOG(TRACE) << "worker running";
@@ -514,21 +615,34 @@ unbiasedSamplingLoop:
         MPT_LOG(TRACE) << "worker done";
     }
 
-    // void addSample(Planner& planner, std::optional<State>&& sample)
-    // attempts to add sample to attempt to motion plan, 
+    /**
+     * Attempts to add sample to motion plan.
+     * @param planner: planner for the problem
+     * @param sample: sampled state to try to add
+     */
     void addSample(Planner& planner, std::optional<State>&& sample) {
         if (sample) {
             addSample(planner, *sample);
         }
     }
 
+    /**
+     * Finds the node with the state closest to the provided state. 
+     * @param planner: planner for the problem
+     * @param state: state to search for nodes near
+     * 
+     * @returns Node? the nearest node to the state
+     */
     decltype(auto) nearest(Planner& planner, const State& state) {
         Timer timer(Stats::nearest());
         return planner.nn_.nearest(state);
     }
 
-    // void addSample(Planner& planner, State& randState)
-    // attempts to add sample to attempt to motion plan, 
+    /**
+     * Attempts to add sample motion.
+     * @param planner: planner for the problem 
+     * @param randState: random state to try to add
+     */
     void addSample(Planner& planner, State& randState) {
         if (scenario_.collision(randState)) {
             return;
@@ -620,8 +734,13 @@ unbiasedSamplingLoop:
         }
     }
 
-    // decltype(auto) validMotion(const State& a, const State& b)
-    // Checks if the motion from the provided state to the other state is a valid motion.
+    /**
+     * Checks if the motion from the provided state to the other state is a valid motion.
+     * @param a: starting state
+     * @param b: target state
+     * 
+     * @returns ?? 
+     */
     decltype(auto) validMotion(const State& a, const State& b) {
         Timer timer(Stats::validMotion());
         return scenario_.link(a, b);

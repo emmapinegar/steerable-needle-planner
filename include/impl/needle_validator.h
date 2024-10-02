@@ -45,21 +45,20 @@ namespace unc::robotics::snp {
 namespace utils {
 
 /**
-bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& rad_curv, const RealNum& pos_tolerance,
-                             const std::vector<IntPoint>& neig, EnvPtr env, BoolArray3& visited, unsigned& max_size)
-
-checks if the workspace between the start (s) and goal are connected and within the limits of the needle
-uses the intersection of the trumpet shaped workspace created by the radius of curvature limit and
-the rugby/olive shaped workspace created by the points from which the goal is still reachable given the start
-
-s: the starting state for the motion planning problem
-goal: the goal state for the motion planning problem
-rad_curv: the radius of curvature limit (?) for the needle
-pos_tolerance: the postion tolerance used for saying not fully reached but "close enough"
-neig: the index increments/decrements to visit a voxel's neighboring voxels for checks
-env: the environment of the motion planning problem
-visited: the voxels visited during the check
-max_size: the maximum number of voxels to visit, used to stop early if things are connected up to that point
+ * checks if the workspace between the start (s) and goal are connected and within the limits of the needle uses the 
+ * intersection of the trumpet shaped workspace created by the radius of curvature limit and the rugby/olive shaped 
+ * workspace created by the points from which the goal is still reachable given the start
+ * 
+ * @param s: the starting state for the motion planning problem
+ * @param goal: the goal state for the motion planning problem
+ * @param rad_curv: the radius of curvature limit (?) for the needle
+ * @param pos_tolerance: the postion tolerance used for saying not fully reached but "close enough"
+ * @param neig: the index increments/decrements to visit a voxel's neighboring voxels for checks
+ * @param env: the environment of the motion planning problem
+ * @param visited: the voxels visited during the check
+ * @param max_size: the maximum number of voxels to visit, used to stop early if things are connected up to that point
+ * 
+ * @returns bool true if the workspace is connected to a certain point
  */
 template <typename State, bool Init=false>
 bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& rad_curv, const RealNum& pos_tolerance,
@@ -195,27 +194,23 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     return connected;
 }
 
+
 /**
-bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNum& pos_tolerance,
-                             const RealNum& ang_tolerance, const std::vector<IntPoint>& neig,
-                             EnvPtr env, const RealNum& rad_curv, const RealNum& ins_length,
-                             const RealNum& ang_constraint_rad, const bool constrain_goal_orientation,
-                             BoolArray3& visited, unsigned& max_size)
-
-verifies that the problem is at least potentially possible to solve
-
-start: the starting state for the motion planning problem
-goal: the goal state for the motion planning problem
-pos_tolerance: the postion tolerance used for saying not fully reached but "close enough"
-ang_tolerance: 
-neig: the index increments/decrements to visit a voxel's neighboring voxels for checks
-env: the environment of the motion planning problem
-rad_curv: the radius of curvature limit (?) for the needle
-ins_length: the maximum insertion length
-ang_constraint_rad: 
-constrain_goal_orientation: 
-visited: the voxels visited during the check
-max_size: the maximum number of voxels to visit, used to stop early if things are connected up to that point
+ * verifies that the problem is at least potentially possible to solve
+ * @param start: the starting state for the motion planning problem
+ * @param goal: the goal state for the motion planning problem
+ * @param pos_tolerance: the postion tolerance used for saying not fully reached but "close enough"
+ * @param ang_tolerance: 
+ * @param neig: the index increments/decrements to visit a voxel's neighboring voxels for checks
+ * @param env: the environment of the motion planning problem
+ * @param rad_curv: the radius of curvature limit (?) for the needle
+ * @param ins_length: the maximum insertion length
+ * @param ang_constraint_rad: 
+ * @param constrain_goal_orientation: 
+ * @param visited: the voxels visited during the check
+ * @param max_size: the maximum number of voxels to visit, used to stop early if things are connected up to that point
+ * 
+ * @returns bool true if the planning problem is valid with the current constraints 
  */
 template <typename State>
 bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNum& pos_tolerance,
@@ -288,16 +283,12 @@ bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNu
 
 
 /**
-bool ExceedAngleConstraint(const State& s, const State& start, const RealNum ang_constraint_rad)
-
-Parameters:
-s: the state s being considered
-start: the starting state for the planner
-ang_constraint_rad: the maximum angle for the needle to follow (in radians)
-
-
-Returns:
-bool true if the angle between the z axes of s and start is greater than ang_constraint_rad
+ * Checks if the state exceeds the angle constraint from the start, does not account for path. 
+ * @param s: the state s being considered
+ * @param start: the starting state for the planner 
+ * @param ang_constraint_rad: the maximum angle for the needle to follow (in radians)
+ * 
+ * @returns bool true if the angle between the z axes of s and start is greater than ang_constraint_rad
  */
 template <typename State>
 bool ExceedAngleConstraint(const State& s, const State& start, const RealNum ang_constraint_rad) {
@@ -307,21 +298,15 @@ bool ExceedAngleConstraint(const State& s, const State& start, const RealNum ang
 }
 
 /**
-bool ValidFullState(const State& s, const State& start, const State& goal, EnvPtr env,
-                    const RealNum& rad_curv, const bool constrain_goal_orientation)
-
-checks that the state s is collision-free, in the limits of the trumpet workspace, and capable of reaching the goal state
-
-Parameters:
-s: the state s being considered
-start: the starting state for the planner
-goal: the goal state
-env: the planning environment
-rad_curv: the minimum radius of curvature for the needle
-constrain_goal_orientation: should the planner try to reach a goal orientation
-
-Returns:
-bool: true if the state passes all of the checks performed, false otherwise
+ * Checks that the state s is collision-free, in the limits of the trumpet workspace, and capable of reaching the goal state
+ * @param s: the state s being considered
+ * @param start: the starting state for the planner 
+ * @param goal: the goal state 
+ * @param env: the planning environment
+ * @param rad_curv: the minimum radius of curvature for the needle 
+ * @param constrain_goal_orientation: should the planner try to reach a goal orientation
+ * 
+ * @returns bool true if the state passes all of the checks performed, false otherwise
  */
 template <typename State>
 bool ValidFullState(const State& s, const State& start, const State& goal, EnvPtr env,
@@ -360,23 +345,16 @@ bool ValidFullState(const State& s, const State& start, const State& goal, EnvPt
 
 
 /**
-bool ValidStateWithGoalReachability(const State& s, const State& goal, const RealNum& pos_tolerance,
-                                    const RealNum& ang_tolerance,
-                                    EnvPtr env, const RealNum& rad_curv, const bool constrain_goal_orientation)
-
-checks that the state s is collision-free and capable of reaching the goal state
-
-Parameters:
-s: the state s being considered
-goal: the goal state
-pos_tolerance: the tolerance for being "close enough" to the goal position
-ang_tolerance: the orientation tolerance
-env: the planning environment
-rad_curv: the minimum radius of curvature for the needle
-constrain_goal_orientation: should the planner try to reach a goal orientation
-
-Returns:
-bool: true if the state passes all of the checks performed, false otherwise
+ * Checks that the state s is collision-free and capable of reaching the goal state.
+ * @param s: the state s being considered
+ * @param goal: the goal state
+ * @param pos_tolerance: the tolerance for being "close enough" to the goal position
+ * @param ang_tolerance: the orientation tolerance
+ * @param env: the planning environment
+ * @param rad_curv: the minimum radius of curvature for the needle
+ * @param constrain_goal_orientation: should the planner try to reach a goal orientation
+ * 
+ * @returns bool true if the state passes all of the checks performed, false otherwise
  */
 template <typename State>
 bool ValidStateWithGoalReachability(const State& s, const State& goal, const RealNum& pos_tolerance,
@@ -410,21 +388,14 @@ bool ValidStateWithGoalReachability(const State& s, const State& goal, const Rea
 }
 
 /**
-bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& rad_curv,
-                 const RealNum& resolution)
-
-
-
-Parameters:
-from:
-to:
-env: 
-rad_curv:
-resolution:
-
-
-Returns:
-bool:
+ * Checks if the motion starting at from moving toward to is valid for the limits of the needle and the obstacles in the environment. 
+ * @param from: starting state
+ * @param to: target state
+ * @param env: environment to check against
+ * @param rad_curv: radius of curvature minimum limit 
+ * @param resolution: resolution to check along of the arc length of the path for collisions
+ * 
+ * @returns bool true if the motion is valid and collision free, false otherwise
  */
 template <typename State>
 bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& rad_curv,
@@ -492,16 +463,13 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 }
 
 /**
-bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr env, const unsigned& offset=0)
-
-Parameters:
-new_base:
-motion: 
-env:
-offset:
-
-Returns: 
-bool:
+ * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
+ * @param new_base: starting state
+ * @param motion: motion from starting state, composed of other states
+ * @param env: environment to collision check against 
+ * @param offset: the offset index for the motion vector, states below the offset are ignored?? default is 0
+ * 
+ * @returns bool true if the motion is collision free, false otherwise
  */
 template <typename State>
 bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr env, const unsigned& offset=0) {
@@ -544,7 +512,12 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
 }
 
 /**
-
+ * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
+ * @param motion: motion from starting state, composed of other states
+ * @param env: environment to collision check against 
+ * @param offset: the offset index for the motion vector, states below the offset are ignored?? default is 0
+ * 
+ * @returns bool true if the motion is collision free, false otherwise
  */
 template <typename State>
 bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const unsigned& offset=0) {
@@ -583,21 +556,15 @@ bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const unsigned& o
 }
 
 /**
-std::optional<State> DirectConnecting(const State& s, const State& start, EnvPtr env,
-                                      const RealNum& rad_curv, const RealNum& resolution, const Quat& pi_x)
-
-attempts to connect the start state directly to the state s, checking for collisions along the path
-
-Parameters:
-s:
-start:
-env:
-rad_curv:
-resolution:
-pi_x:
-
-Returns:
-
+ * Attempts to connect the start state directly to the state s, checking for collisions along the path.
+ * @param s: target state to connect with
+ * @param start: starting state
+ * @param env: environment to collision check against
+ * @param rad_curv: radius of curvature minimum limit
+ * @param resolution: resolution to collision check the path along the arc length
+ * @param pi_x: an additonal rotation of the target state??
+ * 
+ * @returns State the resulting state after connecting the two states if it's reachable and collision free
  */
 template <typename State>
 std::optional<State> DirectConnecting(const State& s, const State& start, EnvPtr env,
@@ -627,12 +594,15 @@ std::optional<State> DirectConnecting(const State& s, const State& start, EnvPtr
 }
 
 /**
-std::optional<State> DirectConnectingWithoutCollisionCheck(const State& s, const State& start, EnvPtr env,
-                                                           const RealNum& rad_curv, const RealNum& resolution, const Quat& pi_x)
-
-attempts to connect the start state with the state s without checking for collisions along the path
-
-
+ * Attempts to connect the start state with the state s without checking for collisions along the path.
+ * @param s: target state to connect with
+ * @param start: starting state
+ * @param env: environment to collision check against
+ * @param rad_curv: radius of curvature minimum limit
+ * @param resolution: resolution to collision check the path along the arc length (not used)
+ * @param pi_x: an additonal rotation of the target state??
+ * 
+ * @returns State the resulting state after connecting the two states if it's reachable
  */
 template <typename State>
 std::optional<State> DirectConnectingWithoutCollisionCheck(const State& s, const State& start, EnvPtr env,
@@ -653,10 +623,25 @@ std::optional<State> DirectConnectingWithoutCollisionCheck(const State& s, const
 }
 
 
+/**
+ * Checks if the insertion length viiolates the constraints of the needle.
+ * @param l: the insertion length
+ * @param max_l: the maximum insertion length limit for the needle
+ * 
+ * @returns bool true if the insertion length is within the limits of the needle, false otherwise
+ */
 inline bool ValidLength(const RealNum& l, const RealNum& max_l) {
     return (l < max_l);
 }
 
+/**
+ * Calculates the maximum arc length to reach the goal connecting the start and goal with a single arc ignoring orientation. 
+ * @param s: starting position
+ * @param g: goal position
+ * @param rad_curv: radius of curvature minimum limit
+ * 
+ * @returns RealNum the maximum arc length to reach the goal from the start
+ */
 RealNum MaxCurveLength(const Vec3& s, const Vec3& g, const RealNum& rad_curv) {
     const RealNum d = (g - s).norm();
 
@@ -673,6 +658,16 @@ RealNum MaxCurveLength(const Vec3& s, const Vec3& g, const RealNum& rad_curv) {
     return theta * rad_curv;
 }
 
+/**
+ * Checks if the goal is reachable with a buffer region. 
+ * @param s: starting state
+ * @param goals: goal positions
+ * @param rad_curv: radius of curvature minimum limit
+ * @param ins_length: insertion length maximum limit
+ * @param pos_tolerance: position tolerance used as sphere radius around the goal
+ * 
+ * @returns bool true if one of the goal positions is reachable and within the insertion limits of the needle, false otherwise
+ */
 template<typename State>
 bool GoalSpheresReachable(const State& s, const std::vector<Vec3>& goals, const RealNum& rad_curv,
                           const RealNum& ins_length, const RealNum& pos_tolerance) {
@@ -692,6 +687,12 @@ bool GoalSpheresReachable(const State& s, const std::vector<Vec3>& goals, const 
     return false;
 }
 
+/**
+ * 
+ * @param min_length_step:
+ * 
+ * @returns RealNum
+ */
 RealNum QueryLS(const RealNum& min_length_step) {
     // These values are emprically determined.
     if (std::abs(min_length_step - 0.078125) < EPS) {
@@ -734,12 +735,32 @@ class ValidatorBase {
     }
     ~ValidatorBase() = default;
 
+    /**
+     * Checks if the state is in collision with the environment.
+     * @param s: the state to collision check
+     * 
+     * @returns bool true if the state is in collision, false otherwise
+     */
     bool InCollision(const State& s) const {
         return (!env_->CollisionFree(s.translation()));
     }
+
+    /**
+     * Checks if the state is in collision with the environment.
+     * @param p: the position to collision check
+     * 
+     * @returns bool true if the position is in collision, false otherwise
+     */
     bool InCollision(const Vec3& p) const {
         return (!env_->CollisionFree(p));
     }
+
+    /**
+     * Checks if the insertion length violates the constraints of the needle.
+     * @param l: the insertion length
+     * 
+     * @returns bool true if the insertion length is within the limits of the needle, false otherwise
+     */
     bool ValidLength(const RealNum& l) const {
         return utils::ValidLength(l, ins_length_);
     }
@@ -779,12 +800,25 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
         visited_.resize(boost::extents[img_size[0]][img_size[1]][img_size[2]]);
     }
 
+    /**
+     * Checks if the problem is valid by checking if the starting point and the goal position are within the limits of the needle. 
+     * 
+     * @returns true if the start is valid and can reach at least one of the goal positions, false otherwise
+     */
     bool ValidProblem() {
         return utils::ValidPoint2PointProblem(start_, goal_, pos_tolerance_, ang_tolerance_, neig_, base::env_,
                                             rad_curv_, ins_length_, ang_constraint_rad_, constrain_goal_orientation_,
                                             visited_, max_size_);
     }
 
+    /**
+     * Checks if the state is valid and respects the limits of the needle.
+     * @param s: the state to check
+     * @param length: the accumulated insertion length of the state from the start, default is 0
+     * @param ang_total: the accumulated angle of the state from the start, default is 0
+     * 
+     * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
+     */
     bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
 
         if (radius_status_ > 0 && utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
@@ -803,6 +837,14 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
                 rad_curv_, constrain_goal_orientation_);
     }
 
+    /**
+     * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
+     * @param from: starting state
+     * @param motion: motion from starting state, composed of other states
+     * @param offset: the offset index for the motion vector, states below the offset are ignored??
+     * 
+     * @returns bool true if the motion is collision free, false otherwise
+     */
     bool ValidMotion(const State& from, const State& to) const {
         return utils::ValidMotion(from, to, base::env_, rad_curv_, validity_res_);
     }
@@ -842,10 +884,19 @@ class SpreadingValidator : public ValidatorBase<State> {
         rotate_pi_x_ = Quat(AngleAxis(M_PI, Vec3::UnitX())).normalized();
     }
 
+    /**
+     * Sets the goal positions for the spreading validator.
+     * @param goals: goal positions to use
+     */
     void ProvideGoalPoints(const std::vector<Vec3>& goals) {
         goals_ = goals;
     }
 
+    /**
+     * Checks if the spreading problem is valid by checking the starting point and if at least one of the goal positions is within the limits of the needle. 
+     * 
+     * @returns true if the start is valid and can reach at least one of the goal positions, false otherwise
+     */
     bool ValidProblem() const {
         const Vec3& start_p = start_.translation();
 
@@ -868,6 +919,14 @@ class SpreadingValidator : public ValidatorBase<State> {
         return true;
     }
 
+    /**
+     * Checks if the state is valid and respects the limits of the needle.
+     * @param s: the state to check
+     * @param length: the accumulated insertion length of the state from the start, default is 0
+     * @param ang_total: the accumulated angle of the state from the start, default is 0
+     * 
+     * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
+     */
     bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
         // if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_) || ang_total > ang_constraint_rad_) {
         //     return false;
@@ -888,10 +947,23 @@ class SpreadingValidator : public ValidatorBase<State> {
         return true;
     }
 
+    /**
+     * Checks if the motion between the two states is valid.
+     * @param from: the starting state
+     * @param to: the target state
+     * 
+     * @returns bool true if the motion is in the limits of the needle and collision free
+     */
     bool ValidMotion(const State& from, const State& to) const {
         return utils::ValidMotion(from, to, base::env_, rad_curv_, validity_res_);
     }
 
+    /**
+     * Attempts to connect from that starting state to the provided state.
+     * @param s: the target state to connect to
+     * 
+     * @returns State the resulting state after connecting if it is reachable
+     */
     std::optional<State> DirectConnectingStart(const State& s) const {
         if (fix_orientation_) {
             return {};
@@ -969,6 +1041,11 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
         visited_.resize(boost::extents[img_size[0]][img_size[1]][img_size[2]]);
     }
 
+    /**
+     * Checks if the problem is valid by checking if the starting point and the goal position are within the limits of the needle. 
+     * 
+     * @returns true if the start is valid and can reach at least one of the goal positions, false otherwise
+     */
     bool ValidProblem() {
         const bool& valid = utils::ValidPoint2PointProblem(start_, goal_, pos_tolerance_, ang_tolerance_, neig_, base::env_,
                                             rad_curv_, ins_length_, ang_constraint_rad_, constrain_goal_orientation_,
@@ -977,6 +1054,14 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
         return valid;
     }
 
+    /**
+     * Checks if the state is valid and respects the limits of the needle.
+     * @param s: the state to check
+     * @param length: the accumulated insertion length of the state from the start, default is 0
+     * @param ang_total: the accumulated angle of the state from the start, default is 0
+     * 
+     * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
+     */
     bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
         if (radius_status_ > 0 && utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
             return false;
@@ -999,23 +1084,53 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
                 rad_curv_, constrain_goal_orientation_);
     }
 
-
+    /**
+     * Checks if the workspace between the state and goal are connected up to some point.
+     * @param s: the state to use as the starting state for the worksapce calculations
+     * 
+     * @returns bool true if the workspace is connect to a point and the goal is reachable given the starting state
+     */
     bool ValidReachableSpace(const State& s) {
         return utils::CheckWorkspaceConnected(s, goal_, rad_curv_, pos_tolerance_, neig_, base::env_, visited_, max_size_);
     }
 
+    /**
+     * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
+     * @param from: starting state
+     * @param motion: motion from starting state, composed of other states
+     * @param offset: the offset index for the motion vector, states below the offset are ignored??
+     * 
+     * @returns bool true if the motion is collision free, false otherwise
+     */
     bool ValidMotion(const State& from, const std::vector<State>& motion, const unsigned& offset) const {
         return utils::ValidMotion(from, motion, base::env_, offset);
     }
 
+    /**
+     * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
+     * @param motion: motion from starting state, composed of other states
+     * 
+     * @returns bool true if the motion is collision free, false otherwise
+     */
     bool Valid(const std::vector<State>& motion) const {
         return utils::ValidMotion(motion, base::env_);
     }
 
+    /**
+     * Gets the configuration tolerance used to add a buffer on ...
+     * 
+     * @returns RealNum the configuration tolerance for the validator
+     */
     const RealNum& ConfigTolerance() const {
         return config_tolerance_;
     }
 
+    /**
+     * Calculates the cost to get from the current state to the goal position, depends on the cost calculation settings of the environment.
+     * @param s: the current state
+     * 
+     * @returns RealNum the cost to get from the current state to the goal, 1000 if it's out of the needle limits, 0 if the cost setting is not handled
+     */
     RealNum CostToGo(const State& s) const {
         RealNum shortest_dist = ShortestDistance(s, goal_.translation(), rad_curv_, pos_tolerance_);
 
@@ -1043,14 +1158,30 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
         return 0;
     }
 
+    /**
+     * Calculates the IJK index of the state position.
+     * @param s: the state to use in calculations
+     * 
+     * @returns IdxPoint IJK index of the state
+     */
     IdxPoint ImageCoordinates(const State& s) const {
         return base::env_->RasToIjk(s.translation());
     }
 
+    /**
+     * Gets the goal state.
+     * 
+     * @returns State the goal state for the validator
+     */
     const State& GoalState() const {
         return goal_;
     }
 
+    /**
+     * Gets the position tolerance for reachign the goal.
+     * 
+     * @returns RealNum the position tolerance for the validator
+     */
     const RealNum& GoalTolerance() const {
         return pos_tolerance_;
     }
@@ -1118,10 +1249,19 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
         rotate_pi_x_ = Quat(AngleAxis(M_PI, Vec3::UnitX())).normalized();
     }
 
+    /**
+     * Sets the goal positions for the spreading validator.
+     * @param goals: goal positions to use
+     */
     void ProvideGoalPoints(const std::vector<Vec3>& goals) {
         goals_ = goals;
     }
 
+    /**
+     * Checks if the problem is valid by checking if the starting point and the goal position are within the limits of the needle. 
+     * 
+     * @returns true if the start is valid and can reach at least one of the goal positions, false otherwise
+     */
     bool ValidProblem() const {
         const Vec3& start_p = start_.translation();
 
@@ -1144,6 +1284,14 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
         return true;
     }
 
+    /**
+     * Checks if the state is valid and respects the limits of the needle.
+     * @param s: the state to check
+     * @param length: the accumulated insertion length of the state from the start, default is 0
+     * @param ang_total: the accumulated angle of the state from the start, default is 0
+     * 
+     * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
+     */
     bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
         if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_) || ang_total > ang_constraint_rad_) {
             return false;
@@ -1160,14 +1308,33 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
         return true;
     }
 
+    /**
+     * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
+     * @param from: starting state
+     * @param motion: motion from starting state, composed of other states
+     * @param offset: the offset index for the motion vector, states below the offset are ignored??
+     * 
+     * @returns bool true if the motion is collision free, false otherwise
+     */
     bool ValidMotion(const State& from, const std::vector<State>& motion, const unsigned& offset) const {
         return utils::ValidMotion(from, motion, base::env_, offset);
     }
 
+    /**
+     * Gets the configuration tolerance used to add a buffer on ...
+     * 
+     * @returns RealNum the configuration tolerance for the validator
+     */
     const RealNum& ConfigTolerance() const {
         return config_tolerance_;
     }
 
+    /**
+     * Attempts to connect from that starting state to the provided state.
+     * @param s: the target state to connect to
+     * 
+     * @returns State the resulting state after connecting if it is reachable
+     */
     std::optional<State> DirectConnectingStart(const State& s) const {
         if (fix_orientation_) {
             return {};
@@ -1177,6 +1344,9 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
                 validity_res_, rotate_pi_x_);
     }
 
+    /**
+     * Initializes and loads the HEALPix environment. 
+     */
     void InitHEALPix() {
         std::ifstream fin;
         fin.open(healpix_file_);
@@ -1198,6 +1368,11 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
         MPT_LOG(INFO) << "Loaded " << healpix_vecs_.size() << " HEALPix points.";
     }
 
+    /**
+     * Gets the next starting state from the HEALPix data if one is available.
+     * 
+     * @returns the next starting state if one is available
+     */
     std::optional<State> IterateNextStart() {
         if (healpix_idx_ >= healpix_vecs_.size()) {
             return {};

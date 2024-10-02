@@ -57,6 +57,15 @@ Str DateAndTime() {
     return oss.str();
 }
 
+/**
+ * Reads in all the needle parameters for the planning problem.
+ * The format should be radius_curvature diameter insertion_length angle_constraint. 
+ * @param filename: name of the text file containting the needle parameters
+ * @param print_info: if true prints all the parameters of the needle read in, defaults to false
+ * 
+ * @returns RealNum minimum radius of curvate possible with the needle, RealNum diameter of the needle, 
+ * RealNum maximum length the needle can be inserted, RealNum the maximum cumulative angle the needle can follow
+ */
 std::tuple<RealNum, RealNum, RealNum, RealNum>
 ReadNeedleParameters(Str const& filename, const bool print_info=false) {
     std::ifstream fin;
@@ -92,6 +101,13 @@ ReadNeedleParameters(Str const& filename, const bool print_info=false) {
     return {rad_curv, diameter, length, ang_constraint};
 }
 
+/**
+ * Reads in the start and goal states for the planning problem. 
+ * The format for each line should be pos_x pos_y pos_z quat_w quat_x quat_y quat_z. Start should be given before goal.
+ * @param filename: name of the text file containing the states
+ * 
+ * @returns Vec3 starting position, Quat starting orientation, Vec3 goal position, Quat goal orientation
+ */
 std::tuple<Vec3, Quat, Vec3, Quat>
 ReadStartAndGoal(Str const& filename) {
     std::ifstream fin;
@@ -125,6 +141,13 @@ ReadStartAndGoal(Str const& filename) {
     return {start_p, start_q.normalized(), goal_p, goal_q.normalized()};
 }
 
+/**
+ * Reads in the start state for the planning problem (assuming start state is the first line of the file). 
+ * The format for each line should be pos_x pos_y pos_z quat_w quat_x quat_y quat_z. Start should be given before goal.
+ * @param filename: name of the text file containing the states
+ * 
+ * @returns Vec3 starting position, Quat starting orientation
+ */
 std::pair<Vec3, Quat>
 ReadStart(Str const& filename) {
     std::ifstream fin;
@@ -151,6 +174,13 @@ ReadStart(Str const& filename) {
     return {start_p, start_q.normalized()};
 }
 
+/**
+ * Reads in the goal state for the planning problem (assuming goal state is the second line of the file). 
+ * The format for each line should be pos_x pos_y pos_z quat_w quat_x quat_y quat_z. Start should be given before goal.
+ * @param filename: name of the text file containing the states
+ * 
+ * @returns Vec3 goal position, Quat goal orientation
+ */
 std::tuple<Vec3, Quat>
 ReadGoal(Str const& filename) {
     std::ifstream fin;
@@ -184,6 +214,13 @@ ReadGoal(Str const& filename) {
     return {goal_p, goal_q.normalized()};
 }
 
+/**
+ * Runs the planner with the given configuration.
+ * @param planner: motion planner to use
+ * @param cfg: configuration to use
+ * @param save_only_best_plan: saves only the best plan found if true, defaults to true
+ * @param save_cost: saves the cost of the plan if true, defaults to false
+ */
 template<unsigned Mode=0, typename Planner>
 void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, const bool save_cost=false)
 {
