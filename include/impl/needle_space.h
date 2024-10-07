@@ -71,6 +71,12 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
 
     const Vec2 center_of_circle = Vec2(rad_curv, 0);
 
+    /**
+     * Checks that all values for position and orientation are valid (finite).
+     * @param s: state to validate
+     * 
+     * @returns bool true if all values are finite, false otherwise
+     */
     static bool isValid(const Type& s) {
         return std::isfinite(std::get<1>(s)[0])
                && std::isfinite(std::get<1>(s)[1])
@@ -81,10 +87,23 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
                && std::isfinite(std::get<0>(s).coeffs()[3]);
     }
 
+    /**
+     * Gets the dimensions of the needle space.
+     * 
+     * @returns unsigned dimensions of the needle space (it's 6)
+     */
     constexpr unsigned dimensions() const {
         return 6;
     }
 
+    /**
+     * Calculates the distance between two states.
+     * Attempts to do shortest distance??
+     * @param from: starting state
+     * @param to: target state
+     * 
+     * @returns Distance arc length between the two states
+     */
     Distance distance(const Type& from, const Type& to) const {
         const Vec3& sp = from.translation();
         const Quat sq = from.rotation().normalized();
@@ -119,6 +138,7 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
     }
 };
 
+
 template<typename Scalar>
 struct Space<mpt::ConfigCostState<Scalar>, NonMetric<1>> {
     using Type = mpt::ConfigCostState<Scalar>;
@@ -134,6 +154,12 @@ struct Space<mpt::ConfigCostState<Scalar>, NonMetric<1>> {
     const Scalar cost_w = snp::global::aorrt_cost_w;
 #endif
 
+    /**
+     * Checks that all values for position and orientation are valid (finite).
+     * @param s: state to validate
+     * 
+     * @returns bool true if all values are finite, false otherwise
+     */
     static bool isValid(const Type& aug_s) {
         auto const& s = aug_s.first;
         auto const& cost = aug_s.second;
@@ -147,10 +173,23 @@ struct Space<mpt::ConfigCostState<Scalar>, NonMetric<1>> {
                && std::isfinite(std::get<0>(s).coeffs()[3]);
     }
 
+    /**
+     * Gets the dimensions of the needle space.
+     * 
+     * @returns unsigned dimensions of the needle space (it's 7)
+     */
     constexpr unsigned dimensions() const {
         return 7;
     }
 
+    /**
+     * Calculates the distance between two states.
+     * Attempts to do shortest distance??
+     * @param from: starting state
+     * @param to: target state
+     * 
+     * @returns Distance arc length between the two states
+     */
     Distance distance(const Type& from, const Type& to) const {
         auto const& p0 = from.translation();
         auto const& p1 = to.translation();

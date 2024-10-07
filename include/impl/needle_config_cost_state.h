@@ -51,53 +51,74 @@ class ConfigCostState {
     ConfigCostState(const Eigen::Quaternion<Scalar>& q, const Eigen::Matrix<Scalar, 3, 1>& p) {
         base_.first = {q, p};
         base_.second = 0;
-        // base_.third = 0;
     }
 
     ConfigCostState(const Eigen::Quaternion<Scalar>& q, const Eigen::Matrix<Scalar, 3, 1>& p, const Scalar& c) {
         base_.first = {q, p};
         base_.second = c;
-        // base_.third = 0;
     }
 
-    // ConfigCostState(const Eigen::Quaternion<Scalar>& q, const Eigen::Matrix<Scalar, 3, 1>& p, const Scalar& c, const Scalar& ang) {
-    //     base_.first = {q, p};
-    //     base_.second = c;
-    //     base_.third = ang;
-    // }    
-
+    /**
+     * Gets the rotation for the base.
+     * 
+     * @returns Eigen::Quaternion<Scalar> base rotation quaternion
+     */
     Eigen::Quaternion<Scalar>& rotation() {
         return std::get<0>(base_.first);
     }
 
+    /**
+     * Gets the rotation for the base.
+     * 
+     * @returns const Eigen::Quaternion<Scalar> base rotation quaternion
+     */
     const Eigen::Quaternion<Scalar>& rotation() const {
         return std::get<0>(base_.first);
     }
 
+    /**
+     * Gets the translation for the base.
+     * 
+     * @returns Eigen::Matrix<Scalar, 3, 1> base translation vector
+     */
     Eigen::Matrix<Scalar, 3, 1>& translation() {
         return std::get<1>(base_.first);
     }
 
+    /**
+     * Gets the translation for the base.
+     * 
+     * @returns const Eigen::Matrix<Scalar, 3, 1> base translation vector
+     */
     const Eigen::Matrix<Scalar, 3, 1>& translation() const {
         return std::get<1>(base_.first);
     }
 
+    /**
+     * Gets the cost for the base.
+     * 
+     * @returns Scalar cost for the base
+     */
     Scalar& cost() {
         return base_.second;
     }
 
+    /**
+     * Gets the cost for the base.
+     * 
+     * @returns const Scalar cost for the base
+     */
     const Scalar& cost() const {
         return base_.second;
     }
 
-    // Scalar& total_angle() {
-    //     return base_.third;
-    // }
-
-    // const Scalar& total_angle() const {
-    //     return base_.third;
-    // }    
-
+    /**
+     * Prints the translation, rotation, and cost of the configuration cost state to the stream.
+     * @param out: output stream to write information to
+     * @param q: configuration cost state to use to get information
+     * 
+     * @returns ?? addition of translation, rotation, and cost to the stream
+     */
     template <typename Char, typename Traits>
     friend decltype(auto)
     operator << (std::basic_ostream<Char, Traits>& out, const ConfigCostState& q) {

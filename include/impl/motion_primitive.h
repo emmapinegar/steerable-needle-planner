@@ -62,10 +62,20 @@ class MotionPrimitive {
         states_ = other.states_;
     }
 
+    /**
+     * Gets the states laong the curve created using the specified motion primitive.
+     * 
+     * @returns vector<State> the states along the curve from the starting state
+     */
     const std::vector<State>& States() const {
         return states_;
     }
 
+    /**
+     * Gets the state at the end of the curve extended.
+     * 
+     * @returns State at the end of the extended curve from the starting state
+     */
     const State& FinalState() const {
         return states_.back();
     }
@@ -73,6 +83,16 @@ class MotionPrimitive {
   private:
     std::vector<State> states_;
 
+    /**
+     * Steers the needle from the state using the given motion primitives.
+     * No collision checking is performed. 
+     * @param s: starting state
+     * @param length: the length to insert
+     * @param rad: the radius of curvature
+     * @param step_size: the step size to move along the length of the resulting curve
+     * 
+     * @returns vector<State> the states along the curve from the starting state
+     */
     static std::vector<State> SteerFrom(const State& s, const RealNum& length,
                                         const RealNum& rad, const RealNum& step_size) {
         const Vec3& p = s.translation();

@@ -44,6 +44,17 @@ namespace unc::robotics::snp {
 
 namespace utils {
 
+/**
+ * Attemtps to connect states directly.
+ * @param from: start state
+ * @param to: target state
+ * @param rng: random number generator
+ * @param normal_dist: normal distribution?
+ * @param rad_curv: the radius of curvature minimum limit 
+ * @param steer_step: step size?
+ * 
+ * @returns State resulting state if connection is "successful"
+ */
 template <typename State, typename RNG, typename Normal>
 std::optional<State> ConnectPointWithCurveDirectly(const State& from, const State& to, RNG& rng,
         Normal& normal_dist, const RealNum& rad_curv, const RealNum& steer_step) {
@@ -98,6 +109,13 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
     return result;
 }
 
+/**
+ * Transforms the state to be in the frame of new_base?
+ * @param state: state that is being transformed
+ * @param new_base: base frame to move to
+ * 
+ * @returns State transformed state into new frame
+ */
 template<typename State>
 State TransformToNewBase(const State& state, const State& new_base) {
     const Vec3& p = new_base.translation();
@@ -110,6 +128,13 @@ State TransformToNewBase(const State& state, const State& new_base) {
     return transformed;
 }
 
+/**
+ * Rotates about the provide orientation's z axis
+ * @param init_q: orientation with z axis to rotate about
+ * @param angle: amount the to rotate by
+ * 
+ * @returns Quat the resulting orientation after rotating about the z axis by the prescribed angle
+ */
 Quat RotateAroundZ(Quat init_q, const RealNum& angle) {
     init_q.normalize();
     Quat proceed_quat(AngleAxis(angle, (init_q*Vec3::UnitZ()).normalized()));
@@ -117,6 +142,19 @@ Quat RotateAroundZ(Quat init_q, const RealNum& angle) {
     return (proceed_quat * init_q).normalized();
 }
 
+/**
+ * attempts to move forward a random amount 
+ * @param from: starting state
+ * @param to: target state
+ * @param rng: random number generator
+ * @param uniform_dist: uniform distribution
+ * @param rad_curv: the radius of curvature minimum limit 
+ * @param steer_step: the step size?
+ * @param num_attempt: number of attempts? (unused)
+ * @param return_first: return first? (unused)
+ * 
+ * @returns State resutling state if move was successful?
+ */
 template <typename State, typename RNG, typename Uniform>
 std::optional<State> RandomForward(const State& from, const State& to, RNG& rng, Uniform& uniform_dist,
                                    const RealNum& rad_curv, const RealNum& steer_step, const Idx& num_attempt,
@@ -152,6 +190,14 @@ class CurvePropagator {
         , steer_step_(cfg->steer_step) {
     }
 
+    /**
+     * Attempts to connect the two states directly.
+     * @param from: starting state
+     * @param to: target state
+     * @param rng: random number generator
+     * 
+     * @returns State resulting state if connection was "successful"
+     */
     template <typename RNG>
     std::optional<State> operator()(const State& from, const State& to, RNG& rng) {
         return utils::ConnectPointWithCurveDirectly(from, to, rng, normal_, rad_curv_, steer_step_);
@@ -172,6 +218,14 @@ class RandomForwardPropagator {
         , steer_step_(cfg->steer_step) {
     }
 
+    /**
+     * Attempts to move forward randomly.
+     * @param from: starting state
+     * @param to: target state
+     * @param rng: random number generator
+     * 
+     * @returns State resulting state if connection was "successful"
+     */
     template <typename RNG>
     std::optional<State> operator()(const State& from, const State& to, RNG& rng) {
         return utils::RandomForward(from, to, rng, uniform_, rad_curv_, steer_step_, num_attempt_, false);
@@ -185,6 +239,7 @@ class RandomForwardPropagator {
     RealUniformDist uniform_;
 };
 
+// TODO: change motion primitives
 template<typename State>
 class MotionPrimitivePropagator {
   public:
@@ -242,12 +297,27 @@ class MotionPrimitivePropagator {
         }
     }
 
+    /**
+     * Transforms the needle to a new base frame.
+     * @param from: state to transform
+     * @param indices: indices of motion primitives [radius, length, angle]
+     * 
+     * @returns State from after being transformed into the base frame of the provided motion primitives if successful
+     */
     std::optional<State> operator()(const State& from, const std::array<unsigned, 3>& indices) const {
         auto const& base_state = motion_primitives_[indices[0]][indices[1]].FinalState();
 
         return utils::TransformToNewBase(base_state, this->ComputeStartPose(from, indices[2]));
     }
 
+    /**
+     * Transforms the needle to a new base frame.
+     * @param from: state to transform
+     * @param rad_idx: radius of curvature index of the base state
+     * @param length_ind: length index of the base state
+     * 
+     * @returns State from after being transformed into the base frame of the provided motion primitives if successful
+     */
     std::optional<State> operator()(const State& from, const unsigned& rad_idx,
                                     const unsigned& length_idx) const {
         auto const& base_state = motion_primitives_[rad_idx][length_idx].FinalState();
@@ -255,6 +325,13 @@ class MotionPrimitivePropagator {
         return utils::TransformToNewBase(base_state, from);
     }
 
+    /**
+     * Computes the start state after a rotation.
+     * @param from: initial state
+     * @param angle_idx: index of the angle level for the rotation
+     * 
+     * @returns State from after a rotation of the angle level has been applied about the z axis
+     */
     State ComputeStartPose(const State& from, const Idx& angle_idx) const {
         State rotated_base = from;
         rotated_base.rotation() = utils::RotateAroundZ(from.rotation(), angle_sequence_[angle_idx]);
@@ -262,42 +339,97 @@ class MotionPrimitivePropagator {
         return rotated_base;
     }
 
+    /**
+     * Gets the states for the motion primitive indices.
+     * @param rad_idx: index of the radius of curvature level
+     * @param length_idx: index of the length level
+     * 
+     * @returns vector<State> the states corresponding to the motion primitive indices
+     */
     const std::vector<State>& BaseMotion(const Idx& rad_idx, const Idx& length_idx) const {
         return motion_primitives_[rad_idx][length_idx].States();
     }
 
+    /**
+     * Gets the radius of curvature in the sequence at the provided index.
+     * @param rad_idx: index of the radius of curvature
+     * 
+     * @returns RealNum the radius of curvature at the index
+     */
     const RealNum& RadiusOfCurvature(const Idx& rad_idx) const {
         return rad_sequence_[rad_idx];
     }
 
+    /**
+     * Gets the list of radius of curvature used for the propagator.
+     * 
+     * @returns vector<RealNum> list of radius of curvature
+     */
     const std::vector<RealNum>& RadCurvList() const {
         return rad_sequence_;
     }
 
+    /**
+     * Gets the length in the sequence at the provided index.
+     * @param length_idx: index of the length
+     * 
+     * @returns RealNum the length at the index
+     */
     const RealNum& Length(const Idx& length_idx) const {
         return length_sequence_[length_idx];
     }
 
+    /**
+     * Gets the angle in the sequence at the provided index.
+     * @param angle_idx: index of the angle
+     * 
+     * @returns RealNum the angle at the index
+     */
     const RealNum& AngleDiff(const Idx& angle_idx) const {
         return angle_sequence_[angle_idx];
     }
 
+    /**
+     * Get the initial number of orientations of?
+     * 
+     * @returns Idx the number of initial orientations
+     */
     const Idx& InitialNumberofOrientations() const {
         return init_num_orientations_;
     }
 
+    /**
+     * Gets the max length level for the propagator.
+     * 
+     * @returns Idx max length level
+     */
     const Idx& MaxLengthLevel() const {
         return max_length_i_;
     }
 
+    /**
+     * Gets the max angle level for the propagator.
+     * 
+     * @returns Idx max angle level
+     */
     const Idx& MaxAngleLevel() const {
         return max_angle_i_;
     }
 
+    /**
+     * Gets the number of length levels for the propagator.
+     * 
+     * @returns Idx number of length levels
+     */
     Idx MaxLengthIndex() const {
         return length_sequence_.size();
     }
 
+    /**
+     * Gets the number of angle levels for the propagator.
+     * 
+     * @returns Idx number of angle levels
+     */
     Idx MaxAngleIndex() const {
         return angle_sequence_.size();
     }

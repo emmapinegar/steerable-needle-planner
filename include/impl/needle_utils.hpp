@@ -320,11 +320,11 @@ bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Qu
 }
 
 /**
- * Forwards to the core???
+ * Attempts to extend from sp to gp while respecting the limits of the needle. 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
- * @param rad: the radius of curvature
+ * @param rad: the radius of curvature limit
  * 
  * @returns Vec3 resulting position, Quat resulting orientation, RealNum arc length traveled
  */
@@ -356,8 +356,12 @@ std::tuple<Vec3, Quat, RealNum> ForwardToCore(const Vec3& sp, const Quat& sq, co
 }
 
 /**
-State ForwardTo(const State& from, const State& to, const RealNum& rad)
-
+ * Attempts to move starting at from towards to while respecting the limits of the needle. 
+ * @param from: starting state
+ * @param to: target state
+ * @param rad: the radius of curvature limit
+ * 
+ * @returns State resulting state after moving the needle  
  */
 template<typename State>
 State ForwardTo(const State& from, const State& to, const RealNum& rad) {
@@ -366,8 +370,12 @@ State ForwardTo(const State& from, const State& to, const RealNum& rad) {
 }
 
 /**
-State ForwardTo(const State& from, const Vec3& gp, const RealNum& rad)
-
+ * Attempts to move starting at from towards gp while respecting the limits of the needle. 
+ * @param from: starting state
+ * @param gp: target position
+ * @param rad: the radius of curvature limit
+ * 
+ * @returns State resulting state after moving the needle  
  */
 template<typename State>
 State ForwardTo(const State& from, const Vec3& gp, const RealNum& rad) {
@@ -376,8 +384,13 @@ State ForwardTo(const State& from, const Vec3& gp, const RealNum& rad) {
 }
 
 /**
-State ForwardTo(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad)
-
+ * Attempts to extend from sp to gp while respecting the limits of the needle. 
+ * @param sp: the starting point of the needle
+ * @param sq: the starting orientation of the needle
+ * @param gp: the goal point of the needle
+ * @param rad: the radius of curvature limit
+ * 
+ * @returns State resulting state after moving the needle
  */
 template<typename State>
 State ForwardTo(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& rad) {
@@ -386,8 +399,13 @@ State ForwardTo(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& r
 }
 
 /**
-std::pair<std::vector<State>, RealNum> ForwardToWithPath(const State& from, const Vec3& gp, const RealNum& rad, const RealNum& step_size)
-
+ * Attempts to move starting at from towards gp while respecting the limits of the needle. 
+ * @param from: starting state
+ * @param gp: target position
+ * @param rad: the radius of curvature limit
+ * @param step_size: step size between points on the path
+ * 
+ * @returns pair<vector<State>, RealNum> resulting path after moving the needle and the arc length the needle moved  
  */
 template<typename State>
 std::pair<std::vector<State>, RealNum> ForwardToWithPath(const State& from, const Vec3& gp, const RealNum& rad, const RealNum& step_size) {
@@ -429,9 +447,14 @@ std::pair<std::vector<State>, RealNum> ForwardToWithPath(const State& from, cons
 }
 
 /**
-std::tuple<std::vector<State>, RealNum, std::optional<State>> ShortestForwardToWithPath(const State& from, const Vec3& gp, const RealNum& rad,
-                                                     const RealNum& step_size, const RealNum& pos_tolerance)
-
+ * Attempts to move starting at from towards gp with the shortest distance while respecting the limits of the needle. 
+ * @param from: starting state
+ * @param gp: target position
+ * @param rad: the radius of curvature limit
+ * @param step_size: step size between points on the path
+ * @param pos_tolerance: the position tolerance for reaching the goal
+ * 
+ * @returns pair<vector<State>, RealNum> resulting path after moving the needle and the arc length the needle moved  
  */
 template<typename State>
 std::tuple<std::vector<State>, RealNum, std::optional<State>> ShortestForwardToWithPath(const State& from, const Vec3& gp, const RealNum& rad,
@@ -508,8 +531,13 @@ std::tuple<std::vector<State>, RealNum, std::optional<State>> ShortestForwardToW
 }
 
 /**
-RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq)
-
+ * Calculates the arc length between the start and goal. 
+ * @param sp: the starting point of the needle
+ * @param sq: the starting orientation of the needle
+ * @param gp: the goal point of the needle
+ * @param gq: the goal orientation of the needle
+ * 
+ * @returns RealNum the arc length between the start and goal 
  */
 RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq) {
     const Vec3 st = (sq.normalized()*Vec3::UnitZ()).normalized();
@@ -539,8 +567,11 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
 }
 
 /**
-RealNum CurveLength(const State& from, const State& to)
-
+ * Calculates the arc length between the start and goal. 
+ * @param from: starting state
+ * @param to: target state
+ * 
+ * @returns RealNum the arc length between the start and goal 
  */
 template<typename State>
 RealNum CurveLength(const State& from, const State& to) {
@@ -548,9 +579,15 @@ RealNum CurveLength(const State& from, const State& to) {
 }
 
 /**
-std::vector<State> Interpolate(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
-                               const RealNum& rad, const RealNum& step_size)
-
+ * Interpolates the path between start and goal.
+ * @param sp: the starting point of the needle
+ * @param sq: the starting orientation of the needle
+ * @param gp: the goal point of the needle
+ * @param gq: the goal orientation of the needle
+ * @param rad: the radius of curvature limit
+ * @param step_size: step size between points on the path
+ * 
+ * @returns vector<State> interpolated path between the start and goal
  */
 template<typename State>
 std::vector<State> Interpolate(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& gq,
@@ -598,9 +635,13 @@ std::vector<State> Interpolate(const Vec3& sp, const Quat& sq, const Vec3& gp, c
 }
 
 /**
-std::vector<State> Interpolate(const State& from, const State& to, const RealNum& rad,
-                               const RealNum& step_size)
-
+ * Interpolates the path between start and goal.
+ * @param from: starting state
+ * @param to: target state
+ * @param rad: the radius of curvature limit
+ * @param step_size: step size between points on the path
+ * 
+ * @returns vector<State> interpolated path between the start and goal
  */
 template<typename State>
 std::vector<State> Interpolate(const State& from, const State& to, const RealNum& rad,
@@ -611,9 +652,14 @@ std::vector<State> Interpolate(const State& from, const State& to, const RealNum
 }
 
 /**
-std::vector<State> AccurateInterpolate(const State& from, const State& to, const RealNum& rad,
-                                       const RealNum& step_size, RealNum* remainder)
-
+ * Accurately interpolates the path between start and goal.
+ * @param from: starting state
+ * @param to: target state
+ * @param rad: the radius of curvature limit
+ * @param step_size: step size between points on the path
+ * @param remainder: 
+ * 
+ * @returns vector<State> interpolated path between the start and goal
  */
 template<typename State>
 std::vector<State> AccurateInterpolate(const State& from, const State& to, const RealNum& rad,
@@ -673,8 +719,12 @@ std::vector<State> AccurateInterpolate(const State& from, const State& to, const
 }
 
 /**
-std::vector<State> InterpolatePath(const std::vector<State>& path, const RealNum& rad, const RealNum& step_size)
-
+ * Interpolates the path between start and goal.
+ * @param path: path between states
+ * @param rad: the radius of curvature limit
+ * @param step_size: step size between points on the path
+ * 
+ * @returns vector<State> interpolated path for the path given
  */
 template<typename State>
 std::vector<State> InterpolatePath(const std::vector<State>& path, const RealNum& rad, const RealNum& step_size) {
@@ -704,8 +754,13 @@ std::vector<State> InterpolatePath(const std::vector<State>& path, const RealNum
 }
 
 /**
-RealNum ShortestDistance(const State& from, const Vec3& gp, const RealNum& rad_curv, const RealNum& pos_tolerance)
-
+ * Interpolates the path between start and goal.
+ * @param from: starting state
+ * @param gp: target position
+ * @param rad_curv: the radius of curvature limit
+ * @param pos_tolerance: the position tolerance for reaching the goal
+ * 
+ * @returns vector<State> interpolated path between the start and goal
  */
 template<typename State>
 RealNum ShortestDistance(const State& from, const Vec3& gp, const RealNum& rad_curv, const RealNum& pos_tolerance) {
@@ -751,25 +806,34 @@ RealNum ShortestDistance(const State& from, const Vec3& gp, const RealNum& rad_c
 }
 
 /**
-RealNum DirectionDifference(const Vec3& t0, const Vec3& t1)
-
+ * Calculates the angle between the to given vectors.
+ * @param t0: the first vector
+ * @param t1: the second vector
+ * 
+ * @returns RealNum angle between the two vectors
  */
 RealNum DirectionDifference(const Vec3& t0, const Vec3& t1) {
-    const RealNum cos_alpha = std::fmin(1, t0.normalized().dot(t1.normalized()));           // TODO: is there an easy way I can track the total change in orientation
+    const RealNum cos_alpha = std::fmin(1, t0.normalized().dot(t1.normalized()));
     return std::acos(cos_alpha);
 }
 
 /**
-RealNum DirectionDifference(const Quat& q0, const Quat& q1)
-
+ * Calculates the angle between the to given quaternions.
+ * @param q0: the first quaternion
+ * @param q1: the second quaternion
+ * 
+ * @returns RealNum angle between the two quaternion
  */
 RealNum DirectionDifference(const Quat& q0, const Quat& q1) {
     return DirectionDifference(q0.normalized() * Vec3::UnitZ(), q1.normalized() * Vec3::UnitZ());
 }
 
 /**
-bool IsTheSameState(const State& a, const State& b)
-
+ * Checks if the two states are too similar.
+ * @param a: the first state
+ * @param b: the second state
+ * 
+ * @returns bool true if the states are sufficiently similar, false otherwise
  */
 template<typename State>
 bool IsTheSameState(const State& a, const State& b) {
@@ -785,10 +849,15 @@ bool IsTheSameState(const State& a, const State& b) {
     return false;
 }
 
-/**
-RealNum DirectionalDistance(const State& from, const State& to, const RealNum& rad,
-                            const RealNum& max_range)
 
+/**
+ * Calculates the distance between the two states while accounting for orientation
+ * @param from: starting state
+ * @param to: target state
+ * @param rad: the radius of curvature limit
+ * @param max_range: maximum range of the needle
+ * 
+ * @returns RealNum the directional distance between the states, returns a values greater than max_range if things are not connected 
  */
 template<typename State>
 RealNum DirectionalDistance(const State& from, const State& to, const RealNum& rad,
@@ -816,8 +885,10 @@ RealNum DirectionalDistance(const State& from, const State& to, const RealNum& r
 }
 
 /**
-void PrintState(const State& s, std::ostream& out)
-
+ * Prints information for a state to a stream.
+ * Prints p_x p_y p_z q_w q_x q_y q_z of the state.
+ * @param s: state to print information of 
+ * @param out: stream to print information to
  */
 template<typename State>
 void PrintState(const State& s, std::ostream& out) {
@@ -829,8 +900,10 @@ void PrintState(const State& s, std::ostream& out) {
 }
 
 /**
-void PrintPosition(const State& s, std::ostream& out)
-
+ * Prints position information for a state to a stream.
+ * Prints p_x p_y p_z of the state.
+ * @param s: state to print information of 
+ * @param out: stream to print information to
  */
 template<typename State>
 void PrintPosition(const State& s, std::ostream& out) {
@@ -838,10 +911,11 @@ void PrintPosition(const State& s, std::ostream& out) {
     out << p[0] << " " << p[1] << " " << p[2] << std::endl;
 }
 
-
 /**
-void PrintPath(const std::vector<State>& path, std::ostream& out, const bool full_state)
-
+ * Prints information for states in a path to a stream.
+ * @param path: path of states to print information of 
+ * @param out: stream to print information to
+ * @param full_state: if true prints all state info, false prints just position info
  */
 template<typename State>
 void PrintPath(const std::vector<State>& path, std::ostream& out, const bool full_state) {
@@ -856,9 +930,11 @@ void PrintPath(const std::vector<State>& path, std::ostream& out, const bool ful
 }
 
 /**
-bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
-                     const bool full_state, const bool show_log)
-
+ * Writes information for states in a path to a file.
+ * @param path: path of states to print information of 
+ * @param file_name: name of file to write path info to
+ * @param full_state: if true writes all state info, false writes just position info
+ * @param show_log: if true prints something to the console afte writing 
  */
 template<typename State>
 bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
@@ -883,16 +959,20 @@ bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
 }
 
 /**
-double RelativeTime(const TimePoint& start)
-
+ * Calculates how much time has passed since start.
+ * @param start: start time to use for calculating difference
+ * 
+ * @returns double amount of time that has passed from start to now in seconds?
  */
 double RelativeTime(const TimePoint& start) {
     return std::chrono::duration_cast<std::chrono::duration<double>>(Clock::now() - start).count();
 }
 
 /**
-double TimeDuration(const Clock::duration& elapsed)
-
+ * Calculates how much time has elasped.
+ * @param elasped: clock duration used
+ * 
+ * @returns double amount of time that elapsed on the clock in seconds?
  */
 double TimeDuration(const Clock::duration& elapsed) {
     return std::chrono::duration_cast<std::chrono::duration<double>>(elapsed).count();
