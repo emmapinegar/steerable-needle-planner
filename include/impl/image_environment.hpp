@@ -287,7 +287,7 @@ bool ImageEnvironment::ConstructEnvironmentFromFile(const Str file_name) {
 
     this->SetImageSize(size);
 
-    this->CreateNewNN("defualt");
+    this->CreateNewNN("default");
     IdxPoint obs;
 
     while (std::getline(fin, line)) {
@@ -298,8 +298,8 @@ bool ImageEnvironment::ConstructEnvironmentFromFile(const Str file_name) {
             obs[i] = std::stoi(field);
         }
 
-        this->AddObstacle(obs, "defualt");
-        std::cout << "\rLoaded obstacle points: " << obstacle_idx_["defualt"] << std::flush;
+        this->AddObstacle(obs, "default");
+        std::cout << "\rLoaded obstacle points: " << obstacle_idx_["default"] << std::flush;
     }
 
     std::cout << std::endl;
