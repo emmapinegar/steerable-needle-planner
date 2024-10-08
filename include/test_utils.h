@@ -65,6 +65,7 @@ Str DateAndTime() {
  * 
  * @returns RealNum minimum radius of curvate possible with the needle, RealNum diameter of the needle, 
  * RealNum maximum length the needle can be inserted, RealNum the maximum cumulative angle the needle can follow
+ * @throws runtime_error if the file can't be opened 
  */
 std::tuple<RealNum, RealNum, RealNum, RealNum>
 ReadNeedleParameters(Str const& filename, const bool print_info=false) {
@@ -107,6 +108,7 @@ ReadNeedleParameters(Str const& filename, const bool print_info=false) {
  * @param filename: name of the text file containing the states
  * 
  * @returns Vec3 starting position, Quat starting orientation, Vec3 goal position, Quat goal orientation
+ * @throws runtime_error if the file can't be opened 
  */
 std::tuple<Vec3, Quat, Vec3, Quat>
 ReadStartAndGoal(Str const& filename) {
@@ -147,6 +149,7 @@ ReadStartAndGoal(Str const& filename) {
  * @param filename: name of the text file containing the states
  * 
  * @returns Vec3 starting position, Quat starting orientation
+ * @throws runtime_error if the file can't be opened 
  */
 std::pair<Vec3, Quat>
 ReadStart(Str const& filename) {
@@ -180,6 +183,7 @@ ReadStart(Str const& filename) {
  * @param filename: name of the text file containing the states
  * 
  * @returns Vec3 goal position, Quat goal orientation
+ * @throws runtime_error if the file can't be opened 
  */
 std::tuple<Vec3, Quat>
 ReadGoal(Str const& filename) {
@@ -220,6 +224,8 @@ ReadGoal(Str const& filename) {
  * @param cfg: configuration to use
  * @param save_only_best_plan: saves only the best plan found if true, defaults to true
  * @param save_cost: saves the cost of the plan if true, defaults to false
+ * 
+ * @throws runtime_error if the output files can't be opened 
  */
 template<unsigned Mode=0, typename Planner>
 void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, const bool save_cost=false)

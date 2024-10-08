@@ -37,6 +37,9 @@
 #include "prrt_base.hpp"
 
 namespace unc::robotics::mpt::impl::prrt {
+/**
+ * Needle spreading style RRT based planner. 
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedleSpreadingPRRT : public
     PlannerBase<NeedleSpreadingPRRT<Scenario, maxThreads, reportStats, NNStrategy>> {
@@ -115,6 +118,11 @@ class NeedleSpreadingPRRT : public
     }
 
   public:
+    /**
+     * Creates an instance of NeedleSpreadingPRRT.
+     * @param scenario: scenario for the planning problem
+     * @param seed: random number generator seed
+     */
     template <typename RNGSeed = RandomDeviceSeed<>>
     explicit NeedleSpreadingPRRT(const Scenario& scenario = Scenario(), const RNGSeed& seed = RNGSeed())
         : nn_(scenario.space())
@@ -476,6 +484,9 @@ class NeedleSpreadingPRRT : public
     }
 };
 
+/**
+ * Needle spreading style RRT based planner. 
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedleSpreadingPRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     : public WorkerStats<reportStats> {
@@ -497,6 +508,10 @@ class NeedleSpreadingPRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     State start_;
 
   public:
+    /**
+     * Creates a worker using the parameters of another worker.
+     * @param other: the worker to use for the parameters to create this worker
+     */
     Worker(Worker&& other)
         : no_(other.no_)
         , scenario_(other.scenario_)
@@ -507,6 +522,12 @@ class NeedleSpreadingPRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     }
 
+    /**
+     * Creates a worker.
+     * @param no: worker number
+     * @param scenario: scenario for the worker
+     * @param seed: seed for the random number generator 
+     */
     template <typename RNGSeed>
     Worker(unsigned no, const Scenario& scenario, const RNGSeed& seed)
         : no_(no)

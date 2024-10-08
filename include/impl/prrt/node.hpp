@@ -38,6 +38,9 @@
 #include <utility>
 
 namespace unc::robotics::mpt::impl::prrt {
+/**
+ * Nodes for the the motion planner to track states and path attributes.
+ */
 template <typename State, typename Traj>
 class Node {
     using Scalar = typename State::Distance;
@@ -49,6 +52,14 @@ class Node {
     Scalar ang_total_{0};
 
   public:
+    /**
+     * Creates a Node object for an RRT based planner.
+     * @param traj: trajectory the node belongs to
+     * @param parent: parent node 
+     * @param args: ??
+     * 
+     * @returns Node node in the trajectory with the given parent node
+     */
     template <typename ... Args>
     Node(Traj&& traj, Node *parent, Args&& ... args)
         : state_(std::forward<Args>(args)...)
@@ -56,38 +67,83 @@ class Node {
     {
     }
 
+    /**
+     * Gets the cumulative arc length of the trajectory up to this node.
+     * 
+     * @returns Scalar trajectory arc length
+     */
     Scalar& length() {
         return traj_length_;
     }
 
+    /**
+     * Gets the cumulative arc length of the trajectory up to this node.
+     * 
+     * @returns const Scalar trajectory arc length
+     */
     const Scalar& length() const {
         return traj_length_;
     }
 
+    /**
+     * Gets the cumulative cost of the trajectory up to this node.
+     * 
+     * @returns Scalar trajectory cost
+     */
     Scalar& cost() {
         return cost_;
     }
 
+    /**
+     * Gets the cumulative cost of the trajectory up to this node.
+     * 
+     * @returns const Scalar trajectory cost
+     */
     const Scalar& cost() const {
         return cost_;
     }
 
+    /**
+     * Gets the cumulative angle of the trajectory up to this node.
+     * 
+     * @returns Scalar trajectory angle
+     */
     Scalar& ang_total() {
         return ang_total_;
     }
 
+    /**
+     * Gets the cumulative angle of the trajectory up to this node.
+     * 
+     * @returns const Scalar trajectory angle
+     */
     const Scalar& ang_total() const {
         return ang_total_;
     }    
 
+    /**
+     * Gets the node state.
+     * 
+     * @returns const State of node 
+     */
     const State& state() const {
         return state_;
     }
 
+    /**
+     * Gets the edge between the node and its parent.
+     * 
+     * @returns const Edge<State, Traj> connection between node and its parent 
+     */    
     const Edge<State, Traj>& edge() const {
         return parent_;
     }
 
+    /**
+     * Gets the parent of the node.
+     * 
+     * @returns const Node parent of the current node
+     */   
     const Node* parent() const {
         return parent_;
     }

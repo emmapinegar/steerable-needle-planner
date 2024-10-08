@@ -38,6 +38,9 @@
 #include "prrt_base.hpp"
 
 namespace unc::robotics::mpt::impl::prrt {
+/**
+ * Needle spreading style AORRT based planner.
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedleSpreadingPAORRT : public
     PlannerBase<NeedleSpreadingPAORRT<Scenario, maxThreads, reportStats, NNStrategy>> {
@@ -502,6 +505,9 @@ class NeedleSpreadingPAORRT : public
     }
 };
 
+/**
+ * Needle spreading style AORRT based planner.
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedleSpreadingPAORRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     : public WorkerStats<reportStats> {

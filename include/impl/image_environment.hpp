@@ -38,13 +38,16 @@
 namespace unc::robotics::snp {
 
 /**
- * Creates an image environment?
+ * Creates an instance of ImageEnvironment. 
  * @param ijk_to_ras: transformation matrix from image coordinates to world coordinates
  */
 ImageEnvironment::ImageEnvironment(const Affine& ijk_to_ras) {
     this->SetIjkToRasAffine(ijk_to_ras);
 }
 
+/**
+ * Destructs an instance of ImageEnvironment. 
+ */
 ImageEnvironment::~ImageEnvironment() {
     cost_array_.resize(boost::extents[0][0][0]);
 
@@ -230,6 +233,7 @@ void ImageEnvironment::GenerateEmptyImage(const Idx size_x, const Idx size_y, co
  * @param file_name: file containing the environment 
  * 
  * @returns bool true if the environment was successfully created, false otherwise
+ * @throws runtime_error if the file can't be opened
  */
 bool ImageEnvironment::ConstructEnvironmentFromFile(const Str file_name) {
     std::ifstream fin;
@@ -348,7 +352,7 @@ bool ImageEnvironment::ConstructCostFromFile(const Str file_name) {
 }
 
 /**
- * Caculates the world coordinates for the given point in image coordinates.
+ * Calculates the world (ras) coordinates for the given point in image (ijk) coordinates.
  * @param p: ijk coordinate to convert
  * 
  * @returns Vec3 world coordinates for the provided image coordinates
@@ -358,7 +362,7 @@ Vec3 ImageEnvironment::IjkToRas(const IdxPoint& p) const {
 }
 
 /**
- * Caculates the world coordinates for the given point in image coordinates.
+ * Calculates the world (ras) coordinates for the given point in image (ijk) coordinates.
  * @param i: i coordinate to convert
  * @param j: j coordinate to convert
  * @param k: k coordinate to convert
@@ -370,7 +374,7 @@ Vec3 ImageEnvironment::IjkToRas(const Idx& i, const Idx& j, const Idx& k) const 
 }
 
 /**
- * Caculates the image coordinates for the given point in world coordinates.
+ * Calculates the image (ijk) coordinates for the given point in world (ras) coordinates.
  * @param p: ras coordinate to convert
  * 
  * @returns IdxPoint image coordinates for the provided world coordinates
@@ -391,12 +395,12 @@ IdxPoint ImageEnvironment::RasToIjk(const Vec3& p) const {
 }
 
 /**
- * Caculates the world coordinates for the given point in image coordinates.
- * @param i: i coordinate to convert
- * @param j: j coordinate to convert
- * @param k: k coordinate to convert
+ * Calculates the image (ijk) coordinates for the given point in world (ras) coordinates.
+ * @param r: r coordinate to convert
+ * @param a: a coordinate to convert
+ * @param s: s coordinate to convert
  * 
- * @returns Vec3 world coordinates for the provided image coordinates
+ * @returns IdxPoint image coordinates for the provided world coordinates
  */
 IdxPoint ImageEnvironment::RasToIjk(const RealNum& r, const RealNum& a, const RealNum& s) const {
     return this->RasToIjk(Vec3(r, a, s));
