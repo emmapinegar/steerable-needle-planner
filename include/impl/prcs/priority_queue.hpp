@@ -41,6 +41,9 @@
 
 namespace unc::robotics::mpt::impl::prcs {
 
+/**
+ * PriorityQueue for RCS style planners. 
+ */
 template <typename State, typename Traj>
 class PriorityQueue {
     using Node = prcs::Node<State, Traj>;
@@ -59,12 +62,21 @@ class PriorityQueue {
     PriorityQueue() {
     }
 
+    /**
+     * Adds node to the priority queue.
+     * @param node: node to add to the priority queue
+     */
     void push(Node* node) {
         std::lock_guard<std::mutex> lock(mutex_);
 
         q_.push(node);
     }
 
+    /**
+     * Removes the highest priority node from the queue. 
+     * 
+     * @returns Node highest priority node 
+     */
     Node* pop() {
         std::lock_guard<std::mutex> lock(mutex_);
 
@@ -78,10 +90,20 @@ class PriorityQueue {
         return node;
     }
 
+    /**
+     * Checks if the priority queue is empty.
+     * 
+     * @returns bool true if the priority queue is empty, false otherwise
+     */
     bool empty() const {
         return q_.empty();
     }
 
+    /**
+     * Gets the size of the priority queue.
+     * 
+     * @returns size_t number of nodes in the priorit queue
+     */
     std::size_t size() const {
         return q_.size();
     }

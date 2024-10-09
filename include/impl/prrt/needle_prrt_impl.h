@@ -37,6 +37,9 @@
 #include "prrt_base.hpp"
 
 namespace unc::robotics::mpt::impl::prrt {
+/**
+ * Needle style RRT based planner.
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportStats, NNStrategy>> {
   public:
@@ -502,6 +505,9 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
     }
 };
 
+/**
+ * Needle style RRT based planner.
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedlePRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     : public WorkerStats<reportStats> {

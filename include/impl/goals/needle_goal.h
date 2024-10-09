@@ -63,6 +63,9 @@ using RandPtr = std::shared_ptr<RandomNumber>;
 namespace unc::robotics::mpt {
 using namespace snp;
 
+/**
+ * 
+ */
 template <typename Space>
 class NeedleGoalState {
     using State = typename Space::Type;
@@ -77,6 +80,9 @@ class NeedleGoalState {
     RandPtr rand_;
 
   public:
+    /**
+     * 
+     */
     template <typename ... Args>
     NeedleGoalState(ConfigPtr cfg, Args&& ... args)
         : goal_(std::forward<Args>(args)...),
@@ -86,6 +92,11 @@ class NeedleGoalState {
         rand_.reset(new RandomNumber());
     }
 
+    /**
+     * Gets the goal state.
+     * 
+     * @returns const State goal state
+     */
     const State& state() const {
         return goal_;
     }
@@ -108,11 +119,24 @@ class NeedleGoalState {
     }
 
   private:
+    /**
+     * Checks if the state is valid (collision free).
+     * @param s: state to validate
+     * 
+     * @returns bool true if the state is valid, false otherwise
+     */
     bool Valid(const State& s) const {
         const Eigen::Matrix<Scalar, 3, 1>& p = s.translation();
         return (cfg_->env->CollisionFree(p));
     }
 
+    /**
+     * Checks if the motion between states is valid.
+     * @param motion: states comprising the motion
+     * 
+     * @returns bool true if all states in the motion are valid, false otherwise
+     * @throws runtime_error if the motion vector is empty
+     */
     bool ValidMotion(const States& motion) const {
         if (motion.size() == 0) {
             throw std::runtime_error("Path contains no states! Cannot check path validity!");
@@ -144,6 +168,13 @@ class NeedleGoalState {
         return true;
     }
 
+    /**
+     * Checks if the goal has been reached.
+     * @param space: space for the planning problem
+     * @param s: state to use for the goal check
+     * 
+     * @returns tuple<bool, Distance, States> true if goal was reached, false otherwise; radius of curvature??; path from start to goal
+     */
     std::tuple<bool, Distance, States> GoalCheck(const Space& space, const State& s) const {
         auto [pathToGoal, dist] = ForwardToWithPath(s, goal_p_, cfg_->rad_curv, cfg_->validity_res);
 
@@ -167,6 +198,13 @@ class NeedleGoalState {
         return {true, 0.0, {pathToGoal.back()}};
     }
 
+    /**
+     * Checks if the goal has been reached. I don't know what the Dubins path shenanigans are about. 
+     * @param space: space for the planning problem
+     * @param s: state to use for the goal check
+     * 
+     * @returns tuple<bool, Distance, States> true if goal was reached, false otherwise; radius of curvature??; path from start to goal
+     */
     std::tuple<bool, Distance, States> GoalCheckDubins(const Space& space, const State& s) const {
         auto [pathToGoal, dist, transition] = ShortestForwardToWithPath(s, goal_p_, cfg_->rad_curv, cfg_->validity_res, cfg_->goal_pos_tolerance);
 
@@ -193,6 +231,13 @@ class NeedleGoalState {
         return {true, 0.0, {pathToGoal.back()}};
     }
 
+    /**
+     * Checks if the goal has been reached. but like make it sequential?
+     * @param space: space for the planning problem
+     * @param s: state to use for the goal check
+     * 
+     * @returns tuple<bool, Distance, States> true if goal was reached, false otherwise; radius of curvature??; path from start to goal
+     */
     std::tuple<bool, Distance, States> GoalCheckSequential(const Space& space, const State& s) const {
         State goal_state;
         auto const& p = s.translation();
@@ -234,6 +279,13 @@ class NeedleGoalState {
         return {false, R_INF, {goal_state}};
     }
 
+    /**
+     * Checks if the goal has been reached. but like make it orientation?
+     * @param space: space for the planning problem
+     * @param s: state to use for the goal check
+     * 
+     * @returns tuple<bool, Distance, States> true if goal was reached, false otherwise; radius of curvature??; path from start to goal
+     */
     std::tuple<bool, Distance, States> GoalCheckWithOrientation(const Space& space,
             const State& s) const {
         State goal_state;
@@ -290,6 +342,9 @@ class NeedleGoalState {
     }
 };
 
+/** 
+ * Sampler that only samples the goal. 
+ */
 template <typename Space>
 class GoalSampler<NeedleGoalState<Space>> {
     const NeedleGoalState<Space>& goal_;

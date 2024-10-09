@@ -37,6 +37,9 @@
 #include "prcs_base.hpp"
 #include "priority_queue.hpp"
 
+/**
+ * Needle spreading style RCS based planner. 
+ */
 namespace unc::robotics::mpt::impl::prcs {
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedleSpreadingPRCS : public
@@ -563,6 +566,9 @@ class NeedleSpreadingPRCS : public
     }
 };
 
+/**
+ * Needle spreading style RCS based planner. 
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     : public WorkerStats<reportStats> {

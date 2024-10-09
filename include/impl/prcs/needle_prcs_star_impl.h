@@ -39,6 +39,9 @@
 #include "lookahead_priority_queue.hpp"
 
 namespace unc::robotics::mpt::impl::prcs {
+/**
+ * Needle style RCS* based planner. 
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>> {
   public:
@@ -566,6 +569,9 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     }
 };
 
+/**
+ * Needle style RCS* based planner. 
+ */
 template <typename Scenario, int maxThreads, bool reportStats, typename NNStrategy>
 class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     : public WorkerStats<reportStats> {

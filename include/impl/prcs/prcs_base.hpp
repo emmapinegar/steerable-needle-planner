@@ -82,6 +82,10 @@ struct WorkerStats<true> {
     TimerStat<>& validMotion() const { return validMotion_; }
     TimerStat<>& nearest() const { return nearest_; }
 
+    /**
+     * Adds the worker states of the provided worker to this worker.
+     * @param other: the worker with stats to add to this worker
+     */
     WorkerStats& operator += (const WorkerStats& other) {
         iterations_ += other.iterations_;
         addedStart_ += other.addedStart_;
@@ -90,6 +94,9 @@ struct WorkerStats<true> {
         return *this;
     }
 
+    /**
+     * Prints the iterations, number of biased samples, valid motion timer, nearest timer. 
+     */
     void print() const {
         MPT_LOG(INFO) << "iterations: " << iterations_;
         MPT_LOG(INFO) << "added start states: " << addedStart_;
