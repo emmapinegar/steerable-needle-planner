@@ -297,6 +297,7 @@ bool ExceedAngleConstraint(const State& s, const State& start, const RealNum ang
     return (diff > ang_constraint_rad);
 }
 
+
 /**
  * Checks that the state s is collision-free, in the limits of the trumpet workspace, and capable of reaching the goal state
  * @param s: the state s being considered

@@ -42,6 +42,9 @@
 namespace unc::robotics::mpt {
 using namespace snp;
 
+/**
+ * Goal for needle spreading style planners.
+ */
 template <typename Space>
 class NeedleSpreadingGoal {
     using State = typename Space::Type;
@@ -59,22 +62,49 @@ class NeedleSpreadingGoal {
         : cfg_(cfg), start_p_(start_p), min_dist_{cfg->spreading_min_dist} {
     }
 
+    /**
+     * Sets the list of goals to spread towards.
+     * @param goals: goals that the planner will try to reach
+     */
     void ProvideGoalPoints(const std::vector<Vec3>& goals) {
         goals_ = goals;
     }
 
+    /**
+     * Gets the number of goals.
+     * 
+     * @return unsigned number of goals 
+     */
     unsigned size() const {
         return goals_.size();
     }
 
+    /**
+     * Gets a goal from the list of goals.
+     * @param idx: index of the goal to get
+     * 
+     * @returns const Vec3 goal at provided index
+     */
     const Vec3& goal(const unsigned& idx) const {
         return goals_[idx];
     }
 
+    /**
+     * Gets the insertion length limit for the configuration.
+     * 
+     * @returns Distance insertion length limit
+     */
     const Distance& length() const {
         return cfg_->ins_length;
     }
 
+    /**
+     * Performs a goal check.
+     * @param space: space for the planning problem
+     * @param s: state to use for the goal check
+     * 
+     * @returns tuple<bool, Distance, States> true if goal was reached, false otherwise; radius of curvature??; path from start to goal
+     */
     std::tuple<bool, Distance, State> operator() (const Space& space, const State& s) const {
         const Vec3& pos = s.translation();
 
@@ -100,6 +130,9 @@ class NeedleSpreadingGoal {
     }
 };
 
+/**
+ * Goal sampler for needle spreading style planners.
+ */
 template <typename Space>
 class GoalSampler<NeedleSpreadingGoal<Space>> {
     const NeedleSpreadingGoal<Space>& goal_;
@@ -113,6 +146,12 @@ class GoalSampler<NeedleSpreadingGoal<Space>> {
         : goal_(goal) {
     }
 
+    /**
+     * Randomly samples a goal from the list of goals.
+     * @param rng: random number generator
+     * 
+     * @returns Type randomly sampled goal position (idk what this type business is)
+     */
     template <typename RNG>
     Type operator() (RNG& rng) {
         Type goal;

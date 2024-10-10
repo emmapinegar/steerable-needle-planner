@@ -1,4 +1,19 @@
 import numpy as np
+# from __future__ import print_function
+import cv2 as cv
+import numpy as np
+import argparse
+import matplotlib.pyplot as plt
+ 
+src = None
+erosion_size = 0
+max_elem = 2
+max_kernel_size = 21
+title_trackbar_element_shape = 'Element:\n 0: Rect \n 1: Cross \n 2: Ellipse'
+title_trackbar_kernel_size = 'Kernel size:\n 2n +1'
+title_erosion_window = 'Erosion Demo'
+title_dilation_window = 'Dilation Demo'
+
 
 
 _DEBUG = False
@@ -89,6 +104,7 @@ class ReMINDEnvironment:
         """
         obstacle_file = str(line_data[0])
         obstacles_np = np.load(obstacle_file)
+        obstacles_np = np.where(obstacles_np > 1, 0, obstacles_np)
         self.voxel_grid = obstacles_np
 
 
@@ -123,7 +139,6 @@ class ReMINDEnvironment:
         self.transform = np.array([float(l) for l in line_data]).reshape(-1,4)
 
 
-
     def write_obstacles(self, filename):
         """
         Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
@@ -135,34 +150,153 @@ class ReMINDEnvironment:
         np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
         obstacle_coords = np.where(self.voxel_grid == 1)
         obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
-        # print(obstacle_arr[:,0])
-        obstacle_coordsx = np.where(np.logical_and(obstacle_arr[:,0] > 150, obstacle_arr[:,0] < self.x_max - 50))
-        obstacle_arr = obstacle_arr[obstacle_coordsx[0],:]
-        # print(obstacle_coordsx)
-        # print(obstacle_arr)
-        obstacle_coordsy = np.where(np.logical_and(obstacle_arr[:,1] > 150, obstacle_arr[:,1] < self.y_max - 50))
-        obstacle_arr = obstacle_arr[obstacle_coordsy[0],:]
-        # print(obstacle_arr)
-        obstacle_coordsz = np.where(np.logical_and(obstacle_arr[:,2] > 30, obstacle_arr[:,2] < self.z_max - 75))
-        obstacle_arr = obstacle_arr[obstacle_coordsz[0],:]
-        arr_length = np.shape(obstacle_arr)[0]
-        obstacle_sub = np.random.random_integers(0,arr_length,arr_length//4)
-        obstacle_arr = obstacle_arr[obstacle_sub,:]
-        # print(obstacle_arr)
+        obstacle_arr = self.get_obstacles_outline(obstacle_arr)
+        # obstacle_arr = self.get_obstacles_full(obstacle_arr)
         np.savetxt(f, obstacle_arr, fmt='%d', delimiter=" ")
 
         f.close()
 
 
-    def write_start_and_goal():
+    def get_obstacles_full(self, obstacle_arr):
         """
-        
+        Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
         """
+        return obstacle_arr
+
+
+    def get_obstacles_isosurface(self, obstacle_arr):
+        """
+        Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
+        """
+        obstacle_coordsx = np.where(np.logical_and(obstacle_arr[:,0] > 50, obstacle_arr[:,0] < self.x_max - 25))
+        obstacle_arr = obstacle_arr[obstacle_coordsx[0],:]
+        obstacle_coordsy = np.where(np.logical_and(obstacle_arr[:,1] > 50, obstacle_arr[:,1] < self.y_max - 25))
+        obstacle_arr = obstacle_arr[obstacle_coordsy[0],:]
+        obstacle_coordsz = np.where(np.logical_and(obstacle_arr[:,2] > 30, obstacle_arr[:,2] < self.z_max - 75))
+        obstacle_arr = obstacle_arr[obstacle_coordsz[0],:]
+        return obstacle_arr
+    
+
+    def get_obstacles_outline(self, obstacle_arr):
+        """
+        Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
+        """
+        mask = np.zeros_like(self.voxel_grid)
+        for i in range(200,210): #int(self.x_max)):
+            plt.imshow(self.voxel_grid[i,:,:])
+            plt.show()
+            eroded_mask = np.logical_not(main(self.voxel_grid[i,:,:]))
+            plt.imshow(eroded_mask)
+            plt.show()
+            mask[i,:,:] = np.logical_and(self.voxel_grid[i,:,:], eroded_mask)
+            # plt.imshow(mask[i,:,:])
+            # plt.show()
+        obstacle_coords = np.where(mask == 1)
+        obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
+        return obstacle_arr
+
+
+    def get_obstacles_truncated(self, obstacle_arr):
+        """
+        Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
+        """
+        obstacle_coordsx = np.where(np.logical_and(obstacle_arr[:,0] > 50, obstacle_arr[:,0] < self.x_max - 25))
+        obstacle_arr = obstacle_arr[obstacle_coordsx[0],:]
+        obstacle_coordsy = np.where(np.logical_and(obstacle_arr[:,1] > 50, obstacle_arr[:,1] < self.y_max - 25))
+        obstacle_arr = obstacle_arr[obstacle_coordsy[0],:]
+        obstacle_coordsz = np.where(np.logical_and(obstacle_arr[:,2] > 30, obstacle_arr[:,2] < self.z_max - 75))
+        obstacle_arr = obstacle_arr[obstacle_coordsz[0],:]
+        return obstacle_arr
+
+
+    def get_obstacles_downsampled(self, obstacle_arr):
+        """
+        Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
+        """
+        arr_length = np.shape(obstacle_arr)[0]
+        obstacle_sub = np.random.random_integers(0,arr_length,arr_length//4)
+        obstacle_arr = obstacle_arr[obstacle_sub,:]
+        return obstacle_arr
 
 
 
 
-if __name__=="__main__":
+
+
+
+ 
+ 
+# from the opencv demo https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html  
+def main(image):
+    global src
+    uint_img = np.array(image*255).astype('uint8')
+    src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
+    if src is None:
+        print('Could not open or find the image: ', image)
+        exit(0)
+ 
+    # cv.namedWindow(title_erosion_window)
+    # cv.createTrackbar(title_trackbar_element_shape, title_erosion_window, 0, max_elem, erosion)
+    # cv.createTrackbar(title_trackbar_kernel_size, title_erosion_window, 0, max_kernel_size, erosion)
+ 
+    # cv.namedWindow(title_dilation_window)
+    # cv.createTrackbar(title_trackbar_element_shape, title_dilation_window, 0, max_elem, dilatation)
+    # cv.createTrackbar(title_trackbar_kernel_size, title_dilation_window, 0, max_kernel_size, dilatation)
+ 
+    erosion_dst = erosion(0)
+    erosion_dst = np.asarray(erosion_dst)
+    # print(np.shape(erosion_dst))
+    erosion_dst = erosion_dst[:,:,0]//255
+    # print(np.shape(erosion_dst))
+    return erosion_dst
+    # dilatation(0)
+    # cv.waitKey()
+ 
+ 
+# optional mapping of values with morphological shapes
+def morph_shape(val):
+    if val == 0:
+        return cv.MORPH_RECT
+    elif val == 1:
+        return cv.MORPH_CROSS
+    elif val == 2:
+        return cv.MORPH_ELLIPSE
+ 
+ 
+ 
+def erosion(val, erosion_size = 5):
+    # erosion_size = cv.getTrackbarPos(title_trackbar_kernel_size, title_erosion_window)
+    erosion_shape = morph_shape(val)
+ 
+    
+    element = cv.getStructuringElement(erosion_shape, (2 * erosion_size + 1, 2 * erosion_size + 1),
+                                       (erosion_size, erosion_size))
+    
+    erosion_dst = cv.erode(src, element)
+    return erosion_dst
+    # cv.imshow(title_erosion_window, erosion_dst)
+ 
+ 
+ 
+ 
+def dilatation(val, dilatation_size=2):
+    # dilatation_size = cv.getTrackbarPos(title_trackbar_kernel_size, title_dilation_window)
+    dilation_shape = morph_shape(val)
+ 
+    element = cv.getStructuringElement(dilation_shape, (2 * dilatation_size + 1, 2 * dilatation_size + 1),
+                                       (dilatation_size, dilatation_size))
+    dilatation_dst = cv.dilate(src, element)
+    # cv.imshow(title_dilation_window, dilatation_dst)
+ 
+ 
+ 
+if __name__ == "__main__":
+    # parser = argparse.ArgumentParser(description='Code for Eroding and Dilating tutorial.')
+    # parser.add_argument('--input', help='Path to input image.', default='LinuxLogo.jpg')
+    # args = parser.parse_args()
+ 
+    # main(args.input)
+
 
     envparser = ReMINDEnvironment()
     envparser.read_env("./../data/input/ReMIND_info_001.txt")
