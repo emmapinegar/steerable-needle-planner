@@ -144,16 +144,35 @@ class ReMINDEnvironment:
         Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
         """
 
-        f = open(filename, 'a')
-        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
-
-        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
         obstacle_coords = np.where(self.voxel_grid == 1)
         obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
-        obstacle_arr = self.get_obstacles_outline(obstacle_arr)
-        # obstacle_arr = self.get_obstacles_full(obstacle_arr)
-        np.savetxt(f, obstacle_arr, fmt='%d', delimiter=" ")
 
+        f = open(f"{filename}.txt", 'a')
+        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        obstacle_arr_full = self.get_obstacles_downsampled(obstacle_arr)
+        np.savetxt(f, obstacle_arr_full, fmt='%d', delimiter=" ")
+        f.close()
+
+        f = open(f"{filename}_outline.txt", 'a')
+        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        obstacle_arr_outline = self.get_obstacles_outline(obstacle_arr)
+        np.savetxt(f, obstacle_arr_outline, fmt='%d', delimiter=" ")
+        f.close()
+
+        f = open(f"{filename}_outline_speckled.txt", 'a')
+        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        obstacle_arr_outline_speckled = self.get_obstacles_outline_speckled(obstacle_arr)
+        np.savetxt(f, obstacle_arr_outline_speckled, fmt='%d', delimiter=" ")
+        f.close()
+
+        f = open(f"{filename}_outline_viz.txt", 'a')
+        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        obstacle_arr_outline_viz = self.get_obstacles_outline_viz(obstacle_arr)
+        np.savetxt(f, obstacle_arr_outline_viz, fmt='%d', delimiter=" ")
         f.close()
 
 
@@ -182,12 +201,50 @@ class ReMINDEnvironment:
         Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
         """
         mask = np.zeros_like(self.voxel_grid)
-        for i in range(200,210): #int(self.x_max)):
-            plt.imshow(self.voxel_grid[i,:,:])
-            plt.show()
-            eroded_mask = np.logical_not(main(self.voxel_grid[i,:,:]))
-            plt.imshow(eroded_mask)
-            plt.show()
+        for i in range(0,int(self.x_max)):
+            # plt.imshow(self.voxel_grid[i,:,:])
+            # plt.show()
+            eroded_mask = np.logical_not(get_shell(self.voxel_grid[i,:,:]))
+            # plt.imshow(eroded_mask)
+            # plt.show()
+            mask[i,:,:] = np.logical_and(self.voxel_grid[i,:,:], eroded_mask)
+            # plt.imshow(mask[i,:,:])
+            # plt.show()
+        obstacle_coords = np.where(mask == 1)
+        obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
+        return obstacle_arr
+
+
+    def get_obstacles_outline_speckled(self, obstacle_arr):
+        """
+        Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
+        """
+        mask = np.zeros_like(self.voxel_grid)
+        for i in range(0,int(self.x_max)):
+            # plt.imshow(self.voxel_grid[i,:,:])
+            # plt.show()
+            eroded_mask = np.logical_not(get_shell(self.voxel_grid[i,:,:]))
+            # plt.imshow(eroded_mask)
+            # plt.show()
+            mask[i,:,:] = np.logical_and(self.voxel_grid[i,:,:], eroded_mask)
+            # plt.imshow(mask[i,:,:])
+            # plt.show()
+        obstacle_coords = np.where(mask == 1)
+        obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
+        return obstacle_arr
+
+
+    def get_obstacles_outline_viz(self, obstacle_arr):
+        """
+        Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
+        """
+        mask = np.zeros_like(self.voxel_grid)
+        for i in range(0,int(self.x_max)):
+            # plt.imshow(self.voxel_grid[i,:,:])
+            # plt.show()
+            eroded_mask = np.logical_not(remove_shell(self.voxel_grid[i,:,:]))
+            # plt.imshow(eroded_mask)
+            # plt.show()
             mask[i,:,:] = np.logical_and(self.voxel_grid[i,:,:], eroded_mask)
             # plt.imshow(mask[i,:,:])
             # plt.show()
@@ -214,7 +271,7 @@ class ReMINDEnvironment:
         Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
         """
         arr_length = np.shape(obstacle_arr)[0]
-        obstacle_sub = np.random.random_integers(0,arr_length,arr_length//4)
+        obstacle_sub = np.random.random_integers(0,arr_length,arr_length//8)
         obstacle_arr = obstacle_arr[obstacle_sub,:]
         return obstacle_arr
 
@@ -251,6 +308,39 @@ def main(image):
     return erosion_dst
     # dilatation(0)
     # cv.waitKey()
+
+
+# from the opencv demo https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html  
+def get_shell(image):
+    global src
+    uint_img = np.array(image*255).astype('uint8')
+    src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
+    if src is None:
+        print('Could not open or find the image: ', image)
+        exit(0)
+ 
+    erosion_dst = erosion(0, erosion_size=5)
+    erosion_dst = np.asarray(erosion_dst)
+    # print(np.shape(erosion_dst))
+    erosion_dst = erosion_dst[:,:,0]//255
+    # print(np.shape(erosion_dst))
+    return erosion_dst
+
+
+
+def remove_shell(image):
+    global src
+    uint_img = np.array(image*255).astype('uint8')
+    src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
+    if src is None:
+        print('Could not open or find the image: ', image)
+        exit(0)
+ 
+    src = erosion(0, erosion_size=5)
+    dilation_dst = dilatation(0, dilatation_size=7)
+    morph_dst = np.asarray(dilation_dst)
+    morph_dst = morph_dst[:,:,0]//255
+    return morph_dst
  
  
 # optional mapping of values with morphological shapes
@@ -264,29 +354,20 @@ def morph_shape(val):
  
  
  
-def erosion(val, erosion_size = 5):
-    # erosion_size = cv.getTrackbarPos(title_trackbar_kernel_size, title_erosion_window)
+def erosion(val, erosion_size = 1):
     erosion_shape = morph_shape(val)
- 
-    
     element = cv.getStructuringElement(erosion_shape, (2 * erosion_size + 1, 2 * erosion_size + 1),
                                        (erosion_size, erosion_size))
-    
     erosion_dst = cv.erode(src, element)
     return erosion_dst
-    # cv.imshow(title_erosion_window, erosion_dst)
  
  
- 
- 
-def dilatation(val, dilatation_size=2):
-    # dilatation_size = cv.getTrackbarPos(title_trackbar_kernel_size, title_dilation_window)
+def dilatation(val, dilatation_size=1):
     dilation_shape = morph_shape(val)
- 
     element = cv.getStructuringElement(dilation_shape, (2 * dilatation_size + 1, 2 * dilatation_size + 1),
                                        (dilatation_size, dilatation_size))
     dilatation_dst = cv.dilate(src, element)
-    # cv.imshow(title_dilation_window, dilatation_dst)
+    return dilatation_dst
  
  
  
@@ -300,7 +381,7 @@ if __name__ == "__main__":
 
     envparser = ReMINDEnvironment()
     envparser.read_env("./../data/input/ReMIND_info_001.txt")
-    envparser.write_obstacles("./../data/input/remind_obstacles.txt")
+    envparser.write_obstacles("./../data/input/remind_obstacles")
 
 
 
