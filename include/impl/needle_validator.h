@@ -73,12 +73,12 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     const RealNum& voxel_rad = env->VoxelRadius();
     const RealNum y = sg.dot(st);
 
-    // std::cout << "sp: " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
-    // std::cout << "sq: " << sq.x() << " " << sq.y() << " " << sq.z() << " " << sq.w() << std::endl;
-    // std::cout << "st: " << st[0] << " " << st[1] << " " << st[2] << std::endl;
-    // std::cout << "gp: " << gp[0] << " " << gp[1] << " " << gp[2] << std::endl;
-    // std::cout << "sg: " << sg[0] << " " << sg[1] << " " << sg[2] << std::endl;
-    // std::cout << "y: " << y << std::endl;
+    std::cout << "sp: " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
+    std::cout << "sq: " << sq.x() << " " << sq.y() << " " << sq.z() << " " << sq.w() << std::endl;
+    std::cout << "st: " << st[0] << " " << st[1] << " " << st[2] << std::endl;
+    std::cout << "gp: " << gp[0] << " " << gp[1] << " " << gp[2] << std::endl;
+    std::cout << "sg: " << sg[0] << " " << sg[1] << " " << sg[2] << std::endl;
+    std::cout << "y: " << y << std::endl;
 
     RealNum max_h;
     if (2 * rad_curv - pos_tolerance < d) {
@@ -110,7 +110,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     std::queue<IntPoint> queue;
     auto const start_ijk = env->RasToIjk(sp).cast<int>();   // TODO: has something like this changed behavior in debugging?
 
-    // std::cout << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << " voxel rad: " << voxel_rad <<std::endl;
+    std::cout << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << " voxel rad: " << voxel_rad <<std::endl;
     queue.push(start_ijk);
     if constexpr (Init) {
         env->SetWorkspace(start_ijk[0], start_ijk[1], start_ijk[2]);
@@ -124,7 +124,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
         cur_ijk = queue.front();
         queue.pop();
         ++counter;
-
+        // std::cout << "counter: " << counter << " ijk: " << cur_ijk[0] << " " << cur_ijk[1] << " " << cur_ijk[2] << std::endl;
         if constexpr (!Init) {
             if (counter > max_size) {
                 return true;
