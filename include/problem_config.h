@@ -114,7 +114,7 @@ struct ProblemConfig {
     Idx seed = 1;
     bool show_logs = true;
     Str output_file_root = "../data/output/test";
-    Str obstacle_file = "../data/input/remind_obstacles.txt";
+    Str obstacle_file = "../data/input/remind_obstacles_outline.txt";
     Str cost_file = "../data/input/costs.txt";
     Str healpix_file = "../data/input/HEALPix.txt";
 

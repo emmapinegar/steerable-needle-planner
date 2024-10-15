@@ -299,9 +299,13 @@ bool ImageEnvironment::ConstructEnvironmentFromFile(const Str file_name) {
         }
 
         this->AddObstacle(obs, "default");
-        std::cout << "\rLoaded obstacle points: " << obstacle_idx_["default"] << std::flush;
+        if (obstacle_idx_["default"] % 1000 == 0)
+        {
+            std::cout << "\rLoaded obstacle points: " << obstacle_idx_["default"] << std::flush;
+        }
+        
     }
-
+    std::cout << "\rLoaded obstacle points: " << obstacle_idx_["default"] << std::flush;
     std::cout << std::endl;
     return true;
 }

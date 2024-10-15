@@ -147,12 +147,12 @@ class ReMINDEnvironment:
         obstacle_coords = np.where(self.voxel_grid == 1)
         obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
 
-        f = open(f"{filename}.txt", 'a')
-        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
-        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
-        obstacle_arr_full = self.get_obstacles_downsampled(obstacle_arr)
-        np.savetxt(f, obstacle_arr_full, fmt='%d', delimiter=" ")
-        f.close()
+        # f = open(f"{filename}.txt", 'a')
+        # np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        # np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        # obstacle_arr_full = self.get_obstacles_downsampled(obstacle_arr)
+        # np.savetxt(f, obstacle_arr_full, fmt='%d', delimiter=" ")
+        # f.close()
 
         f = open(f"{filename}_outline.txt", 'a')
         np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
@@ -161,19 +161,19 @@ class ReMINDEnvironment:
         np.savetxt(f, obstacle_arr_outline, fmt='%d', delimiter=" ")
         f.close()
 
-        f = open(f"{filename}_outline_speckled.txt", 'a')
-        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
-        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
-        obstacle_arr_outline_speckled = self.get_obstacles_outline_speckled(obstacle_arr)
-        np.savetxt(f, obstacle_arr_outline_speckled, fmt='%d', delimiter=" ")
-        f.close()
+        # f = open(f"{filename}_outline_speckled.txt", 'a')
+        # np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        # np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        # obstacle_arr_outline_speckled = self.get_obstacles_outline_speckled(obstacle_arr)
+        # np.savetxt(f, obstacle_arr_outline_speckled, fmt='%d', delimiter=" ")
+        # f.close()
 
-        f = open(f"{filename}_outline_viz.txt", 'a')
-        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
-        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
-        obstacle_arr_outline_viz = self.get_obstacles_outline_viz(obstacle_arr)
-        np.savetxt(f, obstacle_arr_outline_viz, fmt='%d', delimiter=" ")
-        f.close()
+        # f = open(f"{filename}_outline_viz.txt", 'a')
+        # np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        # np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        # obstacle_arr_outline_viz = self.get_obstacles_outline_viz(obstacle_arr)
+        # np.savetxt(f, obstacle_arr_outline_viz, fmt='%d', delimiter=" ")
+        # f.close()
 
 
     def get_obstacles_full(self, obstacle_arr):
@@ -224,11 +224,17 @@ class ReMINDEnvironment:
             # plt.imshow(self.voxel_grid[i,:,:])
             # plt.show()
             eroded_mask = np.logical_not(get_shell(self.voxel_grid[i,:,:]))
+            arr_shape = np.shape(eroded_mask)
+            obstacle_x = np.random.random_integers(0,arr_shape[0]-1,(arr_shape[0]*arr_shape[1])//32)
+            obstacle_y = np.random.random_integers(0,arr_shape[1]-1,(arr_shape[0]*arr_shape[1])//32)
+            # print(np.shape(eroded_mask))
+            eroded_mask[obstacle_x, obstacle_y] = 1.0
             # plt.imshow(eroded_mask)
-            # plt.show()
+            # plt.show() 
             mask[i,:,:] = np.logical_and(self.voxel_grid[i,:,:], eroded_mask)
             # plt.imshow(mask[i,:,:])
             # plt.show()
+        
         obstacle_coords = np.where(mask == 1)
         obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
         return obstacle_arr
@@ -319,7 +325,7 @@ def get_shell(image):
         print('Could not open or find the image: ', image)
         exit(0)
  
-    erosion_dst = erosion(0, erosion_size=5)
+    erosion_dst = erosion(0, erosion_size=2)
     erosion_dst = np.asarray(erosion_dst)
     # print(np.shape(erosion_dst))
     erosion_dst = erosion_dst[:,:,0]//255

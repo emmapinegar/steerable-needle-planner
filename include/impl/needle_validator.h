@@ -124,6 +124,11 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
         cur_ijk = queue.front();
         queue.pop();
         ++counter;
+        // if (counter % 1000 == 0)
+        // {
+        //     std::cout << "\rChecked points: " << counter << std::flush;
+        // }
+        
         // std::cout << "counter: " << counter << " ijk: " << cur_ijk[0] << " " << cur_ijk[1] << " " << cur_ijk[2] << std::endl;
         if constexpr (!Init) {
             if (counter > max_size) {
@@ -175,6 +180,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
                     if ((inc_ras - gp).norm() < voxel_rad + pos_tolerance) {
                         connected = true;
                         if constexpr (!Init) {
+                            std::cout << std::endl;
                             return connected;
                         }
                     }
@@ -190,7 +196,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     if constexpr (Init) {
         max_size = counter;
     }
-
+    std::cout << std::endl;
     return connected;
 }
 
