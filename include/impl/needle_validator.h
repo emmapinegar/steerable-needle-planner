@@ -73,10 +73,8 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     const RealNum& voxel_rad = env->VoxelRadius();
     const RealNum y = sg.dot(st);
 
-    std::cout << "sp: " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
-    std::cout << "sq: " << sq.x() << " " << sq.y() << " " << sq.z() << " " << sq.w() << std::endl;
+
     std::cout << "st: " << st[0] << " " << st[1] << " " << st[2] << std::endl;
-    std::cout << "gp: " << gp[0] << " " << gp[1] << " " << gp[2] << std::endl;
     std::cout << "sg: " << sg[0] << " " << sg[1] << " " << sg[2] << std::endl;
     std::cout << "y: " << y << std::endl;
 
@@ -110,7 +108,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     std::queue<IntPoint> queue;
     auto const start_ijk = env->RasToIjk(sp).cast<int>();   // TODO: has something like this changed behavior in debugging?
 
-    std::cout << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << " voxel rad: " << voxel_rad <<std::endl;
+    std::cout << "start ijk: " << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << " voxel rad: " << voxel_rad <<std::endl;
     queue.push(start_ijk);
     if constexpr (Init) {
         env->SetWorkspace(start_ijk[0], start_ijk[1], start_ijk[2]);
@@ -120,6 +118,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     IntPoint cur_ijk, inc;
     IdxPoint inc_ijk;
     SizeType counter = 0;
+    std::cout << "max size: " << max_size << " init: " << Init << std::endl;
     while (!queue.empty()) {
         cur_ijk = queue.front();
         queue.pop();
@@ -135,6 +134,10 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
                 return true;
             }
         }
+
+        // if (counter > 1000000) {
+        //         return true;
+        // }
 
         for (auto const& n : neig) {
             inc = cur_ijk + n;
@@ -179,6 +182,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
                 if (valid) {
                     if ((inc_ras - gp).norm() < voxel_rad + pos_tolerance) {
                         connected = true;
+                        std::cout << "counter: " << counter << std::endl;
                         if constexpr (!Init) {
                             std::cout << std::endl;
                             return connected;
@@ -196,7 +200,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     if constexpr (Init) {
         max_size = counter;
     }
-    std::cout << std::endl;
+    std::cout << "counter: " << counter << std::endl;
     return connected;
 }
 

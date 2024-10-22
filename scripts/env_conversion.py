@@ -153,13 +153,29 @@ class ReMINDEnvironment:
         # obstacle_arr_full = self.get_obstacles_downsampled(obstacle_arr)
         # np.savetxt(f, obstacle_arr_full, fmt='%d', delimiter=" ")
         # f.close()
+        obstacle_arr_outline = self.get_obstacles_outline(obstacle_arr)
 
-        f = open(f"{filename}_outline.txt", 'a')
+        # f = open(f"{filename}_outline.txt", 'a')
+        # np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        # np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        # np.savetxt(f, obstacle_arr_outline, fmt='%d', delimiter=" ")
+        # f.close()
+
+        np.random.shuffle(obstacle_arr_outline)
+        f = open(f"{filename}_outline_shuffled.txt", 'a')
         np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
         np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
-        obstacle_arr_outline = self.get_obstacles_outline(obstacle_arr)
         np.savetxt(f, obstacle_arr_outline, fmt='%d', delimiter=" ")
         f.close()
+
+        # f = open(f"{filename}_outline_downsampled.txt", 'a')
+        # np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        # np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        # obstacle_arr_outline_downsampled = self.get_obstacles_downsampled(obstacle_arr_outline)
+        # np.savetxt(f, obstacle_arr_outline_downsampled, fmt='%d', delimiter=" ")
+        # f.close()
+
+
 
         # f = open(f"{filename}_outline_speckled.txt", 'a')
         # np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
@@ -277,7 +293,7 @@ class ReMINDEnvironment:
         Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
         """
         arr_length = np.shape(obstacle_arr)[0]
-        obstacle_sub = np.random.random_integers(0,arr_length,arr_length//8)
+        obstacle_sub = np.random.random_integers(0,arr_length-1,(31*arr_length)//32)
         obstacle_arr = obstacle_arr[obstacle_sub,:]
         return obstacle_arr
 
@@ -325,7 +341,7 @@ def get_shell(image):
         print('Could not open or find the image: ', image)
         exit(0)
  
-    erosion_dst = erosion(0, erosion_size=2)
+    erosion_dst = erosion(0, erosion_size=1)
     erosion_dst = np.asarray(erosion_dst)
     # print(np.shape(erosion_dst))
     erosion_dst = erosion_dst[:,:,0]//255

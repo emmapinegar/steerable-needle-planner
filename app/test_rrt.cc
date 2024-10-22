@@ -107,6 +107,7 @@ int main(int argc, char** argv) {
     MPT_LOG(INFO) << "start: " << start;
     MPT_LOG(INFO) << "goal: " << goal;
 
+    // checks if start/goal pair are reasonable for the environment and limits of the needle
     if (!scenario.ValidProblem()) {
         throw std::runtime_error("Planning problem is not valid!");
     }
