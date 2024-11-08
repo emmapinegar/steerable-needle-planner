@@ -50,6 +50,8 @@ struct ProblemConfig {
     const RealNum dist_threshold_0;
     const RealNum dist_threshold_1;
 
+
+
     // Environment.
     EnvPtr env;
 
@@ -110,13 +112,12 @@ struct ProblemConfig {
     // Number of plans needed for termination.
     SizeType num_plans_needed = 10;
 
-    // Misc.
-    Idx seed = 1;
-    bool show_logs = true;
-    Str output_file_root = "../data/output/test";
-    Str obstacle_file = "../data/input/remind_obstacles_outline_shuffled.txt";
-    Str cost_file = "../data/input/costs.txt";
-    Str healpix_file = "../data/input/HEALPix.txt";
+    Idx seed = global_seed;
+    bool show_logs = global_show_logs;
+    Str output_file_root = global_output_file_root;
+    Str obstacle_file = global_obstacle_file;
+    Str cost_file = global_cost_file;
+    Str healpix_file = global_healpix_file;
 
 #ifndef HAVE_GLOBAL_VARIABLES
     ProblemConfig(const bool orientation=false,

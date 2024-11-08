@@ -46,7 +46,7 @@ using namespace unc::robotics::snp;
 int main(int argc, char** argv) {
     Str const date_and_time = utils::DateAndTime();
 
-    Str const needle_parameter_file = "../data/input/needle_parameters.txt";
+    // needle parameter file is defined in global_common.h
     auto [min_curve_rad, needle_diameter, insertion_length, angle_constraint_degree]
         = utils::ReadNeedleParameters(needle_parameter_file, true);
 
@@ -57,10 +57,28 @@ int main(int argc, char** argv) {
 
     bool constrain_goal_orientation = false;
     Str suffix = "";
+    int scan_number = 0;
 
     if (argc > 1) {
         constrain_goal_orientation = std::atoi(argv[1]);
     }
+
+
+
+    if (argc > 5) {
+        suffix = argv[5];
+        suffix = "_" + suffix;
+    }
+
+    if (argc > 4) {
+        scan_number = std::atoi(argv[4]);
+        
+        start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
+        global_obstacle_file = "../data/input/remind_obstacles_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
+        goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
+        suffix = suffix + "_remind_00" + std::to_string(scan_number);
+    }
+
 
     ConfigPtr cfg(new ProblemConfig(constrain_goal_orientation,
                                     min_curve_rad,
@@ -76,12 +94,8 @@ int main(int argc, char** argv) {
         cfg->seed = std::atoi(argv[3]);
     }
 
-    if (argc > 4) {
-        suffix = argv[4];
-        suffix = "_" + suffix;
-    }
-
-    Str const start_and_goal_file = "../data/input/remind_start_and_goal_poses.txt";
+    
+    // start_and_goal_file is defined in global_common.h 
     auto [start_p, start_q, goal_p, goal_q] = utils::ReadStartAndGoal(start_and_goal_file);
 
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;

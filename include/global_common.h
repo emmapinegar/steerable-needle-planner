@@ -90,6 +90,19 @@ using TimePoint = std::chrono::time_point<Clock>;
 const RealNum kRadCurve = 100.0;
 const RealNum kAngleConstraintDegree = 90.0;
 
+
+
+// Misc.
+Idx global_seed = 1;
+bool global_show_logs = true;
+Str global_output_file_root = "../data/output/test";
+Str global_obstacle_file = "../data/input/remind_obstacles_009_outline_shuffled.txt";
+Str global_cost_file = "../data/input/costs.txt";
+Str global_healpix_file = "../data/input/HEALPix.txt";
+Str needle_parameter_file = "../data/input/needle_parameters.txt";
+Str start_and_goal_file = "../data/input/remind_009_start_and_goal_poses.txt";
+Str goal_file = "../data/input/remind_009_goal_regions.txt";
+
 } // namespace unc::robotics::snp
 
 #endif // SNP_GLOBAL_COMMON_H

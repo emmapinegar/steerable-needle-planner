@@ -62,13 +62,39 @@ def draw_ptc(ptc):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         # fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240925-12-25-03_ptcloud.txt", "../data/output/20240925-12-25-03_interp.txt", "../data/output/20240925-12-24-44_ptcloud.txt", "../data/output/20240925-12-24-44_interp.txt", "../data/output/20240925-12-28-14_interp.txt", "../data/output/20240925-12-33-06_interp.txt"]
-        fileNames = ["../data/input/goal_regions.txt", "../data/input/remind_start_and_goal_poses.txt", "../data/input/remind_obstacles.txt", "../data/output/20241017-11-03-46_interp.txt", "../data/output/20241017-10-56-48_interp.txt", "../data/output/20241017-10-46-59_interp.txt", "../data/output/20241017-10-42-38_interp.txt", "../data/output/20241017-10-21-57_interp.txt", "../data/output/20241017-11-37-19_interp.txt", "../data/output/20241017-11-32-01_interp.txt"] #, "../data/output/20240930-12-52-15_interp.txt"]
+        fileNames = ["../data/input/remind_obstacles_001_outline_viz.txt"] #, "../data/output/20240930-12-52-15_interp.txt"]
     else:
         fileNames = sys.argv[1:]
 
     obstacles_transform = np.array([[0.2257, 0.1947, 0.0344, -83.7135],[0.1957, -0.2274, 0.0033, 106.4279],[0.0282, 0.0199, -0.2978, 43.7868],[0, 0, 0, 1]]).astype(np.float64)
 
-    ptcs = []
+
+    start_p = np.array([[38], [126], [46]])
+    start_q = np.array([[0.012442], [0.9547682], [0.2933438], [0.0470351]]) # np.array([[1], [0], [0], [0]]) # w, x, y, z
+
+    goal_p = np.array([[47], [127], [-18]])
+    goal_q = np.array([[1], [0], [0], [0]])
+
+
+    start = o3d.geometry.TriangleMesh.create_coordinate_frame()
+    world = copy.deepcopy(start)
+    rot_s = start.get_rotation_matrix_from_quaternion(start_q)
+    
+    start.translate(start_p)
+    start.rotate(rot_s)
+    world.translate(start_p)
+    
+
+
+    goal = o3d.geometry.TriangleMesh.create_coordinate_frame()
+    rot = goal.get_rotation_matrix_from_quaternion(goal_q)
+    
+    goal.translate(goal_p)
+    goal.rotate(rot)
+
+
+
+    ptcs = [world, start, goal]
     for i in range(len(fileNames)):
         ptcFile = fileNames[i]
         ptc = o3d.io.read_point_cloud(ptcFile, format='xyz')
@@ -78,7 +104,7 @@ if __name__ == "__main__":
             ptc.transform(obstacles_transform)
 
         if numpoints[0] > 100000:
-            ptc = ptc.random_down_sample(0.02)
+            ptc = ptc.random_down_sample(0.1)
 
         print("Point cloud {}: ".format(i))
         print(ptc)

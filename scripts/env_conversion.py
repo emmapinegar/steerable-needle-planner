@@ -14,7 +14,11 @@ title_trackbar_kernel_size = 'Kernel size:\n 2n +1'
 title_erosion_window = 'Erosion Demo'
 title_dilation_window = 'Dilation Demo'
 
-
+_GOAL = 5
+_START = 4
+_TUMOR = 3
+_BRAIN = 2
+_VENTRICLES = 1
 
 _DEBUG = False
 _BOUNDS = 'Bounds:'
@@ -104,8 +108,38 @@ class ReMINDEnvironment:
         """
         obstacle_file = str(line_data[0])
         obstacles_np = np.load(obstacle_file)
+        spread = 5
+        xstart = 280 #np.floor(self.start[0,0]).astype(int)
+        ystart = 215 #np.floor(self.start[1,0]).astype(int)
+        zstart = 50 #np.floor(self.start[2,0]).astype(int)
+        # transformedstart = np.matmul(self.transform, np.array([xstart, ystart, zstart, 1]).reshape(4,1))
+        # transformedstartinv = np.matmul(self.transforminv, np.array([xstart, ystart, zstart, 1]).reshape(4,1))
+        # print(transformedstart)
+        # print(transformedstartinv)
+        # xgoal = np.floor(self.goal[0]).astype(int)
+        # ygoal = np.floor(self.goal[1]).astype(int)
+        # zgoal = np.floor(self.goal[2]).astype(int)
+
+        # print(f"goal x: {xstart}   y: {ystart}   z: {zstart} \t goal x: {xgoal}   y: {ygoal}   z: {zgoal}")
+
+        # obstaclefilename = obstacle_file.replace("-", "_obstacles_")
+        # print(obstacles_np[xstart-spread:xstart+spread, ystart-spread:ystart+spread, zstart-spread:zstart+spread])
+        obstacles_np[xstart-spread:xstart+spread, ystart-spread:ystart+spread, zstart-spread//2:zstart+spread] = 0
+        # # obstacles_np[xgoal-spread:xgoal+spread, ygoal-spread:ygoal+spread, zgoal-spread:zgoal+spread] = _BRAIN
+        # print(np.shape(obstacles_np))
+        # obstacles = np.logical_or(np.logical_not(obstacles_np == _BRAIN), obstacles_np == _VENTRICLES)
+        # print(np.shape(obstacles))
+        # obstacles = np.logical_and(np.logical_not(obstacles_np == _TUMOR), obstacles).astype(int)
+        # print(np.shape(obstacles))
+        # np.save(obstaclefilename, obstacles)
+        # for i in range(200,210):#int(self.x_max)):
+        #     plt.imshow(obstacles_np[i,:,:])
+        #     plt.show()
+        # print(np.where(obstacles_np > 1))
+        # print(obstacles_np[350, 215, 40])
         obstacles_np = np.where(obstacles_np > 1, 0, obstacles_np)
         self.voxel_grid = obstacles_np
+        
 
 
     def parse_goal(self, line_data):
@@ -144,7 +178,16 @@ class ReMINDEnvironment:
         Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
         """
 
+        xstart = 280 #np.floor(self.start[0,0]).astype(int)
+        ystart = 215 #np.floor(self.start[1,0]).astype(int)
+        zstart = 50 #np.floor(self.start[2,0]).astype(int)
+        transformedstart = np.matmul(self.transform, np.array([xstart, ystart, zstart, 1]).reshape(4,1))
+        transformedstartinv = np.matmul(self.transforminv, np.array([xstart, ystart, zstart, 1]).reshape(4,1))
+        print(transformedstart)
+        print(transformedstartinv)
+
         obstacle_coords = np.where(self.voxel_grid == 1)
+        # print(np.shape(obstacle_coords))
         obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
 
         # f = open(f"{filename}.txt", 'a')
@@ -155,13 +198,15 @@ class ReMINDEnvironment:
         # f.close()
         obstacle_arr_outline = self.get_obstacles_outline(obstacle_arr)
 
-        # f = open(f"{filename}_outline.txt", 'a')
-        # np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
-        # np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
-        # np.savetxt(f, obstacle_arr_outline, fmt='%d', delimiter=" ")
-        # f.close()
+        f = open(f"{filename}_outline.txt", 'a')
+        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        np.savetxt(f, obstacle_arr_outline, fmt='%d', delimiter=" ")
+        f.close()
 
         np.random.shuffle(obstacle_arr_outline)
+        np.random.shuffle(obstacle_arr_outline)
+        print(np.shape(obstacle_arr_outline))
         f = open(f"{filename}_outline_shuffled.txt", 'a')
         np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
         np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
@@ -184,12 +229,12 @@ class ReMINDEnvironment:
         # np.savetxt(f, obstacle_arr_outline_speckled, fmt='%d', delimiter=" ")
         # f.close()
 
-        # f = open(f"{filename}_outline_viz.txt", 'a')
-        # np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
-        # np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
-        # obstacle_arr_outline_viz = self.get_obstacles_outline_viz(obstacle_arr)
-        # np.savetxt(f, obstacle_arr_outline_viz, fmt='%d', delimiter=" ")
-        # f.close()
+        f = open(f"{filename}_outline_viz.txt", 'a')
+        np.savetxt(f, self.transform, fmt='%1.4f', newline="\n")
+        np.savetxt(f, np.array([self.x_max, self.y_max, self.z_max]).reshape(1,-1), fmt='%d', delimiter=" ")
+        obstacle_arr_outline_viz = self.get_obstacles_outline_viz(obstacle_arr)
+        np.savetxt(f, obstacle_arr_outline_viz, fmt='%d', delimiter=" ")
+        f.close()
 
 
     def get_obstacles_full(self, obstacle_arr):
@@ -218,14 +263,15 @@ class ReMINDEnvironment:
         """
         mask = np.zeros_like(self.voxel_grid)
         for i in range(0,int(self.x_max)):
-            # plt.imshow(self.voxel_grid[i,:,:])
-            # plt.show()
             eroded_mask = np.logical_not(get_shell(self.voxel_grid[i,:,:]))
-            # plt.imshow(eroded_mask)
-            # plt.show()
             mask[i,:,:] = np.logical_and(self.voxel_grid[i,:,:], eroded_mask)
-            # plt.imshow(mask[i,:,:])
-            # plt.show()
+            if i == 350:
+                plt.imshow(self.voxel_grid[i,:,:])
+                plt.show()
+                plt.imshow(eroded_mask)
+                plt.show()
+                plt.imshow(mask[i,:,:])
+                plt.show()
         obstacle_coords = np.where(mask == 1)
         obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
         return obstacle_arr
@@ -376,7 +422,7 @@ def morph_shape(val):
  
  
  
-def erosion(val, erosion_size = 1):
+def erosion(val, erosion_size = 2):
     erosion_shape = morph_shape(val)
     element = cv.getStructuringElement(erosion_shape, (2 * erosion_size + 1, 2 * erosion_size + 1),
                                        (erosion_size, erosion_size))
@@ -402,8 +448,8 @@ if __name__ == "__main__":
 
 
     envparser = ReMINDEnvironment()
-    envparser.read_env("./../data/input/ReMIND_info_001.txt")
-    envparser.write_obstacles("./../data/input/remind_obstacles")
+    envparser.read_env("./../data/input/ReMIND-009_0.txt")
+    envparser.write_obstacles("./../data/input/remind_obstacles_009")
 
 
 

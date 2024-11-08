@@ -46,7 +46,7 @@ using namespace unc::robotics::snp;
 int main(int argc, char** argv) {
     Str const date_and_time = utils::DateAndTime();
 
-    Str const needle_parameter_file = "../data/input/needle_parameters.txt";
+    // needle parameter file is defined in global_common.h
     auto [min_curve_rad, needle_diameter, insertion_length, angle_constraint_degree]
         = utils::ReadNeedleParameters(needle_parameter_file, true);
 
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
         suffix = "_" + suffix;
     }
 
-    Str const start_and_goal_file = "../data/input/remind_start_and_goal_poses.txt";
+    // start_and_goal_file is defined in global_common.h 
     auto [start_p, start_q] = utils::ReadStart(start_and_goal_file);
 
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
     global::aorrt_cost_w = 1.0; // cost map 10; length 1; clearance 10
 #endif
 
-    Str goal_file = "../data/input/goal_regions.txt";
+    // file is defined in global_common.h
     std::ifstream fin;
     fin.open(goal_file);
 
