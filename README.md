@@ -1,6 +1,10 @@
 # Steerable Needle Planner
 
-#### Update 09/26/2023 by Emma Pinegar
+#### Update 11/11/2024 by Emma Pinegar
+I changed the command line args and global common parameters set up to be better for experiments later. For the spreading planners the argument order is now `./app/*_spreading multithreading seed scan_number min_curv_rad suffix`. For the other planners the argument order is now `./app/* constrain_goal_orientation multithreading seed scan_number min_curv_rad suffix`
+
+
+#### Update 09/26/2024 by Emma Pinegar
 I have made some adjustments to the code to get things working for angles beyond 90 degrees and points that pass below the initial plane of the needle. I also changed how the angles are tracked to enforce the constraint by making it cumulative instead of the instantaneous angle in case things are oscillating. 
 
 
