@@ -46,9 +46,13 @@ using namespace unc::robotics::snp;
 int main(int argc, char** argv) {
     Str const date_and_time = utils::DateAndTime();
 
-    // needle parameter file is defined in global_common.h
+    // needle parameter file path is defined in global_common.h, these are the default parameters for the needle
     auto [min_curve_rad, needle_diameter, insertion_length, angle_constraint_degree]
         = utils::ReadNeedleParameters(needle_parameter_file, true);
+
+    if (argc > 5) {
+        min_curve_rad = std::atoi(argv[5]);
+    }
 
 #ifdef HAVE_GLOBAL_VARIABLES
     global::needle_min_curve_rad = min_curve_rad;
@@ -65,8 +69,8 @@ int main(int argc, char** argv) {
 
 
 
-    if (argc > 5) {
-        suffix = argv[5];
+    if (argc > 6) {
+        suffix = argv[6];
         suffix = "_" + suffix;
     }
 

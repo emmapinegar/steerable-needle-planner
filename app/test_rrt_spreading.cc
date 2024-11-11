@@ -50,6 +50,10 @@ int main(int argc, char** argv) {
     auto [min_curve_rad, needle_diameter, insertion_length, angle_constraint_degree]
         = utils::ReadNeedleParameters(needle_parameter_file, true);
 
+    if (argc > 4) {
+        min_curve_rad = std::atoi(argv[4]);
+    }
+
 #ifdef HAVE_GLOBAL_VARIABLES
     global::needle_min_curve_rad = min_curve_rad;
     global::angle_constraint_degree = angle_constraint_degree;
@@ -57,6 +61,24 @@ int main(int argc, char** argv) {
 
     bool constrain_goal_orientation = false;
     Str suffix = "";
+    int scan_number = 0;
+
+    if (argc > 5) {
+        suffix = argv[5];
+        suffix = "_" + suffix;
+    }
+
+    if (argc > 3) {
+        scan_number = std::atoi(argv[3]);
+        
+        start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
+        global_obstacle_file = "../data/input/remind_obstacles_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
+        goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
+        suffix = suffix + "_remind_00" + std::to_string(scan_number);
+    }
+
+
+
 
     ConfigPtr cfg(new ProblemConfig(constrain_goal_orientation,
                                     min_curve_rad,
@@ -73,10 +95,7 @@ int main(int argc, char** argv) {
         cfg->seed = std::atoi(argv[2]);
     }
 
-    if (argc > 3) {
-        suffix = argv[3];
-        suffix = "_" + suffix;
-    }
+
 
     // start_and_goal_file is defined in global_common.h 
     auto [start_p, start_q] = utils::ReadStart(start_and_goal_file);
