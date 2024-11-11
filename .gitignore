@@ -28,6 +28,7 @@ external/nigh/*
 *.rar
 *.tar
 *.zip
+*.npy
 
 
 # Mac stuff
