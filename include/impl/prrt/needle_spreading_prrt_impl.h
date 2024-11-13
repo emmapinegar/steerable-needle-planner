@@ -260,7 +260,7 @@ class NeedleSpreadingPRRT : public
     }
 
     /**
-     * Finds he best cost to get to the goal or the approximate cost if the goal has not been reached yet. 
+     * Finds the best cost to get to the goal or the approximate cost if the goal has not been reached yet. 
      * 
      * @returns Distance the cost of the best solution (or approximate), size_t the number of nodes in the solution path, Node the goal with the best cost
      */
@@ -434,6 +434,19 @@ class NeedleSpreadingPRRT : public
     Distance cost() const {
         auto [cost, size, n] = bestSolution();
         return cost;
+    }
+
+    /**
+     * Gets the stats of the best solution. 
+     * 
+     * @returns cost, size, goal node, path arc length, path total phi
+     */
+    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str> stats() const {
+        auto [cost, size, n] = bestSolution();
+        RealNum length = n->length();
+        RealNum ang_total = n->ang_total();
+        Str planner_type = "rrt_spreading";
+        return {cost, size, n, length, ang_total, true, planner_type};
     }
 
     /**

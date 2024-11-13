@@ -958,6 +958,30 @@ bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
     return true;
 }
 
+
+/**
+ * 
+ */
+bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
+                      const bool spreading, const Str& planner_type, const Str& file_root, const Str& file_name, const bool show_log)
+{
+    std::ofstream fout;
+    fout.open(file_name, std::ios::app); //https://www.w3resource.com/cpp-exercises/file-handling/cpp-file-handling-exercise-7.php#:~:text=Use%20the%20std%3A%3Aofstream,using%20the%20is_open()%20function.
+
+    if (!fout.is_open()) {
+        throw std::runtime_error("Failed to open " + file_name);
+    }
+
+    fout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type << "," << file_root << std::endl;
+    fout.close();
+
+    if (show_log) {
+        std::cout << "Result with " << path_length << " mm long path and " << ang_total << " radians with to " << file_name << std::endl;
+    }
+
+    return true;
+}
+
 /**
  * Calculates how much time has passed since start.
  * @param start: start time to use for calculating difference

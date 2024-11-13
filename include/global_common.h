@@ -102,7 +102,7 @@ Str global_healpix_file = "../data/input/HEALPix.txt";
 Str needle_parameter_file = "../data/input/needle_parameters.txt";
 Str start_and_goal_file = "../data/input/remind_009_start_and_goal_poses.txt";
 Str goal_file = "../data/input/remind_009_goal_regions.txt";
-
+Str stats_file = "../data/output/planner_stats.txt";
 } // namespace unc::robotics::snp
 
 #endif // SNP_GLOBAL_COMMON_H

@@ -458,6 +458,19 @@ class NeedleSpreadingPAORRT : public
     }
 
     /**
+     * Gets the stats of the best solution. 
+     * 
+     * @returns cost, size, goal node, path arc length, path total phi
+     */
+    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str> stats() const {
+        auto [cost, size, n] = bestSolution();
+        RealNum length = n->length();
+        RealNum ang_total = n->ang_total();
+        Str planner_type = "aorrt_spreading";
+        return {cost, size, n, length, ang_total, true, planner_type};
+    }
+
+    /**
      * Gets the costs of all solutions.
      * 
      * @returns vector<Distance> the costs of each of the paths to the goal

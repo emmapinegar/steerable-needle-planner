@@ -321,7 +321,8 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
             WritePathToFile(path, cfg->output_file_root + "_org.txt");
             auto const& interpolated = InterpolatePath(path, cfg->rad_curv, cfg->result_res);
             WritePathToFile(interpolated, cfg->output_file_root + "_interp.txt");
-
+            auto [bestCost, bestSize, bestGoal, bestLength, bestPhi, spreading, planner_type] = planner.stats();
+            WriteStatsToFile(cfg->rad_curv, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, planner_type, cfg->output_file_root, snp::stats_file);
             if (save_cost) {
                 std::ofstream fout;
                 fout.open(cfg->output_file_root + "_cost.txt");

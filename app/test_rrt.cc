@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 #endif
 
     bool constrain_goal_orientation = false;
-    Str suffix = "";
+    Str suffix = "_rrt";
     int scan_number = 0;
 
     if (argc > 1) {

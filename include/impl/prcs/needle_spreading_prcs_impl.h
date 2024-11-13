@@ -327,6 +327,7 @@ class NeedleSpreadingPRCS : public
 
             for (const Node *p ; (p = n->parent()) != nullptr ; n = p) {
                 cost += workers_[0].scenario().CurveCost(p->state(), n->state());
+                std::cout << "l: " << n->length() << std::endl;
                 ++size;
             }
         }
@@ -509,6 +510,19 @@ class NeedleSpreadingPRCS : public
     Distance cost() const {
         auto [cost, size, n] = bestSolution();
         return cost;
+    }
+
+    /**
+     * Gets the stats of the best solution. 
+     * 
+     * @returns cost, size, goal node, path arc length, path total phi
+     */
+    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str> stats() const {
+        auto [cost, size, n] = bestSolution();
+        RealNum length = n->length();
+        RealNum ang_total = n->ang_total();
+        Str planner_type = "rcs_spreading";
+        return {cost, size, n, length, ang_total, true, planner_type};
     }
 
     /**

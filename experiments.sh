@@ -33,24 +33,31 @@
 # run some experiments
 cd ./build
 
-./app/rrt 0 1 475843 1 25
-./app/rrt 0 1 475843 8 25
-./app/rrt 0 1 475843 9 25
-./app/rcs 0 1 475843 1 25
-./app/rcs 0 1 475843 8 25
-./app/rcs 0 1 475843 9 25
-./app/rrt_spreading 1 475843 1 25
-./app/rrt_spreading 1 475843 8 25
-./app/rrt_spreading 1 475843 9 25
-./app/rcs_star 0 1 475843 1 25
-./app/rcs_star 0 1 475843 8 25
-./app/rcs_star 0 1 475843 9 25
+# ./app/rrt 0 1 475843 1 25
+# ./app/rrt 0 1 475843 8 25
+# ./app/rrt 0 1 475843 9 25
+
+# ./app/aorrt 0 1 475843 1 25
+# ./app/aorrt 0 1 475843 8 25
+# ./app/aorrt 0 1 475843 9 25
+
+# ./app/rcs 0 1 475843 1 25
+# ./app/rcs 0 1 475843 8 25
+# ./app/rcs 0 1 475843 9 25
+
+# ./app/rcs_star 0 1 475843 1 25
+# ./app/rcs_star 0 1 475843 8 25
+# ./app/rcs_star 0 1 475843 9 25
+
+
+
+
+# ./app/rrt_spreading 1 475843 1 25
+# ./app/rrt_spreading 1 475843 8 25
+# ./app/rrt_spreading 1 475843 9 25
+# ./app/aorrt_spreading 1 475843 1 25
+# ./app/aorrt_spreading 1 475843 8 25
+# ./app/aorrt_spreading 1 475843 9 25
 ./app/rcs_spreading 1 475843 1 25
 ./app/rcs_spreading 1 475843 8 25
 ./app/rcs_spreading 1 475843 9 25
-./app/aorrt 0 1 475843 1 25
-./app/aorrt 0 1 475843 8 25
-./app/aorrt 0 1 475843 9 25
-./app/aorrt_spreading 1 475843 1 25
-./app/aorrt_spreading 1 475843 8 25
-./app/aorrt_spreading 1 475843 9 25
