@@ -441,13 +441,26 @@ class NeedleSpreadingPRRT : public
      * 
      * @returns cost, size, goal node, path arc length, path total phi
      */
-    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str> stats() const {
+    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&> stats() const {
+        Str planner_type = "5";
+
         auto [cost, size, n] = bestSolution();
         RealNum length = n->length();
         RealNum ang_total = n->ang_total();
-        Str planner_type = "rrt_spreading";
         return {cost, size, n, length, ang_total, true, planner_type};
+
     }
+
+
+    /**
+     * Gets the stats of the best solution. 
+     * 
+     * @returns cost, size, goal node, path arc length, path total phi
+     */
+    std::tuple<bool, Str&> failed_stats() const {
+        Str planner_type = "5";
+        return {true, planner_type};
+    }  
 
     /**
      * Gets the costs of all solutions.

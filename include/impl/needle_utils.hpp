@@ -972,9 +972,10 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
         throw std::runtime_error("Failed to open " + file_name);
     }
 
-    fout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type << "," << file_root << std::endl;
+    fout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type << "" << std::endl; //"," << file_root <<
     fout.close();
 
+    std::cout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type <<  std::endl;
     if (show_log) {
         std::cout << "Result with " << path_length << " mm long path and " << ang_total << " radians with to " << file_name << std::endl;
     }

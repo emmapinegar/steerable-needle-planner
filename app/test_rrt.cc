@@ -83,6 +83,10 @@ int main(int argc, char** argv) {
         suffix = suffix + "_remind_00" + std::to_string(scan_number);
     }
 
+    if (argc > 3) {
+        
+        global_seed = std::stoul(argv[3]);
+    }
 
     ConfigPtr cfg(new ProblemConfig(constrain_goal_orientation,
                                     min_curve_rad,
@@ -94,9 +98,11 @@ int main(int argc, char** argv) {
         cfg->multi_threading = std::atoi(argv[2]);
     }
 
-    if (argc > 3) {
-        cfg->seed = std::atoi(argv[3]);
-    }
+    // if (argc > 3) {
+        
+    //     cfg->seed = std::atoi(argv[3]);
+    //     std::cout << "seed str " << argv[3] << " seed int " << cfg->seed << " stoi " << std::stoi(argv[3]) << " stoul " << std::stoul(argv[3]) << std::endl;
+    // }
 
     
     // start_and_goal_file is defined in global_common.h 
@@ -139,9 +145,10 @@ int main(int argc, char** argv) {
         using Threads = hardware_concurrency;
         using Algorithm = NeedlePRRT<report_stats<reportStats>, NN, Threads>;
 
-        Planner<Scenario, Algorithm> planner(scenario);
+        Planner<Scenario, Algorithm> planner(scenario, cfg->seed);
         planner.addStart(start);
         planner.setGoalBias(cfg->goal_bias);
+        MPT_LOG(INFO) << "using seed " << cfg->seed;
 
         utils::Run<0>(planner, cfg);
 

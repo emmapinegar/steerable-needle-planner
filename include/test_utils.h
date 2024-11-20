@@ -342,6 +342,12 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
                       << cfg->output_file_root + "_org.txt and "
                       << cfg->output_file_root + "_interp.txt"
                       << std::endl;
+        } 
+        else {
+            std::cout << "trying to write stats with no plan found" << std::endl;
+            auto [spreading, planner_type] = planner.failed_stats();
+            std::cout << "got stats for unsolved planner" << std::endl;
+            WriteStatsToFile(cfg->rad_curv, 1000, 10, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, planner_type, cfg->output_file_root, snp::stats_file);
         }
     }
     else {
