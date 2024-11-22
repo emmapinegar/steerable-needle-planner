@@ -61,7 +61,6 @@ int main(int argc, char** argv) {
 
     bool constrain_goal_orientation = false;
     Str suffix = "_rrt_spreading";
-    int scan_number = 0;
 
     if (argc > 5) {
         suffix = argv[5];
@@ -156,7 +155,7 @@ int main(int argc, char** argv) {
         using Threads = hardware_concurrency;
         using Algorithm = NeedlePRRT<report_stats<reportStats>, NN, Threads, spreading>;
 
-        Planner<Scenario, Algorithm> planner(scenario);
+        Planner<Scenario, Algorithm> planner(scenario, cfg->seed);
         planner.addStart(start);
         planner.setGoalBias(cfg->goal_bias);
 

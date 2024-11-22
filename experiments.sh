@@ -33,47 +33,47 @@
 # run some experiments
 cd ./build
 
-./app/rrt 0 1 475843 1 25
-./app/rrt 0 1 16458 1 25
-./app/rrt 0 1 5435 1 25
-./app/rrt 0 1 475843 8 25
-./app/rrt 0 1 16458 8 25
-./app/rrt 0 1 5435 8 25
-./app/rrt 0 1 475843 9 25
-./app/rrt 0 1 16458 9 25
-./app/rrt 0 1 5435 9 25
+# ./app/rrt 0 1 475843 1 25
+# ./app/rrt 0 1 16458 1 25
+# ./app/rrt 0 1 5435 1 25
+# ./app/rrt 0 1 475843 8 25
+# ./app/rrt 0 1 16458 8 25
+# ./app/rrt 0 1 5435 8 25
+# ./app/rrt 0 1 475843 9 25
+# ./app/rrt 0 1 16458 9 25
+# ./app/rrt 0 1 5435 9 25
 
-./app/aorrt 0 1 475843 1 25
-./app/aorrt 0 1 16458 1 25
-./app/aorrt 0 1 5435 1 25
-./app/aorrt 0 1 475843 8 25
-./app/aorrt 0 1 16458 8 25
-./app/aorrt 0 1 5435 8 25
-./app/aorrt 0 1 475843 9 25
-./app/aorrt 0 1 16458 9 25
-./app/aorrt 0 1 5435 9 25
-
-
-./app/rcs 0 1 475843 1 25
-./app/rcs 0 1 16458 1 25
-./app/rcs 0 1 5435 1 25
-./app/rcs 0 1 475843 8 25
-./app/rcs 0 1 16458 8 25
-./app/rcs 0 1 5435 8 25
-./app/rcs 0 1 475843 9 25
-./app/rcs 0 1 16458 9 25
-./app/rcs 0 1 5435 9 25
+# ./app/aorrt 0 1 475843 1 25
+# ./app/aorrt 0 1 16458 1 25
+# ./app/aorrt 0 1 5435 1 25
+# ./app/aorrt 0 1 475843 8 25
+# ./app/aorrt 0 1 16458 8 25
+# ./app/aorrt 0 1 5435 8 25
+# ./app/aorrt 0 1 475843 9 25
+# ./app/aorrt 0 1 16458 9 25
+# ./app/aorrt 0 1 5435 9 25
 
 
-./app/rcs_star 0 1 475843 1 25
-./app/rcs_star 0 1 16458 1 25
-./app/rcs_star 0 1 5435 1 25
-./app/rcs_star 0 1 475843 8 25
-./app/rcs_star 0 1 16458 8 25
-./app/rcs_star 0 1 5435 8 25
-./app/rcs_star 0 1 475843 9 25
-./app/rcs_star 0 1 16458 9 25
-./app/rcs_star 0 1 5435 9 25
+# ./app/rcs 0 1 475843 1 25
+# ./app/rcs 0 1 16458 1 25
+# ./app/rcs 0 1 5435 1 25
+# ./app/rcs 0 1 475843 8 25
+# ./app/rcs 0 1 16458 8 25
+# ./app/rcs 0 1 5435 8 25
+# ./app/rcs 0 1 475843 9 25
+# ./app/rcs 0 1 16458 9 25
+# ./app/rcs 0 1 5435 9 25
+
+
+# ./app/rcs_star 0 1 475843 1 25
+# ./app/rcs_star 0 1 16458 1 25
+# ./app/rcs_star 0 1 5435 1 25
+# ./app/rcs_star 0 1 475843 8 25
+# ./app/rcs_star 0 1 16458 8 25
+# ./app/rcs_star 0 1 5435 8 25
+# ./app/rcs_star 0 1 475843 9 25
+# ./app/rcs_star 0 1 16458 9 25
+# ./app/rcs_star 0 1 5435 9 25
 
 # ./app/rcs 0 1 475843 1 25
 # ./app/rcs 0 1 475843 8 25
@@ -86,53 +86,53 @@ cd ./build
 
 
 
-./app/rrt_spreading 1 475843 1 25
-./app/rrt_spreading 1 16458 1 25
-./app/rrt_spreading 1 5435 1 25
-./app/rrt_spreading 1 475843 8 25
-./app/rrt_spreading 1 16458 8 25
-./app/rrt_spreading 1 5435 8 25
-./app/rrt_spreading 1 475843 9 25
-./app/rrt_spreading 1 16458 9 25
-./app/rrt_spreading 1 5435 9 25
+# ./app/rrt_spreading 1 475843 1 25
+# ./app/rrt_spreading 1 16458 1 25
+# ./app/rrt_spreading 1 5435 1 25
+# ./app/rrt_spreading 1 475843 8 25
+# ./app/rrt_spreading 1 16458 8 25
+# ./app/rrt_spreading 1 5435 8 25
+# ./app/rrt_spreading 1 475843 9 25
+# ./app/rrt_spreading 1 16458 9 25
+# ./app/rrt_spreading 1 5435 9 25
 
-./app/aorrt_spreading 1 475843 1 25
-./app/aorrt_spreading 1 16458 1 25
-./app/aorrt_spreading 1 5435 1 25
-./app/aorrt_spreading 1 475843 8 25
-./app/aorrt_spreading 1 16458 8 25
-./app/aorrt_spreading 1 5435 8 25
-./app/aorrt_spreading 1 475843 9 25
-./app/aorrt_spreading 1 16458 9 25
-./app/aorrt_spreading 1 5435 9 25
+# ./app/aorrt_spreading 1 475843 1 25
+# ./app/aorrt_spreading 1 16458 1 25
+# ./app/aorrt_spreading 1 5435 1 25
+# ./app/aorrt_spreading 1 475843 8 25
+# ./app/aorrt_spreading 1 16458 8 25
+# ./app/aorrt_spreading 1 5435 8 25
+# ./app/aorrt_spreading 1 475843 9 25
+# ./app/aorrt_spreading 1 16458 9 25
+# ./app/aorrt_spreading 1 5435 9 25
 
-./app/rcs_spreading 1 475843 1 25
-./app/rcs_spreading 1 16458 1 25
-./app/rcs_spreading 1 5435 1 25
-./app/rcs_spreading 1 475843 8 25
-./app/rcs_spreading 1 16458 8 25
-./app/rcs_spreading 1 5435 8 25
-./app/rcs_spreading 1 475843 9 25
-./app/rcs_spreading 1 16458 9 25
-./app/rcs_spreading 1 5435 9 25
+# ./app/rcs_spreading 1 475843 1 25
+# ./app/rcs_spreading 1 16458 1 25
+# ./app/rcs_spreading 1 5435 1 25
+# ./app/rcs_spreading 1 475843 8 25
+# ./app/rcs_spreading 1 16458 8 25
+# ./app/rcs_spreading 1 5435 8 25
+# ./app/rcs_spreading 1 475843 9 25
+# ./app/rcs_spreading 1 16458 9 25
+# ./app/rcs_spreading 1 5435 9 25
 
-# ./app/rcs 0 1 45843 1 25
-# ./app/rcs 0 1 1658 1 25
-# ./app/rcs 0 1 535 1 25
-# ./app/rcs 0 1 45843 8 25
-# ./app/rcs 0 1 1658 8 25
-# ./app/rcs 0 1 535 8 25
-# ./app/rcs 0 1 45843 9 25
-# ./app/rcs 0 1 1658 9 25
-# ./app/rcs 0 1 535 9 25
+./app/rcs 0 1 45843 1 25
+./app/rcs 0 1 1658 1 25
+./app/rcs 0 1 535 1 25
+./app/rcs 0 1 45843 8 25
+./app/rcs 0 1 1658 8 25
+./app/rcs 0 1 535 8 25
+./app/rcs 0 1 45843 9 25
+./app/rcs 0 1 1658 9 25
+./app/rcs 0 1 535 9 25
 
 
-# ./app/rcs_star 0 1 45843 1 25
-# ./app/rcs_star 0 1 1658 1 25
-# ./app/rcs_star 0 1 535 1 25
-# ./app/rcs_star 0 1 45843 8 25
-# ./app/rcs_star 0 1 1658 8 25
-# ./app/rcs_star 0 1 535 8 25
-# ./app/rcs_star 0 1 45843 9 25
-# ./app/rcs_star 0 1 1658 9 25
-# ./app/rcs_star 0 1 535 9 25
+./app/rcs_star 0 1 45843 1 25
+./app/rcs_star 0 1 1658 1 25
+./app/rcs_star 0 1 535 1 25
+./app/rcs_star 0 1 45843 8 25
+./app/rcs_star 0 1 1658 8 25
+./app/rcs_star 0 1 535 8 25
+./app/rcs_star 0 1 45843 9 25
+./app/rcs_star 0 1 1658 9 25
+./app/rcs_star 0 1 535 9 25

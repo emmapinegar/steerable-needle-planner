@@ -61,7 +61,6 @@ int main(int argc, char** argv) {
 
     bool constrain_goal_orientation = false;
     Str suffix = "_rcs_star";
-    int scan_number = 0;
 
     if (argc > 1) {
         constrain_goal_orientation = std::atoi(argv[1]);
@@ -87,6 +86,7 @@ int main(int argc, char** argv) {
                                     insertion_length,
                                     angle_constraint_degree));
 
+    // cfg->timeout = 5000;
     if (argc > 2) {
         cfg->multi_threading = std::atoi(argv[2]);
     }
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
 
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->direct_connect_ratio = 1.0;
-    cfg->use_dubins_connection = true;
+    // cfg->use_dubins_connection = true;
     cfg->goal_pos_tolerance = 1.0;
     cfg->optimal = true;
     cfg->DefaultSetup();

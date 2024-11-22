@@ -61,7 +61,6 @@ int main(int argc, char** argv) {
 
     bool constrain_goal_orientation = false;
     Str suffix = "_rrt";
-    int scan_number = 0;
 
     if (argc > 1) {
         constrain_goal_orientation = std::atoi(argv[1]);
@@ -145,7 +144,7 @@ int main(int argc, char** argv) {
         using Threads = hardware_concurrency;
         using Algorithm = NeedlePRRT<report_stats<reportStats>, NN, Threads>;
 
-        Planner<Scenario, Algorithm> planner(scenario, cfg->seed);
+        Planner<Scenario, Algorithm> planner(scenario);
         planner.addStart(start);
         planner.setGoalBias(cfg->goal_bias);
         MPT_LOG(INFO) << "using seed " << cfg->seed;

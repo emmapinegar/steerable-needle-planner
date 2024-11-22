@@ -742,7 +742,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                 auto const goalAngle = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
                 
-                if (scenario_.valid(goalLength)) {
+                if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                          + scenario_.FinalStateCost(goalState);
                     if (goalCost < planner.bestCost_) {
@@ -761,7 +761,9 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto const goalLength0 = node->length() + snp::CurveLength(node->state(), goalStates[0]);
                 auto const goalLength1 = goalLength0 + snp::CurveLength(goalStates[0], goalStates[1]);
 
-                if (scenario_.valid(goalLength1)) {
+                auto const goalAngle0 = node->ang_total() + DirectionDifference(node->state().rotation(), goalStates[0].rotation());
+                auto const goalAngle1 = goalAngle0 + DirectionDifference(goalStates[0].rotation(), goalStates[1].rotation());
+                if (scenario_.valid(goalStates[1], goalLength1, goalAngle1)) {
                     auto const goalCost0 = node->cost() + scenario_.CurveCost(node->state(), goalStates[0]);
                     auto const goalCost1 = goalCost0 + scenario_.CurveCost(goalStates[0], goalStates[1])
                                          + scenario_.FinalStateCost(goalStates[1]);
@@ -770,10 +772,12 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         Node* transNode = nodePool_.allocate(linkTrajectory(true), node, goalStates[0]);
                         transNode->length() = goalLength0;
                         transNode->cost() = goalCost0;
+                        transNode->ang_total() = goalAngle0;
 
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), transNode, goalStates[1]);
                         goalNode->length() = goalLength1;
                         goalNode->cost() = goalCost1;
+                        goalNode->ang_total() = goalAngle1;
                         planner.foundGoal(goalNode);
                     }
 
@@ -783,14 +787,15 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         else if (!planner.solved() && goalDist < bestDist_) {
             auto goalState = goalStates[0];
             auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
-
-            if (scenario_.valid(goalLength)) {
+            auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
+            if (scenario_.valid(goalState, goalLength, goalAngle)) {
                 bestDist_ = goalDist;
                 auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
                 if (goalNode) {
                     (*goalNode)->length() = goalLength;
                     (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                           + scenario_.FinalStateCost(goalState);
+                    (*goalNode)->ang_total() = goalAngle;
                 }
             }
         }
@@ -941,6 +946,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      * @returns (auto) bool true if the node is valid, false otherwise
      */
     decltype(auto) validNode(Planner& planner, Node* node) {
+        // std::cout << "ang total: " << node->ang_total() << " valid: " << scenario_.valid(node->state(), node->length(), node->ang_total()) << std::endl;
         if (!scenario_.valid(node->state(), node->length(), node->ang_total())) {
             node->valid() = false;
             return false;

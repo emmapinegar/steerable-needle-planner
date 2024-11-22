@@ -296,7 +296,7 @@ def make_figures(data, title, hatch):
 
     # make violin subplot of runtimes with log scale
     plotter.subplot(rows,num_plots//rows,1)
-    make_violin_figure(data, _RUNTIME, 'Run Time for Planner Variations', 'run time (seconds)', hatch, y_min=0, y_max=6)
+    make_violin_figure(data, _RUNTIME, 'Run Time for Planner Variations', 'run time (seconds)', hatch, y_min=0.99, y_max=1.25)
 
     # make success bar subplot with 95% confidence interval
     plotter.subplot(rows,num_plots//rows,2)
@@ -308,7 +308,7 @@ def make_figures(data, title, hatch):
 
     # make a violin subplot of the path length ratios for planners, no log scale
     plotter.subplot(rows,num_plots//rows,4)
-    make_violin_figure(plan_data, _L, r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$', hatch, y_min=0, y_max=300, ylog=False)
+    make_violin_figure(plan_data, _L, r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$', hatch, y_min=0.99, y_max=1.25, ylog=False)
 
     # title the whole figure and adjust the spacing of the plots and margins 
     plotter.suptitle(title, fontsize=18)
@@ -324,20 +324,25 @@ def get_distances(data):
     Returns:
     lproportion (n,): array of the path length ratios calculated from data
     '''
-    return data[:, _L]
-    # starts = _BRSTARTS
-    # goals = _BRGOALS
+    distance = 254
+    
 
-    # lproportion = np.empty(np.shape(data[:,0]))
 
-    # for i in range(np.shape(_BRSTARTS)[0]):
-    #     distance = np.linalg.norm(starts[i] - goals[i])
-    #     indices = np.where(data[:,0] == i)[0]
-    #     if np.shape(indices)[0] == 0:
-    #         continue
-    #     lproportion[indices] = data[indices,_L]/distance
+    lproportion = np.empty(np.shape(data[:,_L]))
+    files = np.array([1, 8, 9])
+    for i in range(np.shape(files)[0]):
+        if files[i] == 1:
+            distance = 65.37
+        elif files[i] == 8:
+            distance = 81.32
+        elif files[i] == 9:
+            distance = 254
+        indices = np.where(data[:,8] == files[i])[0]
+        if np.shape(indices)[0] == 0:
+            continue
+        lproportion[indices] = data[indices,_L]/distance
 
-    # return lproportion
+    return lproportion
 
 
 
@@ -346,7 +351,7 @@ if __name__=='__main__':
 
 
     files = fnmatch.filter(os.listdir('./../data/output/'), '*stats.txt')
-    data = np.empty((0,8))
+    data = np.empty((0,10))
     for file in files:
         next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#')
         data = np.vstack((data, next_data))

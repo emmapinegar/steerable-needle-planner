@@ -61,7 +61,6 @@ int main(int argc, char** argv) {
 
     bool constrain_goal_orientation = false;
     Str suffix = "_rcs";
-    int scan_number = 0;
 
     if (argc > 1) {
         constrain_goal_orientation = std::atoi(argv[1]);

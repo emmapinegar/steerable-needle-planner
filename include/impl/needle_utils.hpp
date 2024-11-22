@@ -972,7 +972,7 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
         throw std::runtime_error("Failed to open " + file_name);
     }
 
-    fout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type << "" << std::endl; //"," << file_root <<
+    fout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type << "," << scan_number << "," << global::angle_constraint_degree << std::endl; //"," << file_root <<
     fout.close();
 
     std::cout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type <<  std::endl;

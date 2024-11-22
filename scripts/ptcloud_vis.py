@@ -62,12 +62,12 @@ def draw_ptc(ptc):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         # fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240925-12-25-03_ptcloud.txt", "../data/output/20240925-12-25-03_interp.txt", "../data/output/20240925-12-24-44_ptcloud.txt", "../data/output/20240925-12-24-44_interp.txt", "../data/output/20240925-12-28-14_interp.txt", "../data/output/20240925-12-33-06_interp.txt"]
-        fileNames = ["../data/input/remind_obstacles_001_outline_viz.txt", "../data/output/20241113-13-55-38_rcs_spreading_remind_001_interp.txt"]
+        fileNames = ["../data/input/remind_obstacles_009_outline_viz.txt", "../data/output/20241122-13-21-03_rcs_star_remind_009_org.txt", "../data/output/20241122-13-21-03_rcs_star_remind_009_ptcloud.txt"]
     else:
         fileNames = sys.argv[1:]
 
-    obstacles_transform = np.array([[0.2257, 0.1947, 0.0344, -83.7135],[0.1957, -0.2274, 0.0033, 106.4279],[0.0282, 0.0199, -0.2978, 43.7868],[0, 0, 0, 1]]).astype(np.float64)
-
+    # obstacles_transform = np.array([[0.2257, 0.1947, 0.0344, -83.7135],[0.1957, -0.2274, 0.0033, 106.4279],[0.0282, 0.0199, -0.2978, 43.7868],[0, 0, 0, 1]]).astype(np.float64)
+    obstacles_transform = np.array([[1, 0.0, 0.0, 0],[0.0, 1, 0.0, 0],[0.0, 0.0, 1, 0],[0, 0, 0, 1]]).astype(np.float64)
 
     start_p = np.array([[38], [126], [46]])
     start_q = np.array([[0.012442], [0.9547682], [0.2933438], [0.0470351]]) # np.array([[1], [0], [0], [0]]) # w, x, y, z

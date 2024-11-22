@@ -734,7 +734,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto const& goalState = goalStates[0];
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                 auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
-                if (scenario_.valid(goalLength)) {
+                if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                          + scenario_.FinalStateCost(goalState);
                     if (goalCost < planner.bestCost_) {
@@ -754,7 +754,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
                 auto const goalAngle0 = node->ang_total() + DirectionDifference(node->state().rotation(), goalStates[0].rotation());
                 auto const goalAngle1 = goalAngle0 + DirectionDifference(goalStates[0].rotation(), goalStates[1].rotation());
-                if (scenario_.valid(goalLength1)) {
+                if (scenario_.valid(goalStates[1], goalLength1, goalAngle1)) {
                     auto const goalCost0 = node->cost() + scenario_.CurveCost(node->state(), goalStates[0]);
                     auto const goalCost1 = goalCost0 + scenario_.CurveCost(goalStates[0], goalStates[1])
                                          + scenario_.FinalStateCost(goalStates[1]);
@@ -779,7 +779,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             auto goalState = goalStates[0];
             auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
             auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
-            if (scenario_.valid(goalLength)) {
+            if (scenario_.valid(goalState, goalLength, goalAngle)) {
                 bestDist_ = goalDist;
                 auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
                 if (goalNode) {
@@ -936,6 +936,10 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      * @returns (auto) bool true if the node is valid, false otherwise
      */
     decltype(auto) validNode(Planner& planner, Node* node) {
+        // if (node->ang_total() > 2.0) {
+        //     std::cout << "ang total: " << node->ang_total() << " valid: " << scenario_.valid(node->state(), node->length(), node->ang_total()) << std::endl;
+        // }
+        
         if (!scenario_.valid(node->state(), node->length(), node->ang_total()) || planner.bestCost_ < node->f() + EPS) {
             node->valid() = false;
             return false;
