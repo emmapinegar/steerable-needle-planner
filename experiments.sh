@@ -33,7 +33,22 @@
 # run some experiments
 cd ./build
 
-# ./app/rrt 0 1 475843 1 25
+# https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
+
+seed_array=(16458 5435 1658 535 4326) # 8972 1784 7583 3829 6784 8392 7489 3423 5432 2349 8753 4637 9874 4812 13242 9238) 
+# for i in ${seed_array[@]}
+# do 
+#     ./app/rrt 0 1 $i 1 25
+# done
+
+for i in ${seed_array[@]}
+do 
+    # ./app/rrt 0 1 $i 1 25
+    # ./app/aorrt 0 1 $i 1 25
+    # ./app/rcs 0 1 $i 1 25
+    ./app/rcs_star 0 1 $i 1 25
+done
+# 
 # ./app/rrt 0 1 16458 1 25
 # ./app/rrt 0 1 5435 1 25
 # ./app/rrt 0 1 475843 8 25
@@ -116,23 +131,23 @@ cd ./build
 # ./app/rcs_spreading 1 16458 9 25
 # ./app/rcs_spreading 1 5435 9 25
 
-./app/rcs 0 1 45843 1 25
-./app/rcs 0 1 1658 1 25
-./app/rcs 0 1 535 1 25
-./app/rcs 0 1 45843 8 25
-./app/rcs 0 1 1658 8 25
-./app/rcs 0 1 535 8 25
-./app/rcs 0 1 45843 9 25
-./app/rcs 0 1 1658 9 25
-./app/rcs 0 1 535 9 25
+# ./app/rcs 0 1 45843 1 25
+# ./app/rcs 0 1 1658 1 25
+# ./app/rcs 0 1 535 1 25
+# ./app/rcs 0 1 45843 8 25
+# ./app/rcs 0 1 1658 8 25
+# ./app/rcs 0 1 535 8 25
+# ./app/rcs 0 1 45843 9 25
+# ./app/rcs 0 1 1658 9 25
+# ./app/rcs 0 1 535 9 25
 
 
-./app/rcs_star 0 1 45843 1 25
-./app/rcs_star 0 1 1658 1 25
-./app/rcs_star 0 1 535 1 25
-./app/rcs_star 0 1 45843 8 25
-./app/rcs_star 0 1 1658 8 25
-./app/rcs_star 0 1 535 8 25
-./app/rcs_star 0 1 45843 9 25
-./app/rcs_star 0 1 1658 9 25
-./app/rcs_star 0 1 535 9 25
+# ./app/rcs_star 0 1 45843 1 25
+# ./app/rcs_star 0 1 1658 1 25
+# ./app/rcs_star 0 1 535 1 25
+# ./app/rcs_star 0 1 45843 8 25
+# ./app/rcs_star 0 1 1658 8 25
+# ./app/rcs_star 0 1 535 8 25
+# ./app/rcs_star 0 1 45843 9 25
+# ./app/rcs_star 0 1 1658 9 25
+# ./app/rcs_star 0 1 535 9 25

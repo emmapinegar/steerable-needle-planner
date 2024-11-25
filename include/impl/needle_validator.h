@@ -184,7 +184,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
                         connected = true;
                         // std::cout << "counter: " << counter << std::endl;
                         if constexpr (!Init) {
-                            std::cout << std::endl;
+                            // std::cout << std::endl;
                             return connected;
                         }
                     }

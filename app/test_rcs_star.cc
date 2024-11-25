@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
         Planner<Scenario, Algorithm> planner(scenario);
         planner.addStart(start);
 
-        utils::Run<0>(planner, cfg);
+        utils::Run<6>(planner, cfg);
 
         auto const& result = planner.resultWithTime();
         for (auto const& res : result) {
