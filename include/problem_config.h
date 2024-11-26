@@ -98,7 +98,7 @@ struct ProblemConfig {
     RealNum delta_theta_min = 0.157;
 
     // For RCS* planner.
-    unsigned look_ahead = 5;
+    unsigned look_ahead = 3;
     RealNum cost_approx_factor = 0.1;
 
     bool optimal = false;

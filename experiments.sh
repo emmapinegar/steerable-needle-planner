@@ -45,7 +45,7 @@ for i in ${seed_array[@]}
 do 
     # ./app/rrt 0 1 $i 1 25
     # ./app/aorrt 0 1 $i 1 25
-    # ./app/rcs 0 1 $i 1 25
+    ./app/rcs 0 1 $i 1 25
     ./app/rcs_star 0 1 $i 1 25
 done
 # 
