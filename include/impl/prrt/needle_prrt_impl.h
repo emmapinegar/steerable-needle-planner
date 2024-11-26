@@ -714,10 +714,11 @@ unbiasedSamplingLoop:
 
             if (isGoal) {
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
-                if (scenario_.valid(goalLength)) {
+
+                auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     auto const& goalCost = newNode->cost() + scenario_.CurveCost(newState, goalState)
-                                         + scenario_.FinalStateCost(goalState);
-                    auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                                            + scenario_.FinalStateCost(goalState);
 
                     if (goalCost < planner.bestCost_) {
                         Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
@@ -731,8 +732,8 @@ unbiasedSamplingLoop:
             }
             else if (!planner.solved() && goalDist < bestDist_) {
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
-
-                if (scenario_.valid(goalLength)) {
+                auto const goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     bestDist_ = goalDist;
                     auto goalNode = planner.foundApproxGoal(newNode, goalState, nodePool_, &bestDist_);
                     if (goalNode) {

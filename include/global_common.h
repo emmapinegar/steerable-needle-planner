@@ -94,16 +94,83 @@ const RealNum kAngleConstraintDegree = 90.0;
 
 // Misc.
 Idx global_seed = 1;
+unsigned Mode = 0;
 bool global_show_logs = true;
 int scan_number = 9;
 Str global_output_file_root = "../data/output/test";
-Str global_obstacle_file = "../data/input/remind_obstacles_009_outline_shuffled.txt";
+Str global_obstacle_file = "../data/input/remind_obstacles_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
 Str global_cost_file = "../data/input/costs.txt";
 Str global_healpix_file = "../data/input/HEALPix.txt";
 Str needle_parameter_file = "../data/input/needle_parameters.txt";
-Str start_and_goal_file = "../data/input/remind_009_start_and_goal_poses.txt";
-Str goal_file = "../data/input/remind_009_goal_regions.txt";
+Str start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
+Str goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
 Str stats_file = "../data/output/planner_stats.txt";
+
+
+
+// Planner behavior control. All parameters use [mm], [rad].
+// Use single threads or multiple threads.
+bool global_multi_threading = false;
+// Position tolerance for the goal state.
+RealNum global_goal_pos_tolerance = EPS;
+// Orientation tolerance for the goal state.
+RealNum goal_ang_tolerance = 0.005;
+
+// Resolution to check if an edge is valid.
+RealNum validity_res = 0.5;
+RealNum cost_res = 0.1;
+// Safe margin for collision detection.
+RealNum safe_margin = 2.0;
+// Resolution used to reinterpolate the result plan.
+RealNum result_res = 2.0;
+// The probability of sampling goal state directly.
+RealNum global_goal_bias = 0.05;
+
+// Method used to do goal connection.
+bool global_dubins = false;
+// // When doing spreading, if the start orientation is fixed.
+// bool spreading_fix_start_orientation = false;
+// // If we allow spreading in all directions, some of the configurations are used
+// // for generating new start orientations.
+// RealNum start_connect_ratio = 0.05;
+// // If the sampler also sample orientation.
+// bool sample_orientation = false;
+// // For spreading planner.
+// RealNum spreading_min_dist = 100.0;
+
+// // For RCS planner.
+// RealNum delta_ell_max = 16.0;
+// RealNum delta_theta_max = 0.5 * M_PI;
+// RealNum delta_ell_min = 0.125;
+// RealNum delta_theta_min = 0.157;
+
+// // For RCS* planner.
+// unsigned look_ahead = 3;
+// RealNum cost_approx_factor = 0.1;
+
+// bool optimal = false;
+// bool use_trilinear_interpolation = true;
+
+// Termination control.
+// Timeout in milliseconds.
+SizeType global_timeout = 1000;
+// Maximum number of nodes in the tree.
+SizeType global_num_nodes = 10000;
+// Number of plans needed for termination.
+SizeType global_num_plans_needed = 10;
+
+bool save_ptcloud = false;
+bool save_interp = true;
+
+
+
+
+
+
+
+
+
+
 } // namespace unc::robotics::snp
 
 #endif // SNP_GLOBAL_COMMON_H

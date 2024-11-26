@@ -59,9 +59,9 @@ struct ProblemConfig {
     // If use goal state that considers orientation, this cannot be changed later.
     const bool constrain_goal_orientation;
     // Use single threads or multiple threads.
-    bool multi_threading = true;
+    bool multi_threading = global_multi_threading;
     // Position tolerance for the goal state.
-    RealNum goal_pos_tolerance = EPS;
+    RealNum goal_pos_tolerance = global_goal_pos_tolerance;
     // Orientation tolerance for the goal state.
     RealNum goal_ang_tolerance = 0.005;
     // When a state is close enough to the goal, always try direct connection.
@@ -76,11 +76,11 @@ struct ProblemConfig {
     // Resolution used to reinterpolate the result plan.
     RealNum result_res = 2.0;
     // The probability of sampling goal state directly.
-    RealNum goal_bias = 0.05;
+    RealNum goal_bias = global_goal_bias;
     // For an arbitrary state, the probability of connecting it to the goal directly.
     RealNum direct_connect_ratio = constrain_goal_orientation? 1.0 : 0.5;
     // Method used to do goal connection.
-    bool use_dubins_connection = false;
+    bool use_dubins_connection = global_dubins;
     // When doing spreading, if the start orientation is fixed.
     bool spreading_fix_start_orientation = false;
     // If we allow spreading in all directions, some of the configurations are used
@@ -106,11 +106,11 @@ struct ProblemConfig {
 
     // Termination control.
     // Timeout in milliseconds.
-    SizeType timeout = 1000;
+    SizeType timeout = global_timeout;
     // Maximum number of nodes in the tree.
-    SizeType num_nodes = 10000;
+    SizeType num_nodes = global_num_nodes;
     // Number of plans needed for termination.
-    SizeType num_plans_needed = 10;
+    SizeType num_plans_needed = global_num_plans_needed;
 
     Idx seed = global_seed;
     bool show_logs = global_show_logs;

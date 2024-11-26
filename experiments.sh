@@ -45,8 +45,8 @@ for i in ${seed_array[@]}
 do 
     # ./app/rrt 0 1 $i 1 25
     # ./app/aorrt 0 1 $i 1 25
-    ./app/rcs 0 1 $i 1 25
-    ./app/rcs_star 0 1 $i 1 25
+    ./app/rrt -multi -seed $i -scan 1 -r 25 -phi 110 -timeout 1000
+    # ./app/rcs_star 0 1 $i 1 25
 done
 # 
 # ./app/rrt 0 1 16458 1 25

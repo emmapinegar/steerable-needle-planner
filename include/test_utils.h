@@ -310,37 +310,46 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
     }
 
     // Save results.
-    // std::ofstream file(cfg->output_file_root + "_ptcloud.txt");
-    // planner.visitGraph(Visitor<State>(file));
-    // std::cout << planner.size() << " vertices written to "
-    //           << cfg->output_file_root + "_ptcloud.txt"
-    //           << std::endl;
+    if (save_ptcloud) {
+        std::ofstream file(cfg->output_file_root + "_ptcloud.txt");
+        planner.visitGraph(Visitor<State>(file));
+        std::cout << planner.size() << " vertices written to "
+                << cfg->output_file_root + "_ptcloud.txt"
+                << std::endl;
+    }
+
 
     if (save_only_best_plan) {
         if (!path.empty()) {
             WritePathToFile(path, cfg->output_file_root + "_org.txt");
-            // auto const& interpolated = InterpolatePath(path, cfg->rad_curv, cfg->result_res);
-            // WritePathToFile(interpolated, cfg->output_file_root + "_interp.txt");
+            
+
             auto [bestCost, bestSize, bestGoal, bestLength, bestPhi, spreading, planner_type] = planner.stats();
             WriteStatsToFile(cfg->rad_curv, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, planner_type, cfg->output_file_root, snp::stats_file);
-            // if (save_cost) {
-            //     std::ofstream fout;
-            //     fout.open(cfg->output_file_root + "_cost.txt");
+            if (save_interp) {
+                auto const& interpolated = InterpolatePath(path, cfg->rad_curv, cfg->result_res);
+                WritePathToFile(interpolated, cfg->output_file_root + "_interp.txt");
+                std::cout << "Result path written to "
+                    << cfg->output_file_root + "_interp.txt"
+                    << std::endl;
+                if (save_cost) {
+                    std::ofstream fout;
+                    fout.open(cfg->output_file_root + "_cost.txt");
 
-            //     if (!fout.is_open()) {
-            //         throw std::runtime_error("Failed to open " + cfg->output_file_root + "_cost.txt");
-            //     }
+                    if (!fout.is_open()) {
+                        throw std::runtime_error("Failed to open " + cfg->output_file_root + "_cost.txt");
+                    }
 
-            //     for (auto const& p : interpolated) {
-            //         auto cost = cfg->env->PointCost(p.translation());
-            //         fout << cost << std::endl;
-            //     }
-            //     fout.close();
-            // }
+                    for (auto const& p : interpolated) {
+                        auto cost = cfg->env->PointCost(p.translation());
+                        fout << cost << std::endl;
+                    }
+                    fout.close();
+                }
+            }
 
             std::cout << "Result path written to "
-                      << cfg->output_file_root + "_org.txt and "
-                      << cfg->output_file_root + "_interp.txt"
+                      << cfg->output_file_root + "_org.txt "
                       << std::endl;
         } 
         else {
@@ -357,22 +366,27 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
         for (auto const& path : paths) {
             if (!path.empty()) {
                 WritePathToFile(path, cfg->output_file_root + "_org_" + std::to_string(i) + ".txt");
-                auto const& interpolated = InterpolatePath(path, cfg->rad_curv, cfg->result_res);
-                WritePathToFile(interpolated, cfg->output_file_root + "_interp_" + std::to_string(i) + ".txt");
+                if (save_interp) {
+                    auto const& interpolated = InterpolatePath(path, cfg->rad_curv, cfg->result_res);
+                    WritePathToFile(interpolated, cfg->output_file_root + "_interp_" + std::to_string(i) + ".txt");
 
-                if (save_cost) {
-                    std::ofstream fout;
-                    fout.open(cfg->output_file_root + "_cost_" + std::to_string(i) + ".txt");
+                    if (save_cost) {
+                        std::ofstream fout;
+                        fout.open(cfg->output_file_root + "_cost_" + std::to_string(i) + ".txt");
 
-                    if (!fout.is_open()) {
-                        throw std::runtime_error("Failed to open " + cfg->output_file_root + "_cost_" + std::to_string(i) + ".txt");
+                        if (!fout.is_open()) {
+                            throw std::runtime_error("Failed to open " + cfg->output_file_root + "_cost_" + std::to_string(i) + ".txt");
+                        }
+
+                        for (auto const& p : interpolated) {
+                            auto cost = cfg->env->PointCost(p.translation());
+                            fout << cost << std::endl;
+                        }
+                        fout.close();
                     }
-
-                    for (auto const& p : interpolated) {
-                        auto cost = cfg->env->PointCost(p.translation());
-                        fout << cost << std::endl;
-                    }
-                    fout.close();
+                    std::cout << i << " paths written to "
+                            << cfg->output_file_root + "_interp_(i).txt"
+                            << std::endl;
                 }
             }
 
@@ -380,8 +394,7 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
         }
 
         std::cout << i << " paths written to "
-                  << cfg->output_file_root + "_org_(i).txt and "
-                  << cfg->output_file_root + "_interp_(i).txt"
+                  << cfg->output_file_root + "_org_(i).txt "
                   << std::endl;
     }
 }
