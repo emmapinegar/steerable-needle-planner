@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
                                     needle_diameter,
                                     insertion_length,
                                     angle_constraint_degree));
-    cfg->timeout = 5000;
+    cfg->timeout = 10000;
 
     if (argc > 1) {
         cfg->multi_threading = std::atoi(argv[1]);
@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
         using Threads = hardware_concurrency;
         using Algorithm = NeedlePRCS<report_stats<reportStats>, NN, Threads, spreading>;
 
-        Planner<Scenario, Algorithm> planner(scenario, cfg->seed);
+        Planner<Scenario, Algorithm> planner(scenario);
         planner.addStart(start);
         planner.setAddStartRatio(cfg->start_connect_ratio);
 

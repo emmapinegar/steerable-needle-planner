@@ -790,14 +790,14 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         if (validNode(planner, node)) {
             if (auto traj = validMotion(planner, node, from)) {
                 auto [isGoal, goalDist, goalState] = scenario_goal<Scenario>::check(scenario_, node->state());
-
+                // PrintState(goalState);
                 if (isGoal) {
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
-
-                    if (scenario_.valid(goalLength)) {
+                    auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation()); 
+                    if (scenario_.valid(goalState, goalLength, goalAngle)) {
                         auto const& goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                              + scenario_.FinalStateCost(goalState);
-                        auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());                     
+                                            
                         Node* goalNode = nodePool_.allocate(linkTrajectory(traj), node, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
@@ -809,7 +809,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
 
-                    if (scenario_.valid(goalLength)) {
+                    if (scenario_.valid(goalState, goalLength, goalAngle)) {
                         bestDist_ = goalDist;
                         auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
 

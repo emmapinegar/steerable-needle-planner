@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
         using Threads = hardware_concurrency;
         using Algorithm = NeedlePRRT<report_stats<reportStats>, NN, Threads, spreading, optimal>;
 
-        Planner<Scenario, Algorithm> planner(scenario, cfg->seed);
+        Planner<Scenario, Algorithm> planner(scenario);
         planner.addStart(start);
         planner.setGoalBias(cfg->goal_bias);
 

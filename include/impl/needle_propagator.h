@@ -103,6 +103,8 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
     result.rotation() = (proceed_quat*sq).normalized();
 
     if (std::isnan(result.rotation().w())) {
+        // PrintState(from);
+        // PrintState(to);
         throw std::runtime_error("[ConnectPointWithCurveDirectly] Get nan result quaternion!");
     }
 
