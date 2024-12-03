@@ -50,8 +50,59 @@ int main(int argc, char** argv) {
     auto [min_curve_rad, needle_diameter, insertion_length, angle_constraint_degree]
         = utils::ReadNeedleParameters(needle_parameter_file, true);
 
-    if (argc > 5) {
-        min_curve_rad = std::atoi(argv[5]);
+    bool constrain_goal_orientation = false;
+    global_multi_threading = false;
+    Str suffix = "_rcs_star";
+
+    int i = 1;
+    while (i < argc) {
+        if (std::strcmp(argv[i], "-r") == 0) {
+            min_curve_rad = std::atoi(argv[++i]);
+        } 
+        else if (std::strcmp(argv[i], "-l") == 0 ) {
+            insertion_length = std::atoi(argv[++i]);
+        }  
+        else if (std::strcmp(argv[i], "-phi") == 0) {
+            angle_constraint_degree = std::atoi(argv[++i]);  
+        }
+        else if (std::strcmp(argv[i], "-seed") == 0) {
+            global_seed = std::stoul(argv[++i]);  
+        }
+        else if (std::strcmp(argv[i], "-scan") == 0) {
+            scan_number = std::stoul(argv[++i]);  
+        }
+        else if (std::strcmp(argv[i], "-suffix") == 0) {
+            suffix = suffix + "_" + argv[++i];  
+        }
+        else if (std::strcmp(argv[i], "-bias") == 0) {
+            global_goal_bias = std::stod(argv[++i]);  
+        }
+        else if (std::strcmp(argv[i], "-tau") == 0) {
+            global_goal_pos_tolerance = std::stod(argv[++i]);  
+        }
+        else if (std::strcmp(argv[i], "-mode") == 0) {
+            Mode = std::atoi(argv[++i]);  
+        }
+        else if (std::strcmp(argv[i], "-timeout") == 0) {
+            global_timeout = std::atoi(argv[++i]);  
+        }
+        else if (std::strcmp(argv[i], "-nodes") == 0) {
+            global_num_nodes = std::atoi(argv[++i]);  
+        }
+        else if (std::strcmp(argv[i], "-dubins") == 0) {
+            global_dubins = true;  
+        }
+        else if (std::strcmp(argv[i], "-constrain_goal") == 0) {
+            constrain_goal_orientation = true;  
+        } 
+        else if (std::strcmp(argv[i], "-multi") == 0) {
+            global_multi_threading = true;  
+        }                                    
+        else {
+            std::cerr << "Specified arg not supported " << argv[i] << std::endl;
+        }
+            
+        i++;
     }
 
 #ifdef HAVE_GLOBAL_VARIABLES
@@ -59,26 +110,10 @@ int main(int argc, char** argv) {
     global::angle_constraint_degree = angle_constraint_degree;
 #endif
 
-    bool constrain_goal_orientation = false;
-    Str suffix = "_rcs_star";
-
-    if (argc > 1) {
-        constrain_goal_orientation = std::atoi(argv[1]);
-    }
-
-    if (argc > 6) {
-        suffix = argv[6];
-        suffix = "_" + suffix;
-    }
-
-    if (argc > 4) {
-        scan_number = std::atoi(argv[4]);
-        
-        start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
-        global_obstacle_file = "../data/input/remind_obstacles_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
-        goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
-        suffix = suffix + "_remind_00" + std::to_string(scan_number);
-    }
+    start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
+    global_obstacle_file = "../data/input/remind_obstacles_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
+    goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
+    suffix = suffix + "_remind_00" + std::to_string(scan_number);
 
     ConfigPtr cfg(new ProblemConfig(constrain_goal_orientation,
                                     min_curve_rad,
@@ -86,14 +121,6 @@ int main(int argc, char** argv) {
                                     insertion_length,
                                     angle_constraint_degree));
 
-    // cfg->timeout = 5000;
-    if (argc > 2) {
-        cfg->multi_threading = std::atoi(argv[2]);
-    }
-
-    if (argc > 3) {
-        cfg->seed = std::atoi(argv[3]);
-    }
 
     // start_and_goal_file is defined in global_common.h 
     auto [start_p, start_q, goal_p, goal_q] = utils::ReadStartAndGoal(start_and_goal_file);
@@ -101,11 +128,12 @@ int main(int argc, char** argv) {
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->direct_connect_ratio = 1.0;
     // cfg->use_dubins_connection = true;
-    cfg->goal_pos_tolerance = 1.0;
+    // cfg->goal_pos_tolerance = 1.0;
     cfg->optimal = true;
     cfg->DefaultSetup();
     cfg->env->SetCostType(ImageEnvironment::CostType::PATH_LENGTH);
-    std::cout << "Using cost: " << cfg->env->CostTypeString() << std::endl;
+    std::cout << "Planning parameters: r " << cfg->rad_curv << " l " << cfg->ins_length << " phi " << cfg->ang_constraint_degree 
+                << "\ncost " << cfg->env->CostTypeString() << " constrain goal " << constrain_goal_orientation << " dubins " << global_dubins << std::endl;
 
     cfg->env->AddToWhiteList(start_p, 3);
     cfg->env->SetWhiteList(true);
