@@ -794,6 +794,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 if (isGoal) {
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation()); 
+                    MPT_LOG(INFO) << "calculating goal angle";
                     if (scenario_.valid(goalState, goalLength, goalAngle)) {
                         auto const& goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                              + scenario_.FinalStateCost(goalState);
