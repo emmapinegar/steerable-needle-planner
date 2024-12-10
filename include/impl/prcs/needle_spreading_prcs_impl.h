@@ -327,7 +327,7 @@ class NeedleSpreadingPRCS : public
 
             for (const Node *p ; (p = n->parent()) != nullptr ; n = p) {
                 cost += workers_[0].scenario().CurveCost(p->state(), n->state());
-                std::cout << "l: " << n->length() << std::endl;
+                // std::cout << "l: " << n->length() << std::endl;
                 ++size;
             }
         }
@@ -676,12 +676,12 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         Distance scaledRatio = 0;
         std::uniform_real_distribution<Distance> uniform01;
 
-        // if(no_ == 0 && planner.addStartRatio_ > 0) {
-        //     scaledRatio = planner.addStartRatio_ * planner.workers_.size();
-        //     MPT_LOG(TRACE) << "using scaled add start ratio of " << scaledRatio;
+        if(no_ == 0 && planner.addStartRatio_ > 0) {
+            scaledRatio = planner.addStartRatio_ * planner.workers_.size();
+            MPT_LOG(INFO) << "using scaled add start ratio of " << scaledRatio;
 
-        //     // scenario_.validator().InitHEALPix();
-        // }
+            // scenario_.validator().InitHEALPix();
+        }
 
         configTolerance_ = scenario_.validator().ConfigTolerance();
         initNum_ = planner.propagator_.InitialNumberofOrientations();
@@ -742,10 +742,17 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      * @returns bool true if new start state was added to the planner, false otherwise
      */
     bool addNewStart(Planner& planner) {
-        auto startState = scenario_.validator().IterateNextStart();
-
+        auto randState = csampler_(rng_); //scenario_.validator().IterateNextStart();
+        randState.translation() = scenario_.StartState().translation() + 0.1*randState.translation();
+        std::cout << randState <<  std::endl;
+        auto startState = scenario_.DirectConnectingStart(randState);
+        // std::cout << startState2 << std::endl;
+        // auto startState = scenario_.validator().IterateNextStart();
+        // std::cout << startState << std::endl;
         if (startState) {
+            MPT_LOG(INFO) << "checking if there's a similar state..";
             if (!similarStart(planner, *startState)) {
+                MPT_LOG(INFO) << "no similar start found, trying to add..";
                 planner.addStart(*startState);
                 return true;
             }
@@ -790,11 +797,11 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         if (validNode(planner, node)) {
             if (auto traj = validMotion(planner, node, from)) {
                 auto [isGoal, goalDist, goalState] = scenario_goal<Scenario>::check(scenario_, node->state());
-                // PrintState(goalState);
+
                 if (isGoal) {
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation()); 
-                    MPT_LOG(INFO) << "calculating goal angle";
+                    // MPT_LOG(INFO) << "calculating goal angle";
                     if (scenario_.valid(goalState, goalLength, goalAngle)) {
                         auto const& goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                              + scenario_.FinalStateCost(goalState);
@@ -807,6 +814,8 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     }
                 }
                 else if (!planner.solved() && goalDist < bestDist_) {
+                    // PrintState(goalState);
+                    // PrintState(node->state());
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
 
@@ -893,7 +902,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         Timer timer(Stats::nearest());
         from.rotation().normalize();
         auto [nearNode, d] = planner.nn_.nearest(from).value();
-
+        MPT_LOG(INFO) << "d: " << d;
         if (d < configTolerance_) {
             return true;
         }

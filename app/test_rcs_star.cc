@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     bool constrain_goal_orientation = false;
     global_multi_threading = false;
     Str suffix = "_rcs_star";
-
+    global_timeout = 1000;
     int i = 1;
     while (i < argc) {
         if (std::strcmp(argv[i], "-r") == 0) {
@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
         Planner<Scenario, Algorithm> planner(scenario);
         planner.addStart(start);
 
-        utils::Run<6>(planner, cfg);
+        utils::Run<0>(planner, cfg);
 
         auto const& result = planner.resultWithTime();
         for (auto const& res : result) {

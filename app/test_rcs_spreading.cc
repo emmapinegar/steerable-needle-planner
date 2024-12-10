@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    start_q = Quat::FromTwoVectors(Vec3::UnitZ(), (goals[0] - start_p).normalized());
+    // start_q = Quat::FromTwoVectors(Vec3::UnitZ(), (goals[0] - start_p).normalized());
 
     using Scenario = PRCSSpreadingScenario<RealNum>::Type;
     using State = typename Scenario::State;

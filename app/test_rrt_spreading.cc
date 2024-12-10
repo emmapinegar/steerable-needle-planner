@@ -129,6 +129,7 @@ int main(int argc, char** argv) {
 
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->sample_orientation = true;
+    cfg->start_connect_ratio = 0.05;
     // cfg->goal_pos_tolerance = 3.0;
     cfg->steer_step = -1;
     // cfg->goal_bias = 0.0;
@@ -160,7 +161,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    start_q = Quat::FromTwoVectors(Vec3::UnitZ(), (goals[0] - start_p).normalized());
+    // start_q = Quat::FromTwoVectors(Vec3::UnitZ(), (goals[0] - start_p).normalized());
 
     using Scenario = SpreadingScenario<RealNum>::Type;
     using State = typename Scenario::State;
