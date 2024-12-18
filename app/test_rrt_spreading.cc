@@ -66,10 +66,10 @@ int main(int argc, char** argv) {
             angle_constraint_degree = std::atoi(argv[++i]);  
         }
         else if (std::strcmp(argv[i], "-seed") == 0) {
-            global_seed = std::stoul(argv[++i]);  
+            global_seed = std::atoi(argv[++i]);  
         }
         else if (std::strcmp(argv[i], "-scan") == 0) {
-            scan_number = std::stoul(argv[++i]);  
+            scan_number = std::atoi(argv[++i]);  
         }
         else if (std::strcmp(argv[i], "-suffix") == 0) {
             suffix = suffix + "_" + argv[++i];  

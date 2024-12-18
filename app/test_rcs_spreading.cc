@@ -66,10 +66,10 @@ int main(int argc, char** argv) {
             angle_constraint_degree = std::atoi(argv[++i]);  
         }
         else if (std::strcmp(argv[i], "-seed") == 0) {
-            global_seed = std::stoul(argv[++i]);  
+            global_seed = std::atoi(argv[++i]);  
         }
         else if (std::strcmp(argv[i], "-scan") == 0) {
-            scan_number = std::stoul(argv[++i]);  
+            scan_number = std::atoi(argv[++i]);  
         }
         else if (std::strcmp(argv[i], "-suffix") == 0) {
             suffix = suffix + "_" + argv[++i];  
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->sample_orientation = true;
     // cfg->goal_pos_tolerance = 3.0;
-    cfg->start_connect_ratio = 0.01;
+    cfg->start_connect_ratio = 0.0;
     cfg->DefaultSetup();
     cfg->env->SetCostType(ImageEnvironment::CostType::PATH_LENGTH);
 

@@ -63,7 +63,7 @@ class NeedleSpreadingPRCS : public
     using Propagator = typename Scenario::Propagator;
 
     Distance maxDistance_{std::numeric_limits<Distance>::infinity()};
-    Distance addStartRatio_{0.01};
+    Distance addStartRatio_{0.00001};
 
     static constexpr bool concurrent = maxThreads != 1;
     using NNConcurrency = std::conditional_t<concurrent, nigh::Concurrent, nigh::NoThreadSafety>;
@@ -743,16 +743,16 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      */
     bool addNewStart(Planner& planner) {
         auto randState = csampler_(rng_); //scenario_.validator().IterateNextStart();
-        randState.translation() = scenario_.StartState().translation() + 0.1*randState.translation();
-        std::cout << randState <<  std::endl;
+        // randState.translation() = scenario_.StartState().translation() + 0.1*randState.translation();
+        // std::cout << randState <<  std::endl;
         auto startState = scenario_.DirectConnectingStart(randState);
         // std::cout << startState2 << std::endl;
         // auto startState = scenario_.validator().IterateNextStart();
         // std::cout << startState << std::endl;
         if (startState) {
-            MPT_LOG(INFO) << "checking if there's a similar state..";
+            // MPT_LOG(INFO) << "checking if there's a similar state..";
             if (!similarStart(planner, *startState)) {
-                MPT_LOG(INFO) << "no similar start found, trying to add..";
+                // MPT_LOG(INFO) << "no similar start found, trying to add..";
                 planner.addStart(*startState);
                 return true;
             }
@@ -902,7 +902,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         Timer timer(Stats::nearest());
         from.rotation().normalize();
         auto [nearNode, d] = planner.nn_.nearest(from).value();
-        MPT_LOG(INFO) << "d: " << d;
+        // MPT_LOG(INFO) << "d: " << d;
         if (d < configTolerance_) {
             return true;
         }
