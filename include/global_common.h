@@ -159,8 +159,8 @@ SizeType global_num_nodes = 10000;
 // Number of plans needed for termination.
 SizeType global_num_plans_needed = 10;
 
-bool save_ptcloud = true;
-bool save_interp = true;
+bool save_ptcloud = false;
+bool save_interp = false;
 
 
 

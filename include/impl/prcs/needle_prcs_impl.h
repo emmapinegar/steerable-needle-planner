@@ -96,7 +96,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
     std::forward_list<Node*> goals_;
     Distance bestCost_{std::numeric_limits<Distance>::infinity()};
     snp::TimePoint start_time_;
-    using ResultSeq = std::vector<std::pair<float, Distance>>;
+    using ResultSeq = std::vector<std::tuple<float, Distance, RealNum, RealNum>>;
     ResultSeq resultWithTime_;
     unsigned minValidateRank_{10};
 
@@ -126,7 +126,8 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
             std::lock_guard<std::mutex> lock(mutex_);
             goals_.push_front(node);
             bestCost_ = std::fmin(bestCost_, node->cost());
-            resultWithTime_.push_back({std::chrono::duration_cast<std::chrono::duration<float>>(snp::Clock::now() - start_time_).count(), node->cost()});
+            resultWithTime_.push_back({std::chrono::duration_cast<std::chrono::duration<float>>(snp::Clock::now() - start_time_).count(),
+                                         node->cost(), node->length(), node->ang_total()});
         }
 
         ++goalCount_;

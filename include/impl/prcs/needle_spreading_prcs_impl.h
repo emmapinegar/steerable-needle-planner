@@ -96,7 +96,7 @@ class NeedleSpreadingPRCS : public
     std::forward_list<Node*> goals_;
     Distance bestCost_{std::numeric_limits<Distance>::infinity()};
     snp::TimePoint start_time_;
-    using ResultSeq = std::vector<std::pair<float, Distance>>;
+    using ResultSeq = std::vector<std::tuple<float, Distance, RealNum, RealNum>>;
     ResultSeq resultWithTime_;
 
     Node* approxRes_{nullptr};
@@ -125,7 +125,8 @@ class NeedleSpreadingPRCS : public
             std::lock_guard<std::mutex> lock(mutex_);
             goals_.push_front(node);
             bestCost_ = std::fmin(bestCost_, node->cost());
-            resultWithTime_.push_back({std::chrono::duration_cast<std::chrono::duration<float>>(snp::Clock::now() - start_time_).count(), node->cost()});
+            resultWithTime_.push_back({std::chrono::duration_cast<std::chrono::duration<float>>(snp::Clock::now() - start_time_).count(),
+                                         node->cost(), node->length(), node->ang_total()});
         }
 
         ++goalCount_;
@@ -814,8 +815,6 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     }
                 }
                 else if (!planner.solved() && goalDist < bestDist_) {
-                    PrintState(goalState);
-                    PrintState(node->state());
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
 

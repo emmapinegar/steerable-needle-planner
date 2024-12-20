@@ -54,6 +54,7 @@ int main(int argc, char** argv) {
     global_multi_threading = false;
     Str suffix = "_aorrt_spreading";
     global_timeout = 5000;
+    double start_sample = 0.0;
     int i = 1;
     while (i < argc) {
         if (std::strcmp(argv[i], "-r") == 0) {
@@ -97,6 +98,15 @@ int main(int argc, char** argv) {
         } 
         else if (std::strcmp(argv[i], "-multi") == 0) {
             global_multi_threading = true;  
+        } 
+        else if (std::strcmp(argv[i], "-save_pc") == 0) {
+            save_ptcloud = true;
+        }
+        else if (std::strcmp(argv[i], "-save_interp") == 0) {
+            save_interp = true;
+        } 
+        else if (std::strcmp(argv[i], "-start_sample") == 0) {
+            start_sample = std::stod(argv[++i]);
         }                                    
         else {
             std::cerr << "Specified arg not supported " << argv[i] << std::endl;
@@ -128,7 +138,7 @@ int main(int argc, char** argv) {
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->sample_orientation = true;
     // cfg->goal_pos_tolerance = 3.0;
-    cfg->start_connect_ratio = 0.05;
+    cfg->start_connect_ratio = start_sample;
     cfg->steer_step = 16.0;
     // cfg->goal_bias = 0.0;
     cfg->DefaultSetup();
@@ -195,6 +205,10 @@ int main(int argc, char** argv) {
         planner.setGoalBias(cfg->goal_bias);
 
         utils::Run<0>(planner, cfg);
+        auto const& result = planner.resultWithTime();
+        for (auto const& res : result) {
+            std::cout << std::get<0>(res) << ", " << std::get<1>(res) << ", " << std::get<2>(res) << ", " << std::get<3>(res) << std::endl;
+        }
     }
     else {
         using Threads = single_threaded;
@@ -206,6 +220,10 @@ int main(int argc, char** argv) {
         MPT_LOG(INFO) << "using seed " << cfg->seed;
 
         utils::Run<0>(planner, cfg);
+        auto const& result = planner.resultWithTime();
+        for (auto const& res : result) {
+            std::cout << std::get<0>(res) << ", " << std::get<1>(res) << ", " << std::get<2>(res) << ", " << std::get<3>(res) << std::endl;
+        }
     }
 
     return 0;

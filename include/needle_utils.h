@@ -112,7 +112,7 @@ template<typename State>
 bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
                      const bool full_state=true, const bool show_log=false);
 bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
-                      const bool spreading, const Str& planner_type, const Str& file_root, const Str& file_name, const bool show_log=false);
+                      const bool spreading, const Str& planner_type, const Str& file_root, const Str& file_name, const std::vector<std::tuple<float, RealNum, RealNum, RealNum>>& results, const bool show_log=false);
 
 double RelativeTime(const TimePoint& start);
 double TimeDuration(const Clock::duration& elapsed);

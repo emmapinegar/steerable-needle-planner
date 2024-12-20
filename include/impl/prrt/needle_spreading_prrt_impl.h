@@ -68,6 +68,11 @@ class NeedleSpreadingPRRT : public
 
     std::mutex mutex_;
     std::forward_list<Node*> goals_;
+    // Distance bestCost_{std::numeric_limits<Distance>::infinity()};
+    // Distance maxCost_{0};
+    snp::TimePoint start_time_;
+    using ResultSeq = std::vector<std::tuple<float, Distance, RealNum, RealNum>>;
+    ResultSeq resultWithTime_;
 
     Node* approxRes_{nullptr};
     Distance bestDist_{std::numeric_limits<Distance>::infinity()};
@@ -92,9 +97,12 @@ class NeedleSpreadingPRRT : public
         {
             std::lock_guard<std::mutex> lock(mutex_);
             goals_.push_front(node);
+            resultWithTime_.push_back({std::chrono::duration_cast<std::chrono::duration<float>>(snp::Clock::now() - start_time_).count(),
+                                         node->cost(), node->length(), node->ang_total()});
         }
 
         ++goalCount_;
+        bestDist_ = 0.0;
     }
 
     /**
@@ -204,7 +212,7 @@ class NeedleSpreadingPRRT : public
         if (size() == 0) {
             throw std::runtime_error("there are no valid initial states");
         }
-
+        start_time_ = snp::Clock::now();
         workers_.solve(*this, doneFn);
     }
 
@@ -478,6 +486,15 @@ class NeedleSpreadingPRRT : public
         return costs;
     }
 
+    /**
+     * Gets the time to get a result from the planner.
+     * 
+     * @returns ResultSeq resutls of the planner and time
+     */
+    const ResultSeq& resultWithTime() const {
+        return resultWithTime_;
+    }
+
   private:
     /**
      * Visits all of the nodes with the visitor. 
@@ -739,8 +756,6 @@ unbiasedSamplingLoop:
                 }
             }
             else if (!planner.solved() && goalDist < bestDist_) {
-                PrintState(goalState);
-                PrintState(newState);
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 

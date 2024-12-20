@@ -71,6 +71,9 @@ class NeedleSpreadingPAORRT : public
     std::forward_list<Node*> goals_;
     Distance bestCost_{std::numeric_limits<Distance>::infinity()};
     Distance maxCost_{0};
+    snp::TimePoint start_time_;
+    using ResultSeq = std::vector<std::tuple<float, Distance, RealNum, RealNum>>;
+    ResultSeq resultWithTime_;
 
     Node* approxRes_{nullptr};
     Distance bestDist_{std::numeric_limits<Distance>::infinity()};
@@ -96,9 +99,12 @@ class NeedleSpreadingPAORRT : public
             std::lock_guard<std::mutex> lock(mutex_);
             goals_.push_front(node);
             bestCost_ = std::fmin(bestCost_, node->cost());
+            resultWithTime_.push_back({std::chrono::duration_cast<std::chrono::duration<float>>(snp::Clock::now() - start_time_).count(),
+                                         node->cost(), node->length(), node->ang_total()});
         }
 
         ++goalCount_;
+        bestDist_ = 0.0;
     }
 
     /**
@@ -225,7 +231,7 @@ class NeedleSpreadingPAORRT : public
         if (size() == 0) {
             throw std::runtime_error("there are no valid initial states");
         }
-
+        start_time_ = snp::Clock::now();
         workers_.solve(*this, doneFn);
     }
 
@@ -494,6 +500,15 @@ class NeedleSpreadingPAORRT : public
         }
 
         return costs;
+    }
+
+    /**
+     * Gets the time to get a result from the planner.
+     * 
+     * @returns ResultSeq resutls of the planner and time
+     */
+    const ResultSeq& resultWithTime() const {
+        return resultWithTime_;
     }
 
   private:

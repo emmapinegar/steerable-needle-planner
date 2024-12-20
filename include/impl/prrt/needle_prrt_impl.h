@@ -69,7 +69,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
     std::forward_list<Node*> goals_;
     Distance bestCost_{std::numeric_limits<Distance>::infinity()};
     snp::TimePoint start_time_;
-    using ResultSeq = std::vector<std::pair<float, Distance>>;
+    using ResultSeq = std::vector<std::tuple<float, Distance, RealNum, RealNum>>;
     ResultSeq resultWithTime_;
 
     Node* approxRes_{nullptr};
@@ -97,7 +97,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
             goals_.push_front(node);
             bestCost_ = std::fmin(bestCost_, node->cost());
             resultWithTime_.push_back({std::chrono::duration_cast<std::chrono::duration<float>>(snp::Clock::now() - start_time_).count(),
-                                         node->cost()});
+                                         node->cost(), node->length(), node->ang_total()});
         }
 
         ++goalCount_;

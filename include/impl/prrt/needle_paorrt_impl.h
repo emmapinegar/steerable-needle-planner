@@ -70,7 +70,7 @@ class NeedlePAORRT : public PlannerBase<NeedlePAORRT<Scenario, maxThreads, repor
     Distance bestCost_{std::numeric_limits<Distance>::infinity()};
     Distance maxCost_{0};
     snp::TimePoint start_time_;
-    using ResultSeq = std::vector<std::pair<float, Distance>>;
+    using ResultSeq = std::vector<std::tuple<float, Distance, RealNum, RealNum>>;
     ResultSeq resultWithTime_;
 
     Node* approxRes_{nullptr};
@@ -98,7 +98,7 @@ class NeedlePAORRT : public PlannerBase<NeedlePAORRT<Scenario, maxThreads, repor
             goals_.push_front(node);
             bestCost_ = std::fmin(bestCost_, node->cost());
             resultWithTime_.push_back({std::chrono::duration_cast<std::chrono::duration<float>>(snp::Clock::now() - start_time_).count(),
-                                         node->cost()});
+                                         node->cost(), node->length(), node->ang_total()});
         }
 
         ++goalCount_;

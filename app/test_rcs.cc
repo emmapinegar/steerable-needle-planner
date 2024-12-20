@@ -53,7 +53,8 @@ int main(int argc, char** argv) {
     bool constrain_goal_orientation = false;
     global_multi_threading = false;
     Str suffix = "_rcs";
-
+    global_timeout = 1000;
+    double start_sample = 0.0;
     int i = 1;
     while (i < argc) {
         if (std::strcmp(argv[i], "-r") == 0) {
@@ -97,7 +98,16 @@ int main(int argc, char** argv) {
         } 
         else if (std::strcmp(argv[i], "-multi") == 0) {
             global_multi_threading = true;  
-        }                                    
+        }  
+        else if (std::strcmp(argv[i], "-save_pc") == 0) {
+            save_ptcloud = true;
+        }
+        else if (std::strcmp(argv[i], "-save_interp") == 0) {
+            save_interp = true;
+        } 
+        else if (std::strcmp(argv[i], "-start_sample") == 0) {
+            start_sample = std::stod(argv[++i]);
+        }                                  
         else {
             std::cerr << "Specified arg not supported " << argv[i] << std::endl;
         }
@@ -168,7 +178,7 @@ int main(int argc, char** argv) {
 
         auto const& result = planner.resultWithTime();
         for (auto const& res : result) {
-            std::cout << res.first << ", " << res.second << std::endl;
+            std::cout << std::get<0>(res) << ", " << std::get<1>(res) << ", " << std::get<2>(res) << ", " << std::get<3>(res) << std::endl;
         }
     }
     else {
@@ -184,7 +194,7 @@ int main(int argc, char** argv) {
 
         auto const& result = planner.resultWithTime();
         for (auto const& res : result) {
-            std::cout << res.first << ", " << res.second << std::endl;
+            std::cout << std::get<0>(res) << ", " << std::get<1>(res) << ", " << std::get<2>(res) << ", " << std::get<3>(res) << std::endl;
         }
     }
 

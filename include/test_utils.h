@@ -325,7 +325,7 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
             
 
             auto [bestCost, bestSize, bestGoal, bestLength, bestPhi, spreading, planner_type] = planner.stats();
-            WriteStatsToFile(cfg->rad_curv, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, planner_type, cfg->output_file_root, snp::stats_file);
+            WriteStatsToFile(cfg->rad_curv, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, planner_type, cfg->output_file_root, snp::stats_file, planner.resultWithTime());
             if (save_interp) {
                 auto const& interpolated = InterpolatePath(path, cfg->rad_curv, cfg->result_res);
                 WritePathToFile(interpolated, cfg->output_file_root + "_interp.txt");
@@ -356,7 +356,7 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
             std::cout << "trying to write stats with no plan found" << std::endl;
             auto [spreading, planner_type] = planner.failed_stats();
             std::cout << "got stats for unsolved planner" << std::endl;
-            WriteStatsToFile(cfg->rad_curv, 1000, 10, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, planner_type, cfg->output_file_root, snp::stats_file);
+            WriteStatsToFile(cfg->rad_curv, 1000, 10, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, planner_type, cfg->output_file_root, snp::stats_file, planner.resultWithTime());
         }
     }
     else {
