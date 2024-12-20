@@ -739,6 +739,8 @@ unbiasedSamplingLoop:
                 }
             }
             else if (!planner.solved() && goalDist < bestDist_) {
+                PrintState(goalState);
+                PrintState(newState);
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 

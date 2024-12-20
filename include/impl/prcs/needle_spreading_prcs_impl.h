@@ -814,8 +814,8 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     }
                 }
                 else if (!planner.solved() && goalDist < bestDist_) {
-                    // PrintState(goalState);
-                    // PrintState(node->state());
+                    PrintState(goalState);
+                    PrintState(node->state());
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
 

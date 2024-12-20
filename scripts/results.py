@@ -296,7 +296,7 @@ def make_figures(data, title, hatch):
 
     # make violin subplot of runtimes with log scale
     plotter.subplot(rows,num_plots//rows,1)
-    make_violin_figure(data, _RUNTIME, 'Run Time for Planner Variations', 'run time (seconds)', hatch, y_min=0, y_max=2.25)
+    make_violin_figure(data, _RUNTIME, 'Run Time for Planner Variations', 'run time (seconds)', hatch, y_min=0, y_max=7.5)
 
     # make success bar subplot with 95% confidence interval
     plotter.subplot(rows,num_plots//rows,2)
@@ -304,11 +304,11 @@ def make_figures(data, title, hatch):
 
     # make violin subplot of total phis for planners with log scale
     plotter.subplot(rows,num_plots//rows,3)
-    make_violin_figure(plan_data, _TOTALPHI, r'Total $\phi$ for Planner Variations', r'$\phi$ (radians)', hatch, y_min=0.0, y_max=3)
+    make_violin_figure(plan_data, _TOTALPHI, r'Total $\phi$ for Planner Variations', r'$\phi$ (radians)', hatch, y_min=0.0, y_max=8)
 
     # make a violin subplot of the path length ratios for planners, no log scale
     plotter.subplot(rows,num_plots//rows,4)
-    make_violin_figure(plan_data, _L, r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$', hatch, y_min=1, y_max=1.11, ylog=False)
+    make_violin_figure(plan_data, _L, r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$', hatch, y_min=1, y_max=2.25, ylog=False)
 
     # title the whole figure and adjust the spacing of the plots and margins 
     plotter.suptitle(title, fontsize=18)

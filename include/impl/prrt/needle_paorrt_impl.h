@@ -481,7 +481,7 @@ class NeedlePAORRT : public PlannerBase<NeedlePAORRT<Scenario, maxThreads, repor
         return {cost, size, n, length, ang_total, false, planner_type};
     }
 
-        /**
+    /**
      * Gets the stats of the best solution. 
      * 
      * @returns cost, size, goal node, path arc length, path total phi
@@ -751,7 +751,7 @@ unbiasedSamplingLoop:
 
                 
 
-                if (!scenario_.valid(goalLength)) {
+                if (!scenario_.valid(goalState, goalLength, goalAngle)) {
                     return;
                 }
 
@@ -770,8 +770,8 @@ unbiasedSamplingLoop:
             }
             else if (!planner.solved() && goalDist < bestDist_) {
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
-
-                if (!scenario_.valid(goalLength)) {
+                auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                if (!scenario_.valid(goalState, goalLength, goalAngle)) {
                     return;
                 }
 

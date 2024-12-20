@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
     Str suffix = "_rcs_spreading";
     global_timeout = 5000;
     int i = 1;
+    double start_sample = 0.0;
     while (i < argc) {
         if (std::strcmp(argv[i], "-r") == 0) {
             min_curve_rad = std::atoi(argv[++i]);
@@ -97,6 +98,9 @@ int main(int argc, char** argv) {
         } 
         else if (std::strcmp(argv[i], "-multi") == 0) {
             global_multi_threading = true;  
+        }
+        else if (std::strcmp(argv[i], "-start_sample") == 0) {
+            start_sample = std::stod(argv[++i]);
         }                                    
         else {
             std::cerr << "Specified arg not supported " << argv[i] << std::endl;
@@ -127,8 +131,9 @@ int main(int argc, char** argv) {
 
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->sample_orientation = true;
+    cfg->direct_connect_ratio = 1.0;
     // cfg->goal_pos_tolerance = 3.0;
-    cfg->start_connect_ratio = 0.0;
+    cfg->start_connect_ratio = start_sample;
     cfg->DefaultSetup();
     cfg->env->SetCostType(ImageEnvironment::CostType::PATH_LENGTH);
 
