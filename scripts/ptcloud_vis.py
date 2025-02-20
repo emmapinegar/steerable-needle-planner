@@ -62,17 +62,20 @@ def draw_ptc(ptc):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         # fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240925-12-25-03_ptcloud.txt", "../data/output/20240925-12-25-03_interp.txt", "../data/output/20240925-12-24-44_ptcloud.txt", "../data/output/20240925-12-24-44_interp.txt", "../data/output/20240925-12-28-14_interp.txt", "../data/output/20240925-12-33-06_interp.txt"]
-        fileNames = ["../data/input/remind_obstacles_001_outline_viz.txt", "../data/output/20241216-14-18-00_rcs_spreading_remind_001_ptcloud.txt"]
+        fileNames = ["../data/input/remind_obstacles_009_outline_viz.txt", "../data/output/20250219-09-20-24_rcs_star_remind_009_org.txt"]
     else:
         fileNames = sys.argv[1:]
 
-    obstacles_transform = np.array([[0.2257, 0.1947, 0.0344, -83.7135],[0.1957, -0.2274, 0.0033, 106.4279],[0.0282, 0.0199, -0.2978, 43.7868],[0, 0, 0, 1]]).astype(np.float64)
-    # obstacles_transform = np.array([[1, 0.0, 0.0, 0],[0.0, 1, 0.0, 0],[0.0, 0.0, 1, 0],[0, 0, 0, 1]]).astype(np.float64)
+    # obstacles_transform = np.array([[0.2257, 0.1947, 0.0344, -83.7135],[0.1957, -0.2274, 0.0033, 106.4279],[0.0282, 0.0199, -0.2978, 43.7868],[0, 0, 0, 1]]).astype(np.float64)
+    obstacles_transform = np.array([[1, 0.0, 0.0, 0],[0.0, 1, 0.0, 0],[0.0, 0.0, 1, 0],[0, 0, 0, 1]]).astype(np.float64)
+    obstacles_transform = np.array([[0.3333321809768677, -0.0005582469166256487, 0.0006548745441250503, -65.49219512939453],
+                                     [-0.0005461304099299014, -0.3332766890525818, -0.006119941361248493, 79.45664978027344],
+                                       [0.0006650125724263489, 0.006118847988545895, -0.3332764804363251, 91.7663345336914],
+                                         [0.0, 0.0, 0.0, 1.0]]).astype(np.float64)
+    start_p = np.array([[27], [7], [76]])
+    start_q = np.array([[0], [-1], [0], [0]]) # np.array([[-0.0007], [0.0008], [0.0077], [0.9999]]) # w, x, y, z
 
-    start_p = np.array([[38], [126], [46]])
-    start_q = np.array([[0.012442], [0.9547682], [0.2933438], [0.0470351]]) # np.array([[1], [0], [0], [0]]) # w, x, y, z
-
-    goal_p = np.array([[47], [127], [-18]])
+    goal_p = np.array([[27], [20], [-7]])
     goal_q = np.array([[1], [0], [0], [0]])
 
 
@@ -104,7 +107,7 @@ if __name__ == "__main__":
             ptc.transform(obstacles_transform)
 
         if numpoints[0] > 100000:
-            ptc = ptc.random_down_sample(0.1)
+            ptc = ptc.random_down_sample(0.01)
 
         print("Point cloud {}: ".format(i))
         print(ptc)

@@ -107,6 +107,9 @@ int main(int argc, char** argv) {
         } 
         else if (std::strcmp(argv[i], "-start_sample") == 0) {
             start_sample = std::stod(argv[++i]);
+        } 
+        else if (std::strcmp(argv[i], "-stats_file") == 0) {
+            stats_file = argv[++i];
         }                                    
         else {
             std::cerr << "Specified arg not supported " << argv[i] << std::endl;

@@ -72,7 +72,7 @@ struct ProblemConfig {
     RealNum validity_res = 0.5;
     RealNum cost_res = 0.1;
     // Safe margin for collision detection.
-    RealNum safe_margin = 2.0;
+    RealNum safe_margin = 0.5; // "collision-checking resolution of 0.5 mm"
     // Resolution used to reinterpolate the result plan.
     RealNum result_res = 2.0;
     // The probability of sampling goal state directly.

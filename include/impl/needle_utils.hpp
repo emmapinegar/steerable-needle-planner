@@ -983,17 +983,17 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
         auto newlength = std::get<2>(res);
         auto newangle = std::get<3>(res);
         times += std::to_string(newtime);
-        times += ";";
+        times += ",";
         costs += std::to_string(newcost);
-        costs += ";";
+        costs += ",";
         lengths += std::to_string(newlength);
-        lengths += ";";
+        lengths += ",";
         angles += std::to_string(newangle);
-        angles += ";";
+        angles += ",";
     }
 
 
-    fout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type << "," << scan_number << "," << global::angle_constraint_degree << ",[" << times << "],[" << costs << "],[" << lengths << "],[" << angles << "]" <<  std::endl; //"," << file_root <<
+    fout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type << "," << scan_number << "," << global::angle_constraint_degree << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
     fout.close();
 
     std::cout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type <<  std::endl;

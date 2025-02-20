@@ -4,6 +4,7 @@ import cv2 as cv
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+from scipy.spatial.transform import Rotation as R
  
 src = None
 erosion_size = 0
@@ -171,6 +172,7 @@ class ReMINDEnvironment:
         Parse transformation matrix that converts from pixel indices to world coordinates.
         """
         self.transform = np.array([float(l) for l in line_data]).reshape(-1,4)
+        print(f"transform: \n{self.transform}")
 
 
     def write_obstacles(self, filename):
@@ -178,14 +180,24 @@ class ReMINDEnvironment:
         Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
         """
 
-        xstart = 280 #np.floor(self.start[0,0]).astype(int)
-        ystart = 215 #np.floor(self.start[1,0]).astype(int)
-        zstart = 50 #np.floor(self.start[2,0]).astype(int)
+        xstart = np.floor(self.start[0,0]).astype(int)
+        ystart = np.floor(self.start[1,0]).astype(int)
+        zstart = np.floor(self.start[2,0]).astype(int)
         transformedstart = np.matmul(self.transform, np.array([xstart, ystart, zstart, 1]).reshape(4,1))
         transformedstartinv = np.matmul(self.transforminv, np.array([xstart, ystart, zstart, 1]).reshape(4,1))
-        print(transformedstart)
-        print(transformedstartinv)
+        transformedgoal = np.matmul(self.transform, np.array([np.floor(self.goal[0]).astype(int), np.floor(self.goal[1]).astype(int), np.floor(self.goal[2]).astype(int), 1]).reshape(4,1))
 
+        start_transformation = np.eye(3,3)
+        start_transformation[0:3,0] = np.divide(self.transform[0:3,0], np.linalg.norm(self.transform[0:3,0]))
+        start_transformation[0:3,1] = np.divide(self.transform[0:3,1], np.linalg.norm(self.transform[0:3,1]))
+        start_transformation[0:3,2] = np.divide(self.transform[0:3,2], np.linalg.norm(self.transform[0:3,2]))
+
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
+
+        r = R.from_matrix([[start_transformation[0,0], start_transformation[0,1], start_transformation[0,2]], [start_transformation[1,0], start_transformation[1,1], start_transformation[1,2]], [start_transformation[2,0], start_transformation[2,1], start_transformation[2,2]]])
+        start_quat = r.as_quat()
+        print(f"start: {transformedstart[0,0]} {transformedstart[1,0]} {transformedstart[2,0]} {start_quat[1]} {start_quat[2]} {start_quat[3]} {start_quat[0]}")
+        print(f"goal: {transformedgoal[0,0]} {transformedgoal[1,0]} {transformedgoal[2,0]}")
         obstacle_coords = np.where(self.voxel_grid == 1)
         # print(np.shape(obstacle_coords))
         obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
@@ -265,7 +277,7 @@ class ReMINDEnvironment:
         for i in range(0,int(self.x_max)):
             eroded_mask = np.logical_not(get_shell(self.voxel_grid[i,:,:]))
             mask[i,:,:] = np.logical_and(self.voxel_grid[i,:,:], eroded_mask)
-            if i == 350:
+            if i == self.start[0,0]:
                 plt.imshow(self.voxel_grid[i,:,:])
                 plt.show()
                 plt.imshow(eroded_mask)
@@ -448,8 +460,8 @@ if __name__ == "__main__":
 
 
     envparser = ReMINDEnvironment()
-    envparser.read_env("./../data/input/ReMIND-009_0.txt")
-    envparser.write_obstacles("./../data/input/remind_obstacles_009")
+    envparser.read_env("./../data/input/ReMIND-008_0.txt")
+    envparser.write_obstacles("./../data/input/remind_obstacles_008")
 
 
 

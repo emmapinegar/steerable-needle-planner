@@ -192,7 +192,7 @@ std::pair<RealNum, RealNum> SampleInUnitCircle(RNG& rng, Uniform& uniform) {
  * @param uniform: uniform distribution
  * @param normal: normal distribution
  * 
- * @returns Vec3 postion sample in hte bounds of the needle trumpet
+ * @returns Vec3 postion sample in the bounds of the needle trumpet
  */
 template<typename RNG, typename Uniform, typename Normal>
 Vec3 SampleInTrumpet(const RealNum& rad_curv, const RealNum& ins_length, const RealNum& max_r,

@@ -1128,7 +1128,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             bin_.pop();
             node->reset(linkTrajectory(true), parent, parent->state());
         }
-
+        // MPT_LOG(INFO) << "adding a new node";
         node->setResolution({lengthLevel, angleLevel}, {radIndex, lengthIndex, angleIndex});
         planner.queue_.push(node);
         return node;

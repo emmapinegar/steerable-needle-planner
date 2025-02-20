@@ -15,16 +15,22 @@ _AOCON_PHI = '#BF0F67'
 _COLORS = [_RGRRT_NOPHI, _RGCON_NOPHI, _AORRT_NOPHI, _AOCON_NOPHI, _RGRRT_PHI, _RGCON_PHI, _AORRT_PHI]
 _LABELS = [r'RGRRT', r'AORRT', r'RCS', r'RCS*', r'RGRRT$_s$', r'AORRT$_s$', r'RCS$_s$']
 
-_RUNTIME = 3
-_TOTALPHI = 2
-_L = 1
 _KAPPA = 0
+_L = 1
+_TOTALPHI = 2
+_RUNTIME = 3
 
 _SUCCESS = 4
 _APPROX_SUCCESS = 5
 _SPREADING = 6
 _PLANNER = 7
+_ENV = 8
+_MAXPHI = 9
 
+_TIMES = 10
+_COSTS = 11
+_LENGTHS = 12
+_PHIS = 13
 
 _ALPHA = 0.25
 _ROTATION = 10
@@ -217,6 +223,109 @@ def make_violin_figure(data, index, title, ylabel, hatching, y_min=0, y_max=10, 
 
 
 
+def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, ylog=False):
+    '''
+    Makes violin plots for the planner variations.
+    Parameters:
+    data (n,11): data from the experiments to analyze
+    index (int): index for the column of the data to be analyzed
+    title (string): title for the resulting plot
+    ylabel (string): label for the y axis of the plot
+    hatching (string): the hatching pattern for the violin plot (Note that this may not show up when saving as a PDF)
+    y_min (float): minimum y axis value, default=0
+    y_max (float): maximum y axis value, default=100
+    y_log (bool): if true makes the y axis scaled log, can throw off y axis limits
+    '''
+    # print(data)
+    rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
+    indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
+    if index == _LENGTHS:
+        ldata = get_distances_time(data, time_data)
+        # print(ldata)
+    plotter.title(title)
+    
+    for i in range(len(indices)):
+
+        if index == _LENGTHS:
+            data_ind = ldata[indices[i], index - _TIMES] # ldata[indices[i]]
+        else:
+            data_ind = time_data[indices[i], index - _TIMES]
+        if np.shape(data_ind)[0] == 0:
+            continue
+        color = _COLORS[i%len(_COLORS)]
+        # print(data_ind)
+        # print(np.shape(data_ind))
+        flat = []
+        for x in data_ind:
+            for xi in x:
+                flat.append(xi)
+        # print(flat)
+        time = []
+        for x in time_data[indices[i], _TIMES - _TIMES]:
+            for xi in x:
+                time.append(xi)
+        time = np.array(time)
+        flat = np.array(flat)
+        # print(flat)
+        # print(time)
+        sortedinds = np.argsort(time)
+        # print(sortedinds)
+        time = time[sortedinds]
+        flat = flat[sortedinds]
+        # print(time)
+        # print(flat)
+
+        n = 5 #window
+        average = np.cumsum(flat)
+        average[n:] = average[n:] - average[:-n]
+        average[n-1:] = average[n-1:]/n
+
+        averagetime = np.cumsum(time)
+        averagetime[n:] = averagetime[n:] - averagetime[:-n]
+        averagetime[n-1:] = averagetime[n-1:]/n
+
+        if np.shape(average)[0] > 0:
+            for i in range(0, n-1):
+                average[i] = average[i]/(i+1)
+                averagetime[i] = averagetime[i]/(i+1)
+
+        # print(average)
+
+
+        # z = np.polyfit(time, flat, 2)
+        # print(z)
+        # p = np.poly1d(z)
+        # interptime = np.linspace(0,time[-1],100)
+        # plotter.plot(interptime, p(interptime), color=color)
+        plotter.plot(averagetime, average, color=color)
+        # plotter.scatter(time, flat, color=color, s=5)
+        # for j in indices[i]:
+        #     if index == _L:
+        #         data_ind = ldata[i] # ldata[indices[i]]
+        #     else:
+        #         data_ind = time_data[j, index - _TIMES]
+        #     if np.shape(data_ind)[0] == 0:
+        #         continue
+        #     color = _COLORS[i%len(_COLORS)]
+        #     print(j)
+        #     print(time_data[j, _TIMES - _TIMES])
+
+        #     _bp = plotter.plot(time_data[j, _TIMES - _TIMES], data_ind, color=color)
+
+    plotter.ylabel(ylabel)
+    # plotter.xticks(np.arange(0,len(_COLORS)),_LABELS, rotation=_ROTATION)
+    plotter.xlim([0, 50])
+    plotter.ylim([1,1.2])
+
+    if ylog:
+        plotter.yscale('log')
+    else:
+        plotter.yscale('linear')
+        
+
+    # plotter.ylim([y_min, y_max])
+    # fix_ylabels()
+
 def make_success_bar(data, hatch):
     '''
     Makes a success rate plot for the planner variations with a 95% binomial confidence interval.
@@ -280,7 +389,7 @@ def fix_ylabels():
     plotter.yticks(locs, new_labels)
 
 
-def make_figures(data, title, hatch):
+def make_figures(data, time_data, title, hatch):
     '''
     Makes a figure with 4 subplots anaylzing different aspects of the planner variations.
     Parameters:
@@ -296,11 +405,13 @@ def make_figures(data, title, hatch):
 
     # make violin subplot of runtimes with log scale
     plotter.subplot(rows,num_plots//rows,1)
-    make_violin_figure(data, _RUNTIME, 'Run Time for Planner Variations', 'run time (seconds)', hatch, y_min=0, y_max=7.5)
+    make_success_bar(data, hatch)
+    # make_violin_figure(data, _RUNTIME, 'Run Time for Planner Variations', 'run time (seconds)', hatch, y_min=0, y_max=7.5)
 
     # make success bar subplot with 95% confidence interval
     plotter.subplot(rows,num_plots//rows,2)
-    make_success_bar(data, hatch)
+    # make_success_bar(data, hatch)
+    make_time_figure(data, time_data, _LENGTHS, r'Distance vs time', r'$\ell')
 
     # make violin subplot of total phis for planners with log scale
     plotter.subplot(rows,num_plots//rows,3)
@@ -345,26 +456,94 @@ def get_distances(data):
     return lproportion
 
 
+def get_distances_time(data, time_data):
+    '''
+    Calculates the path length ratio, a better metric than just the total path length since we're considering multiple sets of starts & goals.
+    Parameters:
+    data (n,11): data from the experiments to analyze
+
+    Returns:
+    lproportion (n,): array of the path length ratios calculated from data
+    '''
+    distance = 254
+    
+
+
+    lproportion = np.empty(np.shape(time_data[:,_LENGTHS-_TIMES]))
+    files = np.array([1, 8, 9])
+    for i in range(np.shape(files)[0]):
+        if files[i] == 1:
+            distance = 65.37
+        elif files[i] == 8:
+            distance = 41.06
+        elif files[i] == 9:
+            distance = 84.67
+        indices = np.where(data[:,_ENV] == files[i])[0]
+        if np.shape(indices)[0] == 0:
+            continue
+
+        time_data[indices,_LENGTHS-_TIMES] = time_data[indices,_LENGTHS-_TIMES]/distance
+
+    return time_data
+
 
 
 if __name__=='__main__':
 
 
-    files = fnmatch.filter(os.listdir('./../data/output/'), '*stats.txt')
+    files = fnmatch.filter(os.listdir('./../data/output/'), '*multi_stats.txt')
     data = np.empty((0,10))
+    time_data = []
+    # timedytpe = np.dtype(["string", "string", "string", "string"])
+    def conv(x):
+        x_ = x.decode()
+        data = []
+        # print(x)
+        # print(x_)
+        # print(len(x_))
+        testx = x_.strip("[,]").split(',')
+        # print(testx)
+
+
+        if len(x) > 2:
+            values = np.array([float(xi) for xi in x_.strip("[,]").split(',')])
+            print(values)
+            return values
+        else:
+            return np.array([])
+    convs = {0: lambda x: conv(x), 1: lambda x: conv(x), 2: lambda x: conv(x), 3: lambda x: conv(x)}
     for file in files:
-        next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#')
+        next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9))
+
         data = np.vstack((data, next_data))
+        next_time_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(10,11,12,13), converters=conv, dtype=object, quotechar='"')
+        # print(next_time_data)
+
+        print(np.shape(next_time_data))
+        time_data.append(next_time_data)
+
+    # print(time_data)
 
     kappas = np.unique(data[:,_KAPPA])
     hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
-
+    envs = np.unique(data[:, _ENV])
+    phis = np.unique(data[:,_MAXPHI])
     # make figures for each of the kappa values used in experiments
     for i in range(np.shape(kappas)[0]):
         kappa = kappas[i]
         kappa_inds = np.where(data[:,_KAPPA] == kappa)[0]
         kappa_data = data[kappa_inds,:]
-        make_figures(kappa_data, r'$\kappa$ = %.4f $mm^{-1}$' % kappa, hatches[i])
+        for j in range(np.shape(envs)[0]):
+            env = envs[j]
+            env_inds = np.where(kappa_data[:,_ENV] == env)[0]
+            env_data = kappa_data[env_inds,:]
+            for k in range(np.shape(phis)[0]):
+                phi = phis[k]
+                phi_inds = np.where(env_data[:,_MAXPHI] == phi)[0]
+                phi_data = env_data[phi_inds,:]
+                if np.shape(phi_data)[0] > 0:
+                    print(np.shape(phi_data))
+                    make_figures(phi_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env, hatches[i])
         # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
         # analyze_pairs(data)
     plotter.show()

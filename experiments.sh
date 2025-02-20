@@ -35,17 +35,25 @@ cd ./build
 
 # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
 
-seed_array=(8972 1784) # 7583 3829 6784) # 8392 7489 3423 5432 2349 8753 4637 9874 4812 13242 9238)  # 16458 5435 1658 535 4326)
-scan_array=(1 8 9)
+# seed_array=(8972 1784 7583 3829 6784 8392 7489 3423 5432 2349 8753 4637 9874 4812 13242 9238 16458 5435 1658 535 4326)
+seed_array=(4545) #3746 4654 8796 1564 3034 8653 4854 1318 5624 8965 6341 4389 6532 3063 2164 1167 7890 6114 2631 9296 1743 8294 4326 4439 7010 3880) #) # 
+scan_array=(8 9)
 
 
 for i in ${seed_array[@]}
 do 
     for j in ${scan_array[@]}
     do
-        ./app/rrt -multi -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 5000 -bias 0.02
-        ./app/aorrt -multi -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 5000 -bias 0.02
-        ./app/rcs -multi -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 5000 -bias 0.02
-        ./app/rcs_star -multi -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 5000 -bias 0.02
+        echo ""
+        echo "seed $i scan $j"
+        echo ""
+        ./app/rrt -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 240000 -bias 0.05
+        ./app/aorrt -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 240000 -bias 0.05
+        ./app/rcs -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 240000 -bias 0.05
+        ./app/rcs_star -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 240000 -bias 0.05
+        # ./app/rrt -seed $i -scan $j -r 20 -l 200 -phi 360 -timeout 240000 -bias 0.05 -multi -stats_file "../data/output/planner_multi_stats.txt"
+        # ./app/aorrt -seed $i -scan $j -r 20 -l 200 -phi 360 -timeout 240000 -bias 0.05 -multi -stats_file "../data/output/planner_multi_stats.txt"
+        # ./app/rcs -seed $i -scan $j -r 20 -l 200 -phi 360 -timeout 240000 -bias 0.05 -multi -stats_file "../data/output/planner_multi_stats.txt"
+        # ./app/rcs_star -seed $i -scan $j -r 20 -l 200 -phi 360 -timeout 240000 -bias 0.05 -multi -stats_file "../data/output/planner_multi_stats.txt"
     done
 done

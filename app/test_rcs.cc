@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
     // needle parameter file is defined in global_common.h
     auto [min_curve_rad, needle_diameter, insertion_length, angle_constraint_degree]
-        = utils::ReadNeedleParameters(needle_parameter_file, true);
+        = utils::ReadNeedleParameters(needle_parameter_file, false);
 
     bool constrain_goal_orientation = false;
     global_multi_threading = false;
@@ -107,7 +107,10 @@ int main(int argc, char** argv) {
         } 
         else if (std::strcmp(argv[i], "-start_sample") == 0) {
             start_sample = std::stod(argv[++i]);
-        }                                  
+        }
+        else if (std::strcmp(argv[i], "-stats_file") == 0) {
+            stats_file = argv[++i];
+        }                                    
         else {
             std::cerr << "Specified arg not supported " << argv[i] << std::endl;
         }
