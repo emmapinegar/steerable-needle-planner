@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
 
     bool constrain_goal_orientation = false;
     global_multi_threading = false;
+    global_variable_curvature = false;
     Str suffix = "_rrt";
     global_timeout = 1000;
     double start_sample = 0.0;
@@ -110,6 +111,9 @@ int main(int argc, char** argv) {
         } 
         else if (std::strcmp(argv[i], "-stats_file") == 0) {
             stats_file = argv[++i];
+        }
+        else if (std::strcmp(argv[i], "-var_curve") == 0) {
+            global_variable_curvature = true;
         }                                    
         else {
             std::cerr << "Specified arg not supported " << argv[i] << std::endl;
@@ -127,6 +131,7 @@ int main(int argc, char** argv) {
 
     start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
     global_obstacle_file = "../data/input/remind_obstacles_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
+    global_skull_file = "../data/input/remind_skull_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
     goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
     suffix = suffix + "_remind_00" + std::to_string(scan_number);
 
@@ -147,6 +152,11 @@ int main(int argc, char** argv) {
     // cfg->goal_bias = 0.05;
     cfg->DefaultSetup();
     cfg->env->SetCostType(ImageEnvironment::CostType::PATH_LENGTH);
+
+    if (global_variable_curvature)
+    {
+        std::cout << "variable curvature mode" << std::endl;
+    }
 
     std::cout << "Planning parameters: r " << cfg->rad_curv << " l " << cfg->ins_length << " phi " << cfg->ang_constraint_degree 
                 << "\ncost " << cfg->env->CostTypeString() << " constrain goal " << constrain_goal_orientation << " dubins " << global_dubins << std::endl;

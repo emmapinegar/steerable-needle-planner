@@ -51,9 +51,9 @@ bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& ra
         return true;
     }
 
-    if (y < 0) {
-        return false;           // TODO: change if we want a limit greater than 180
-    }
+    // if (y < 0) {
+    //     return false;           // TODO: change if we want a limit greater than 180
+    // }
 
     const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));
     const RealNum dist_to_center = Vec2(x - rad, y).norm(); 
@@ -553,6 +553,9 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
     const Vec3 normal_vec = (st.cross(gt)).normalized();
 
     if (normal_vec.dot(sg.normalized()) > EPS) {
+        // TODO: remove other prints
+        std::cerr << "d: " << d << " calpha: " << cos_alpha << " norm vec: " << normal_vec << " sg: " << sg << std::endl;
+        // end of prints to remove
         std::cerr << "[CurveLength] Not on a plane, returning approximate length." << std::endl;
         return d;
     }

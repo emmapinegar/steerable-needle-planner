@@ -55,6 +55,8 @@ struct ProblemConfig {
     // Environment.
     EnvPtr env;
 
+    EnvPtr skull;
+
     // Planner behavior control. All parameters use [mm], [rad].
     // If use goal state that considers orientation, this cannot be changed later.
     const bool constrain_goal_orientation;
@@ -103,6 +105,7 @@ struct ProblemConfig {
 
     bool optimal = false;
     bool use_trilinear_interpolation = true;
+    bool variable_curvature = global_variable_curvature;
 
     // Termination control.
     // Timeout in milliseconds.
@@ -118,6 +121,13 @@ struct ProblemConfig {
     Str obstacle_file = global_obstacle_file;
     Str cost_file = global_cost_file;
     Str healpix_file = global_healpix_file;
+    Str skull_file = global_skull_file;
+
+    RealNum needle_mag = 0.0018;
+    RealNum manip_mag = 66.03;
+    RealNum torque_b = 24.565146515698146;
+    RealNum torque_m = 321125.69590560044;
+
 
 #ifndef HAVE_GLOBAL_VARIABLES
     ProblemConfig(const bool orientation=false,
@@ -173,6 +183,15 @@ struct ProblemConfig {
 
         env->SetMinDist(0.5*needle_d + env->VoxelRadius() + safe_margin);
         env->EnableTrilinearInterpolation(use_trilinear_interpolation);
+
+        if (variable_curvature)
+        {
+            skull.reset(new ImageEnvironment());
+            if (!skull->ConstructEnvironmentFromFile(skull_file))
+            {
+                throw std::runtime_error("Failed to initialize skull from file!");
+            }
+        }
     }
 
     void SetEnvironment(EnvPtr environment) {

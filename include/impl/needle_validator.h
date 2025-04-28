@@ -737,12 +737,24 @@ RealNum QueryLS(const RealNum& min_length_step) {
 template<typename State>
 class ValidatorBase {
   public:
-    ValidatorBase(const ConfigPtr cfg) : ins_length_(cfg->ins_length)
+    ValidatorBase(const ConfigPtr cfg) : ins_length_(cfg->ins_length), variable_curvature_(cfg->variable_curvature)
     {
         if (cfg->env == nullptr) {
             throw std::runtime_error("Construction of validator failed! Config class doesn't have a valid environment!");
         }
         env_ = cfg->env;
+
+        if (variable_curvature_) {
+            if (cfg->skull == nullptr) {
+                throw std::runtime_error("Skull is not defined for variable curvature calculations");
+            }
+            skull_ = cfg->skull;
+            needle_mag_ = cfg->needle_mag;
+            manip_mag_ = cfg->manip_mag;
+            torque_b_ = cfg->torque_b;
+            torque_m_ = cfg->torque_m;
+            max_curvature_ = cfg->rad_curv;
+        }
     }
     ~ValidatorBase() = default;
 
@@ -776,8 +788,49 @@ class ValidatorBase {
         return utils::ValidLength(l, ins_length_);
     }
 
+
+    RealNum GetCurvature(const State& s) const {
+        auto [skull_point, r_mag] = skull_->NearestObstacleCenter(s.translation());
+        skull_point = skull_point / 1000;
+        Vec3 p = s.translation()/1000;
+        Vec3 r = Vec3(skull_point[0] - p[0], skull_point[1] - p[1], skull_point[2] - p[2]);
+        Vec3 r_hat = r.normalized();
+        r_mag = r.norm() + 0.0020; // adding buffer for physical magnet radius
+        Vec3 mag_point = Vec3(p[0] + r_hat[0]*(r_mag), p[1] + r_hat[1]*(r_mag), p[2] + r_hat[2]*(r_mag));
+        auto r_outer = r_hat * r_hat.transpose(); // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
+        Vec3 needle_mag = s.rotation().normalized() * Vec3::UnitZ();
+        Vec3 manip_mag = s.rotation().normalized() * Vec3::UnitX(); //r_hat.cross(s.rotation().normalized() * Vec3::UnitX()).normalized();//needle_mag.cross(r_hat);
+        // std::cout << "r_outer: " << r_outer << std::endl;
+        auto r_mat = 3*r_outer - Eigen::Matrix3d::Identity();
+        // std::cout << "r_mat: " << r_mat << std::endl;
+        Vec3 b = manip_mag_*(1e-7/(r_mag*r_mag*r_mag))*r_mat * manip_mag;
+        Vec3 tau = needle_mag_* needle_mag.cross(b);
+        RealNum curvature_lim = 1/((torque_m_*tau.norm() + torque_b_)/1000);
+        std::cout << "|r|: " << r_mag << " max K: " << max_curvature_ << " curvature lim: " << curvature_lim << " |tau|: " << tau.norm() << std::endl;
+        std::cout << " skull point: " << skull_point[0] << " " << skull_point[1] << " " << skull_point[2] << " state: " << p[0] << " " << p[1] << " " << p[2] << " r: " << r[0] << " " << r[1] << " " << r[2] << " mag point: " << mag_point[0] << " " << mag_point[1] << " " << mag_point[2] << std::endl;
+        std::cout << "manip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << std::endl;
+        // return curvature_lim;
+        if (curvature_lim < max_curvature_) {
+            return max_curvature_;
+        } 
+        else {
+            return curvature_lim;
+        }
+    }
+    // TODO: add function calculating variable curvature here, may just be a wrapper for implementation in configuration if too much info needs to be passed?
+
+    // b = r_hat * r_hat' * manip_m;
+    // tau = skew_needle_m * b;
+    // max_curvature = (torque_m_ * ||tau|| + torque_b_)/1000
     const RealNum ins_length_;
     EnvPtr env_;
+    EnvPtr skull_;
+    bool variable_curvature_;
+    RealNum needle_mag_;
+    RealNum manip_mag_;
+    RealNum torque_b_;
+    RealNum torque_m_;
+    RealNum max_curvature_;
 };
 
 template<typename State>

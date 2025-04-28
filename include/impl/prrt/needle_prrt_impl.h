@@ -677,6 +677,7 @@ unbiasedSamplingLoop:
             return;
         }
 
+
         auto [nearNode, d] = nearest(planner, randState).value();
 
         State newState = randState;
@@ -691,7 +692,13 @@ unbiasedSamplingLoop:
             return;
         }
 
+
+
+
         newState = *propagated;
+
+        scenario_.curvature(newState);
+
 
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
