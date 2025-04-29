@@ -201,8 +201,8 @@ class CurvePropagator {
      * @returns State resulting state if connection was "successful"
      */
     template <typename RNG>
-    std::optional<State> operator()(const State& from, const State& to, RNG& rng) {
-        return utils::ConnectPointWithCurveDirectly(from, to, rng, normal_, rad_curv_, steer_step_);
+    std::optional<State> operator()(const State& from, const State& to, RNG& rng, const RealNum& curve_lim) {
+        return utils::ConnectPointWithCurveDirectly(from, to, rng, normal_, curve_lim, steer_step_);
     }
 
   private:
@@ -229,8 +229,8 @@ class RandomForwardPropagator {
      * @returns State resulting state if connection was "successful"
      */
     template <typename RNG>
-    std::optional<State> operator()(const State& from, const State& to, RNG& rng) {
-        return utils::RandomForward(from, to, rng, uniform_, rad_curv_, steer_step_, num_attempt_, false);
+    std::optional<State> operator()(const State& from, const State& to, RNG& rng, RealNum& curve_lim) {
+        return utils::RandomForward(from, to, rng, uniform_, curve_lim, steer_step_, num_attempt_, false);
     }
 
   private:

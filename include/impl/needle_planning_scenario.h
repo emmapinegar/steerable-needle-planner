@@ -485,6 +485,11 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
         return validator_.InCollision(s);
     }
 
+    RealNum curvature(const State& s) const {
+        return validator_.GetCurvature(s);
+    }
+
+
     /**
      * Checks with the validator if there is a valid motion between the two states.
      * @param from: starting state

@@ -702,14 +702,15 @@ unbiasedSamplingLoop:
             }
         }
 
-        auto propagated = propagator_(nearNode->state(), randState, rng_);
+        auto propagated = propagator_(nearNode->state(), randState, rng_, nearNode->curve_lim());
 
         if (!propagated) {
             return;
         }
 
         newState = *propagated;
-
+        
+        auto const& newCurvature = scenario_.curvature(newState);
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
@@ -730,9 +731,11 @@ unbiasedSamplingLoop:
             newNode->length() = newLength;
             newNode->cost() = nearNode->cost() + scenario_.CurveCost(nearNode->state(), newState);
             newNode->ang_total() = newAngle;
+            newNode->curve_lim() = newCurvature;
             planner.nn_.insert(newNode);
 
             if (isGoal) {
+                auto const& goalCurvature = scenario_.curvature(goalState);
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 MPT_LOG(INFO) << "calculating goal angle";
                 auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
@@ -752,6 +755,7 @@ unbiasedSamplingLoop:
                     goalNode->length() = goalLength;
                     goalNode->cost() = goalCost;
                     goalNode->ang_total() = goalAngle;
+                    goalNode->curve_lim() = goalCurvature;
                     planner.foundGoal(goalNode);
                 }
             }

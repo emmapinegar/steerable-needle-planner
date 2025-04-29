@@ -50,6 +50,7 @@ class Node {
     Scalar traj_length_{0};
     Scalar cost_{0};
     Scalar ang_total_{0};
+    Scalar curve_lim_{0};
 
   public:
     /**
@@ -120,6 +121,25 @@ class Node {
     const Scalar& ang_total() const {
         return ang_total_;
     }    
+
+    /**
+     * Gets the curvature limit (minimum possible radius in mm) at this node.
+     * 
+     * @returns Scalar curvature limit
+     */
+    Scalar& curve_lim() {
+        return curve_lim_;
+    }
+
+    /**
+     * Gets the curvature limit (minimum possible radius in mm) at this node.
+     * 
+     * @returns const Scalar curvature limit
+     */
+    const Scalar& curve_lim() const {
+        return curve_lim_;
+    }
+
 
     /**
      * Gets the node state.
