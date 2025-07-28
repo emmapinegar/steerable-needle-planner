@@ -583,6 +583,8 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
             if (n->parent()) {
                 visitor.edge(n->parent()->state());
+            } else {
+                visitor.edge(n->state());
             }
         }
     }
@@ -822,25 +824,56 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 recycle(node);
                 return;
             }
-
-            auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex());
+            // TODO: add node radius limit
+            auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex(), node->parent()->curve_lim());
 
             if (!propagated) {
                 recycle(node);
                 return;
             }
 
+            // TODO: calculate and add the curvature limit to node 
             node->state() = *propagated;
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
+            node->curve_lim() = scenario_.curvature(node->state());
         }
 
         const bool inheritValidation = node->valid();
         bool inevitableCollision = similarNode(planner.ic_invalid_nn_, node->state(), configTolerance_);
-
+        // std::cout << "\npopped & propagated ";
+        // node->print();
         if (!inevitableCollision && validNode(planner, node)) {
-            if (auto traj = validMotion(planner, node, from)) {
+
+            // if (auto traj = validMotion(planner, node, from)) {
+            //     auto const validResult = checkTerminateCondition(planner, node);
+
+            //     if (done()) {
+            //         return;
+            //     }
+
+            //     if (!validResult && node->parent() && node->rank() >= planner.minValidateRank_
+            //         && !similarNode(planner.ic_nn_, node->state(), 1.0))
+            //     {
+            //         if (!scenario_.validReachableSpace(node->state())) {
+            //             inevitableCollision = true;
+            //             planner.ic_invalid_nn_.insert(StateNode(node->state()));
+            //         }
+            //         else {
+            //             planner.ic_nn_.insert(StateNode(node->state()));
+            //         }
+            //     }
+
+            //     if (!inevitableCollision) {
+            //         expand(planner, node);
+            //         closed_.push_back(node);
+            //     }
+            // }
+
+
+            if (auto traj = validMotion(planner, node, from)) { //, motion)) {
+                // std::cout << " motion valid" << std::endl;
                 auto const validResult = checkTerminateCondition(planner, node);
 
                 if (done()) {
@@ -864,28 +897,32 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     closed_.push_back(node);
                 }
             }
+
         }
 
         if (!node->parent()) {
             return;
         }
 
+        // std::cout << " refine shorter! ";
         auto shorter = refine(planner, node, SHORTER);
-
+        
         if (node->valid()) {
             if (shorter) {
                 shorter->valid() = true;
             }
 
             if (!inevitableCollision) {
+                // std::cout << " refine longer! ";
                 auto longer = refine(planner, node, LONGER);
                 if (inheritValidation && longer) {
                     longer->valid() = true;
                 }
             }
         }
-
+        // std::cout << " refine left! ";
         refine(planner, node, LEFT);
+        // std::cout << " refine right!" << std::endl;
         refine(planner, node, RIGHT);
 
         if (!node->valid()) {
@@ -980,6 +1017,46 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      * @returns (auto) bool true if the motion between the node and the state is valid, false otherwise 
      */
     decltype(auto) validMotion(Planner& planner, Node* node, const State& from) {
+        // if (node->valid()) {
+        //     std::cout << " node already valid ";
+        //     node->print();
+        //     // return true;
+        // }
+
+        if (node->rank() == 0) {
+            return true;
+        }
+
+        Timer timer(Stats::validMotion());
+        auto const& lengthIdx = node->lengthIndex();
+        auto const& baseMotion = planner.propagator_.BaseMotion(node->radIndex(), lengthIdx);
+
+        // std::cout << "node level l: " << node->lengthLevel() << " a: " << node->angleLevel() << " index l: " << lengthIdx << " r: " << node->radIndex() << " a: " << node->angleIndex();
+        // std::cout << " base motion: " << baseMotion[0].rotation() << " next: " << baseMotion[1].rotation() << " third: " << baseMotion[2].rotation() << std::endl;
+
+        unsigned offset = 0;
+        if (lengthIdx > 0 && lengthIdx % 2 == 0) {
+            offset = planner.propagator_.BaseMotion(node->radIndex(), lengthIdx/2).size();
+        }
+
+        if (scenario_.validator().ValidMotion(from, baseMotion, scenario_.Config(), planner.propagator_.RadiusOfCurvature(node->radIndex()), offset)) {
+            node->valid() = true;
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Checks if the motion from the provided state to the node is a valid motion.
+     * @param planner: planner for the problem 
+     * @param node: node to add on top of in the validation process
+     * @param from: state to add on top of the given node
+     * 
+     * @returns (auto) bool true if the motion between the node and the state is valid, false otherwise 
+     */
+    decltype(auto) validMotion(Planner& planner, Node* node, const State& from, const std::vector<State>& motion) {
         if (node->valid()) {
             return true;
         }
@@ -992,8 +1069,12 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         if (lengthIdx > 0 && lengthIdx % 2 == 0) {
             offset = planner.propagator_.BaseMotion(node->radIndex(), lengthIdx/2).size();
         }
+        
+        if (motion.size() == 0) {
+            return false;
+        }
 
-        if (scenario_.validator().ValidMotion(from, baseMotion, offset)) {
+        if (scenario_.validator().ValidMotion(from, motion, scenario_.Config(), planner.propagator_.RadiusOfCurvature(node->radIndex()), offset)) {
             node->valid() = true;
             return true;
         }
@@ -1074,6 +1155,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         }
 
         case LEFT: {
+            // std::cout << "indices " << newIndices[2] << " " << newIndices[2]*2;
             if (node->angleLevel() == 0) {
                 newIndices[2] += initNum_;
             }
@@ -1082,6 +1164,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             }
 
             newLevels[1]++;
+            // std::cout << " " << newIndices[2] << std::endl;
             break;
         }
 
@@ -1131,6 +1214,9 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         // MPT_LOG(INFO) << "adding a new node";
         node->setResolution({lengthLevel, angleLevel}, {radIndex, lengthIndex, angleIndex});
         planner.queue_.push(node);
+
+
+        // std::cout << " added " << parent->state() << " level l: " << lengthLevel << " a: " << angleLevel << " index l: " << lengthIndex << " r: " << radIndex << " a: " << angleIndex << std::endl;
         return node;
     }
 

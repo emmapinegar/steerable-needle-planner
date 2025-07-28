@@ -74,6 +74,7 @@ class Node {
     Scalar cost_to_come_{0};
     Scalar cost_to_go_{0};
     Scalar ang_total_{0};
+    Scalar curve_lim_{0};
     bool valid_{false};
 
     unsigned rank_{0};
@@ -200,6 +201,26 @@ class Node {
     const Scalar& ang_total() const {
         return ang_total_;
     }  
+
+
+    /**
+     * Gets the curvature limit (minimum possible radius in mm) at this node.
+     * 
+     * @returns Scalar curvature limit
+     */
+    Scalar& curve_lim() {
+        return curve_lim_;
+    }
+
+    /**
+     * Gets the curvature limit (minimum possible radius in mm) at this node.
+     * 
+     * @returns const Scalar curvature limit
+     */
+    const Scalar& curve_lim() const {
+        return curve_lim_;
+    }
+
 
     /**
      * Calculates the cost to come to the current state and the estimated cost to reach the goal. 
@@ -380,8 +401,9 @@ class Node {
             this->printState(this->parent()->state(), out);
         }
 
-        out << "End at: ";
+        out << " End at: ";
         this->printState(this->state(), out);
+        out << std::endl;
     }
 
     /**
@@ -394,8 +416,8 @@ class Node {
         auto const& q = state.rotation();
 
         out << "[" << p[0] << "," << p[1] << "," << p[2] << ","
-            << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << "]"
-            << std::endl;
+            << q.w() << "," << q.x() << "," << q.y() << "," << q.z() << "]";
+            // << std::endl;
     }
 };
 

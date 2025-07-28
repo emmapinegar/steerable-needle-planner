@@ -264,7 +264,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
      * @returns bool true if there is a valid motion between the states, false otherwise
      */
     bool link(const State& from, const State& to) const {
-        return validator_.ValidMotion(from, to);
+        return validator_.ValidMotion(from, to, cfg_);
     }
 
     /**
@@ -498,7 +498,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
      * @returns bool true if there is a valid motion between the states, false otherwise
      */
     bool link(const State& from, const State& to) const {
-        return validator_.ValidMotion(from, to);
+        return validator_.ValidMotion(from, to, cfg_);
     }
 
     /**

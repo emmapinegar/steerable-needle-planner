@@ -35,6 +35,7 @@
 #define SNP_UTILS_H
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 #include <mpt/se3_space.hpp>
@@ -157,10 +158,12 @@ struct Visitor {
 
     void vertex(const State& s) {
         const auto& p = s.translation();
-        out_ << p[0] << " " << p[1] << " " << p[2] << std::endl;
+        out_ << std::setprecision(15) << p[0] << " " << p[1] << " " << p[2]; // << std::endl;
     }
 
     void edge(const State& to) {
+        const auto& p = to.translation();
+        out_ << std::setprecision(15) << " " << p[0] << " " << p[1] << " " << p[2] << std::endl;
     }
 };
 

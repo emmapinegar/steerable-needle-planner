@@ -80,7 +80,7 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
     if (cos_theta > 0) {
         r = std::fmax(rad_curv, 0.5*d/std::sin(std::acos(cos_theta)));
     }
-
+    // std::cout << "r: " << r << std::endl;
     const Vec3 normal = (st.cross(sg)).normalized();
     const Vec3 center = sp + r*(normal.cross(st));
     const RealNum max_ang = std::acos(((gp - center).normalized()).dot((sp - center).normalized()));
@@ -306,10 +306,14 @@ class MotionPrimitivePropagator {
      * 
      * @returns State from after being transformed into the base frame of the provided motion primitives if successful
      */
-    std::optional<State> operator()(const State& from, const std::array<unsigned, 3>& indices) const {
+    std::optional<State> operator()(const State& from, const std::array<unsigned, 3>& indices, const RealNum& curve_lim) const {
         auto const& base_state = motion_primitives_[indices[0]][indices[1]].FinalState();
-
-        return utils::TransformToNewBase(base_state, this->ComputeStartPose(from, indices[2]));
+        RealNum rad = RadiusOfCurvature(indices[0]);
+        
+        if (curve_lim < rad) {
+            // std::cout << "radius: " << rad << " lim: " << curve_lim << std::endl;
+            return utils::TransformToNewBase(base_state, this->ComputeStartPose(from, indices[2]));
+        } 
     }
 
     /**
@@ -321,10 +325,13 @@ class MotionPrimitivePropagator {
      * @returns State from after being transformed into the base frame of the provided motion primitives if successful
      */
     std::optional<State> operator()(const State& from, const unsigned& rad_idx,
-                                    const unsigned& length_idx) const {
+                                    const unsigned& length_idx, const RealNum& curve_lim) const {
         auto const& base_state = motion_primitives_[rad_idx][length_idx].FinalState();
-
-        return utils::TransformToNewBase(base_state, from);
+        RealNum rad = RadiusOfCurvature(rad_idx);
+        if (curve_lim < rad) {
+            // std::cout << "radius: " << rad << " lim: " << curve_lim << std::endl;
+            return utils::TransformToNewBase(base_state, from);
+        } 
     }
 
     /**

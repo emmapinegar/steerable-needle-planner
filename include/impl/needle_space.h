@@ -111,10 +111,13 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
 
         const Vec3 sg = gp - sp;
         const Vec3 tang = (sq*Vec3::UnitZ()).normalized();
+        const Vec3 normal_vec = (tang.cross(sg.normalized())).normalized();
 
+        
         Distance y = sg.dot(tang);
 
         if (y < 0) {
+            // std::cout << "p: " << sp[0] << " " << sp[1] << " " << sp[2] << " y: " << y << std::endl;
             return double_range;
         }
 
@@ -123,7 +126,12 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
 
         Distance dist_to_center = (Vec2(x, y) - center_of_circle).norm();
 
+        Distance r_ = (d*d)/(2*x);
+        Scalar phi = std::atan2(y,r_ - x);
+        Distance l = phi*r_;
+
         if (dist_to_center < rad_curv) {
+            // std::cout << "p: " << sp[0] << " " << sp[1] << " " << sp[2] << " dist: " << dist_to_center << " l: " << l << " phi: " << phi << " r_: " << r_ << std::endl;
             return (rad_curv - dist_to_center + max_range);
         }
 
@@ -134,7 +142,13 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
         Distance straight_portion = dist_to_center * std::sin(alpha);
         Distance curve_portion = ang * rad_curv;
 
-        return curve_portion + straight_portion;
+
+
+
+        // std::cout << "p: " << sp[0] << " " << sp[1] << " " << sp[2] << " d: " << curve_portion + straight_portion << " l: " << l << " phi: " << phi << " r_: " << r_ << std::endl;
+        return l;
+        // return curve_portion + straight_portion;
+        // return snp::CurveLength(from, to);
     }
 };
 

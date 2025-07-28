@@ -509,6 +509,9 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
             if (n.parent()) {
                 visitor.edge(n.parent()->state());
+            } 
+            else {
+                visitor.edge(n.state());
             }
         }
     }
@@ -679,6 +682,9 @@ unbiasedSamplingLoop:
 
 
         auto [nearNode, d] = nearest(planner, randState).value();
+        
+        // std::cout << "neighbor: " << nearNode->state().translation()[0] << " " << nearNode->state().translation()[1] << " " << nearNode->state().translation()[2] << " d: " << d << std::endl; 
+
 
         State newState = randState;
 
@@ -692,14 +698,9 @@ unbiasedSamplingLoop:
             return;
         }
 
-
-
-
         newState = *propagated;
 
         auto const& newCurvature = scenario_.curvature(newState);
-
-
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
@@ -769,6 +770,7 @@ unbiasedSamplingLoop:
      */
     decltype(auto) validMotion(const State& a, const State& b) {
         Timer timer(Stats::validMotion());
+
         return scenario_.link(a, b);
     }
 };

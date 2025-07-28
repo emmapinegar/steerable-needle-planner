@@ -126,8 +126,9 @@ class MotionPrimitive {
                 tmp.translation() = proceed_quat*(p - center) + center;
                 tmp.rotation() = (proceed_quat*q).normalized();
                 states.emplace_back(tmp);
+                // std::cout << "[motion_primitive.h SteerFrom] p: " << tmp.translation()[0] << " " <<  tmp.translation()[1] << " " << tmp.translation()[2] << " q: " <<  tmp.rotation() << " y: " << (tmp.rotation()*Vec3::UnitY())[0] << " " <<  (tmp.rotation()*Vec3::UnitY())[1] << " " << (tmp.rotation()*Vec3::UnitY())[2] << " z: " << (tmp.rotation()*Vec3::UnitZ())[0] << " " <<  (tmp.rotation()*Vec3::UnitZ())[1] << " " << (tmp.rotation()*Vec3::UnitZ())[2]  <<std::endl;
             }
-
+            // std::cout << "[motion_primitive.h SteerFrom] p: " << p[0] << " " <<  p[1] << " " << p[2] << " q: " <<  q << std::endl;
             Quat proceed_quat(AngleAxis(max_ang, normal_vec));
             tmp.translation() = proceed_quat*(p - center) + center;
             tmp.rotation() = (proceed_quat*q).normalized();

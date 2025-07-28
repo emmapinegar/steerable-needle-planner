@@ -549,7 +549,7 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
     if (d < EPS || cos_alpha > 1 - EPS) {
         return d;
     }
-
+    const Vec3 tesst_normal = (st.cross(sg.normalized())).normalized();
     const Vec3 normal_vec = (st.cross(gt)).normalized();
 
     if (normal_vec.dot(sg.normalized()) > EPS) {
@@ -565,7 +565,7 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
     if (std::isnan(r * std::acos(cos_alpha))) {
         throw std::runtime_error("[CurveLength] Get nan curve length!");
     }
-
+    // std::cout << "norm: " << normal_vec << " test: " << tesst_normal << std::endl;
     return r * std::acos(cos_alpha);
 }
 
@@ -700,7 +700,7 @@ std::vector<State> AccurateInterpolate(const State& from, const State& to, const
 
     const Vec3 normal_vec = (st.cross(gt)).normalized();
     if (normal_vec.dot(sg.normalized()) > EPS) {
-        std::cout << "[AccurateInterpolate] Not on a plan, linear interpolation." << std::endl;
+        std::cout << "[AccurateInterpolate] Not on a plane, linear interpolation." << std::endl;
         const Quat uniformed_quat = Quat::FromTwoVectors(Vec3::UnitZ(), sg.normalized()).normalized();
         LinearInterpolate(sp, uniformed_quat, sg.normalized(), step_size, d + EPS, path, first_step);
         return path;

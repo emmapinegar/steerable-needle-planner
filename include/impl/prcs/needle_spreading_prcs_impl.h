@@ -780,7 +780,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 return;
             }
 
-            auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex());
+            auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex(), node->parent()->curve_lim());
 
             if (!propagated) {
                 recycle(node);
@@ -792,6 +792,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
+            node->curve_lim() = scenario_.curvature(node->state());
         }
 
         const bool inheritValidation = node->valid();
@@ -962,7 +963,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             offset = planner.propagator_.BaseMotion(node->radIndex(), lengthIdx/2).size();
         }
 
-        if (scenario_.validator().ValidMotion(from, baseMotion, offset)) {
+        if (scenario_.validator().ValidMotion(from, baseMotion, scenario_.Config(), planner.propagator_.RadiusOfCurvature(node->radIndex()), offset)){
             node->valid() = true;
             return true;
         }

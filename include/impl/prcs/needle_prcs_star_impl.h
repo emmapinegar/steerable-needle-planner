@@ -810,7 +810,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 recycle(node);
                 return;
             }
-
+            // TODO: find how to check curvature limit?? 
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             from = planner.propagator_.ComputeStartPose(node->parent()->state(), node->angleIndex());
             // MPT_LOG(INFO) << "parent ang " << node->parent()->ang_total() << " node ang " << DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
@@ -983,7 +983,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             offset = planner.propagator_.BaseMotion(node->radIndex(), lengthIdx/2).size();
         }
 
-        if (scenario_.validator().ValidMotion(from, baseMotion, offset)) {
+        if (scenario_.validator().ValidMotion(from, baseMotion, scenario_.Config(), planner.propagator_.RadiusOfCurvature(node->radIndex()), offset)) {
             node->valid() = true;
             return true;
         }
@@ -1122,6 +1122,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     Node* addNewNode(Planner& planner, Node* parent, const unsigned& radIndex, const unsigned& lengthLevel,
                      const unsigned& angleLevel, const unsigned& lengthIndex=0, const unsigned& angleIndex=0) {
         const State& pState = parent->state();
+        if (parent->curve_lim() == 0) {
+            parent->curve_lim() = scenario_.curvature(parent->state());
+        }
         auto from = planner.propagator_.ComputeStartPose(pState, angleIndex);
         auto duplicatedStart = similarState(planner, parent, from);
 
@@ -1129,7 +1132,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             return nullptr;
         }
 
-        auto propagated = planner.propagator_(from, radIndex, lengthIndex);
+        auto propagated = planner.propagator_(from, radIndex, lengthIndex, parent->curve_lim());
 
         if (!propagated) {
             return nullptr;
@@ -1150,6 +1153,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         node->cost() = parent->cost() + scenario_.CurveCost(pState, endState);
         node->costToGo() = scenario_.validator().CostToGo(endState);
         node->ang_total() = node->parent()->ang_total() + DirectionDifference(pState.rotation(), endState.rotation());
+        node->curve_lim() = scenario_.curvature(node->state());
         planner.queue_.push(node);
         return node;
     }
