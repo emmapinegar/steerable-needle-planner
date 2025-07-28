@@ -524,6 +524,8 @@ class NeedleSpreadingPAORRT : public
 
             if (n.parent()) {
                 visitor.edge(n.parent()->state());
+            } else {
+                visitor.edge(n.state());
             }
         }
     }

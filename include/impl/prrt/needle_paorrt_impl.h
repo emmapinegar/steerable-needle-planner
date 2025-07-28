@@ -529,6 +529,8 @@ class NeedlePAORRT : public PlannerBase<NeedlePAORRT<Scenario, maxThreads, repor
 
             if (n.parent()) {
                 visitor.edge(n.parent()->state());
+            } else {
+                visitor.edge(n.state());
             }
         }
     }

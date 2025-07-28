@@ -356,13 +356,13 @@ class RRT(object):
            status can be: _TRAPPED, _ADVANCED or _REACHED
         '''
         (nearest_node, magnitude) = T.find_nearest(parent)
-        print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
+        # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
         if magnitude > 1e-5:
             print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} printing parent")
             nearest_node.parent.needle_model.move_needle(nearest_node.needle_model.p, print_=True)
             return (_TRAPPED, nearest_node)
-        nearest_node.needle_model.get_new_lims(sample, print_=True)
-        q, phi = nearest_node.needle_model.ik(sample, print_=True)
+        nearest_node.needle_model.get_new_lims(sample, print_=False)
+        q, phi = nearest_node.needle_model.ik(sample, print_=False)
         if q is not None:
             
             magnitude = q[0]
@@ -382,7 +382,7 @@ class RRT(object):
                     # if q[1] < 1e-5:
                     #     new_needle = new_needle.move_needle(p[0:3,3], q=q, print_=True)
                     # else:
-                    new_needle = new_needle.move_needle(p[0:3,3], print_=True)
+                    new_needle = new_needle.move_needle(p[0:3,3], print_=False)
                     
                     if new_needle is not None:
                         q, phi = new_needle.ik(sample,print_=False)

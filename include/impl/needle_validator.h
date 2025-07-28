@@ -518,7 +518,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         return true;
     }
 
-    bool print_ = true;
+    bool print_ = false;
     // if (abs(gp[0] + 54.481084) < 1e-3) {
     //     print_ = true;
     // }
@@ -662,7 +662,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
 
     }
-    std::cout << "motion valid!!!\n\n\n" << std::endl;
+    if (print_) {
+        std::cout << "motion valid!!!\n\n\n" << std::endl;
+    }
     return true;
 }
 
@@ -708,9 +710,9 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
     // if (abs(result_p[0] + 50.9382384) < 1e-2) {
     //     print_ = true;
     // }
-    if (motion_rad > 100) {
-        print_ = true;
-    }
+    // if (motion_rad > 100) {
+    //     print_ = true;
+    // }
     if (cfg->variable_curvature) {
 
         result_q = (base_q*motion[motion.size()-1].rotation()).normalized();
@@ -766,39 +768,39 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
     }
 
 
-    while (!queue.empty()) {
-        auto p = queue.front();
-        queue.pop();
+    // while (!queue.empty()) {
+    //     auto p = queue.front();
+    //     queue.pop();
 
-        SizeType middle = p.first + (p.second - p.first)/2;
-        // std::cout << "new index " << middle << std::endl;
+    //     SizeType middle = p.first + (p.second - p.first)/2;
+    //     // std::cout << "new index " << middle << std::endl;
 
-        result_p = base_q * motion[middle].translation() + base_p;
-        if (!env->CollisionFree(result_p)) {
-            return false;                                        
-        }                              
+    //     result_p = base_q * motion[middle].translation() + base_p;
+    //     if (!env->CollisionFree(result_p)) {
+    //         return false;                                        
+    //     }                              
 
-        if (cfg->variable_curvature) {
+    //     if (cfg->variable_curvature) {
 
-            result_q = (base_q*motion[middle].rotation().normalized()).normalized();
-            result_t = (result_q*Vec3::UnitZ()).normalized();
-            result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, cfg->rad_curv);
+    //         result_q = (base_q*motion[middle].rotation().normalized()).normalized();
+    //         result_t = (result_q*Vec3::UnitZ()).normalized();
+    //         result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, cfg->rad_curv);
 
-            if (result_rad > motion_rad) {
-                std::cout << "radius not in curvature limits!!!!!!\n" << std::endl;
-                return false;
-            }
-            std::cout << "new index " << middle << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2] << " q: " << motion[middle].rotation().normalized() << " translation: " << motion[middle].translation()[0] << " " << motion[middle].translation()[1] << " " << motion[middle].translation()[2] << std::endl;
-        }
+    //         if (result_rad > motion_rad) {
+    //             std::cout << "radius not in curvature limits!!!!!!\n" << std::endl;
+    //             return false;
+    //         }
+    //         std::cout << "new index " << middle << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2] << " q: " << motion[middle].rotation().normalized() << " translation: " << motion[middle].translation()[0] << " " << motion[middle].translation()[1] << " " << motion[middle].translation()[2] << std::endl;
+    //     }
 
-        if (p.first < middle) {
-            queue.emplace(p.first, middle);
-        }
+    //     if (p.first < middle) {
+    //         queue.emplace(p.first, middle);
+    //     }
 
-        if (middle+1 < p.second) {
-            queue.emplace(middle+1, p.second);
-        }
-    }
+    //     if (middle+1 < p.second) {
+    //         queue.emplace(middle+1, p.second);
+    //     }
+    // }
     // std::cout << "motion valid!!!" << std::endl;
     return true;
 }

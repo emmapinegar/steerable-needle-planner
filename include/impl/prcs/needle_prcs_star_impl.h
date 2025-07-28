@@ -576,6 +576,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
             if (n->parent()) {
                 visitor.edge(n->parent()->state());
+            } else {
+                visitor.edge(n->state());
             }
         }
     }

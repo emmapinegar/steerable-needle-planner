@@ -62,4 +62,4 @@ def verify_var_curve(env, points_file, variable_curvature=True):
 
 
 if __name__=='__main__':
-    verify_var_curve("./envs/ReMIND_info_003.txt", "./../data/output/20250725-10-00-09_rrt_remind_003_ptcloud.txt")
+    verify_var_curve("./envs/ReMIND_info_003.txt", "./../data/output/20250728-12-52-18_rrt_remind_003_ptcloud.txt")

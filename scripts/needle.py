@@ -163,7 +163,7 @@ class SteerableNeedle:
                 # theta = -np.pi/2
 
 
-        if k == 0.0 or k < 1e-3:
+        if k == 0.0 or k < 1e-5:
             # print(f"going straight {p} theta: {theta}")
             l = pz
             k = 0.0
