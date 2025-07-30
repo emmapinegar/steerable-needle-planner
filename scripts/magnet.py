@@ -1,6 +1,6 @@
 
 import numpy as np
-
+import numpy.typing as npt
 
 _DEBUG = False
 
@@ -12,14 +12,15 @@ _MU_O = 4.0*np.pi*1e-7 # permeability of free space, should not be changed
 
 class Magnet():
 
-    def __init__(self, position, m, m_mag):
-        '''
+    def __init__(self, position:npt.NDArray, m:npt.NDArray, m_mag:float):
+        """
         Class to define magnet objects.
+
         Parameters:
-        position (3x1 array): x,y,z position vector from global origin to center of magnet
-        m (3x1 array): the dipole vector of the magnet, this will be normalized before making it of magnitide m_mag
-        m_mag (double): the strength/magnitude of the magnet's dipole
-        '''
+            position (3x1 ndarray): x,y,z position vector from global origin to center of magnet in millimeters
+            m (3x1 ndarray): the dipole vector of the magnet, this will be normalized before making it of magnitide m_mag
+            m_mag (float): the strength/magnitude of the magnet's dipole
+        """
         self.position = np.array(position/1000) #conversion to mm
         self.m = np.array(m)
         norm = np.linalg.norm(self.m)
@@ -28,16 +29,16 @@ class Magnet():
         self.mag = m_mag
         self.skew_m = vector_to_skew(self.m)
         
-    def get_Bb(self, other_magnet):
-        '''
-        Gets the field derivative and magnetic field at the location of this magnet
+    def get_Bb(self, other_magnet:'Magnet') -> tuple[npt.NDArray, npt.NDArray]:
+        """
+        Gets the field derivative and magnetic field at the location of this magnet.
+
         Parameters:
-        other_magnet (Magnet): the other magnet
+            other_magnet (Magnet): the other magnet
 
         Returns:
-        B (3x3 numpy array): the field derivative matrix
-        b (3x1 numpy array): the magnetic field 
-        '''
+            [B,b] ([3x3 ndarray, 3x1 ndarray]): [field derivative matrix, magnetic field vector]
+        """
         r_ij, r_mag, r_hat = self.get_r(other_magnet)
 
         coeff = _MU_O/(4.0*np.pi*r_mag**3)
@@ -51,33 +52,33 @@ class Magnet():
         b = np.matmul(b, other_magnet.m)
         return B, b
 
-    def get_r(self, other_magnet):
-        '''
-        Gets several vectors that look at the position difference between the two magnets
+    def get_r(self, other_magnet:'Magnet') -> tuple[npt.NDArray, float, npt.NDArray]:
+        """
+        Gets several vectors that look at the position difference between the two magnets.
+        
         Parameters:
-        other_magnet (Magnet): the other magnet
+            other_magnet (Magnet): the other magnet
 
         Returns:
-        r (3x1 numpy array): self.position - other_magnet.position
-        r_mag (double): ||r||
-        r_hat (3x1 numpy array): r/||r||
-        '''
+            [r,r_mag,r_hat] ([ndarray, float, ndarray]): [self.position - other_magnet.position, ||r||, r/||r||]
+        """
         r = self.position - other_magnet.position
         r_mag = np.linalg.norm(r) #added padding
         r_hat = np.divide(r,r_mag)
         r_mag = r_mag #+ 0.02
         return r, r_mag, r_hat
 
-    def get_force_torque(self, other_magnet):
-        '''
-        Gets the force and torque vectors this magnet experiences because of other magnet
+    def get_force_torque(self, other_magnet:'Magnet') -> tuple[npt.NDArray, npt.NDArray]:
+        """        
+        Gets the force and torque vectors this magnet experiences because of other magnet.
+
         Parameters:
-        other_magnet (Magnet): the other magnet in the interaction
+            other_magnet (Magnet): the other magnet in the interaction
 
         Returns:
-        f (3x1 numpy array): force vector this magnet experiences
-        tau (3x1 numpy array): vector the torque is about and the magnitude
-        '''
+            [f,tau] (ndarray, ndarray): force vector this magnet experiences , vector the torque is about and the magnitude
+        """
+
         B, b = self.get_Bb(other_magnet)
         f = np.matmul(np.transpose(B), self.m)
         tau = np.matmul(self.skew_m, b)
@@ -85,14 +86,15 @@ class Magnet():
    
 
 
-def vector_to_skew(vector):
+def vector_to_skew(vector:npt.NDArray) -> npt.NDArray:
     """
-    Given a vector returns the skew symmetric matrix for that vector
+    Given a vector returns the skew symmetric matrix for that vector.
+
     Parameters:
-    vector (3x1 numpy array): vector being turned into skew
+        vector (3x1 ndarray): vector being turned into skew
 
     Returns: 
-    shew (3x3 numpy array): skew symmetric matrix of vector
+        skew (3x3 ndarray): skew symmetric matrix of vector
     """
     skew = np.array([[0, -vector[2,0], vector[1,0]], [vector[2,0], 0, -vector[0,0]], [-vector[1,0], vector[0,0], 0]])
     return skew

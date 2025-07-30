@@ -691,7 +691,7 @@ unbiasedSamplingLoop:
         if (scenario_.PositionDist(nearNode->state(), randState) < snp::EPS) {
             return;
         }
-
+        nearNode->curve_lim() = scenario_.curvature(nearNode->state());
         auto propagated = propagator_(nearNode->state(), randState, rng_, nearNode->curve_lim());
 
         if (!propagated) {

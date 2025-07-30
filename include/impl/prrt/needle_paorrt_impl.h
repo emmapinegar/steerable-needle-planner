@@ -694,6 +694,7 @@ unbiasedSamplingLoop:
      * @param randState: random state to try to add
      */
     void addSample(Planner& planner, State& randState) {
+
         if (scenario_.collision(randState)) {
             return;
         }
@@ -701,13 +702,14 @@ unbiasedSamplingLoop:
         randState.cost() = planner.costUpperBound() * uniform01_(rng_);
 
         auto [nearNode, d] = nearest(planner, randState).value();
+        nearNode->curve_lim() = scenario_.curvature(nearNode->state());
 
         State newState = randState;
 
         if (scenario_.PositionDist(nearNode->state(), randState) < snp::EPS) {
             return;
         }
-
+        // std::cout << " curve lim: " << nearNode->curve_lim() << std::endl;
         auto propagated = propagator_(nearNode->state(), randState, rng_, nearNode->curve_lim());
 
         if (!propagated) {
@@ -715,6 +717,11 @@ unbiasedSamplingLoop:
         }
 
         newState = *propagated;
+
+        // std::cout << "adding new state" << std::endl;
+        // PrintState(randState);
+        // PrintState(newState);
+        // PrintState(nearNode->state());
 
         auto const& newCurvature = scenario_.curvature(newState);
 
@@ -734,6 +741,7 @@ unbiasedSamplingLoop:
         }
 
         newState.cost() = newCost;
+
 
         if (auto traj = validMotion(nearNode->state(), newState)) {
             auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, newState);

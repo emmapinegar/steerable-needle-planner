@@ -101,7 +101,8 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
 
     result.translation() = proceed_quat*(sp - center) + center;
     result.rotation() = (proceed_quat*sq).normalized();
-
+    // PrintState(result);
+    // std::cout << "[ConnectWithCurveDirectly]" << std::endl;
     if (std::isnan(result.rotation().w())) {
         // PrintState(from);
         // PrintState(to);
@@ -178,7 +179,8 @@ std::optional<State> RandomForward(const State& from, const State& to, RNG& rng,
     Quat proceed_quat(AngleAxis(max_ang, normal_vec));
     result.translation() = proceed_quat*(p - center) + center;
     result.rotation() = (proceed_quat*q).normalized();
-
+    // std::cout << "theta: " << theta << " ell: " << ell << " center: " << center[0] << " " << center[1] << " " << center[2] << " max angle: " << max_ang <<  " rad: " << rad_curv << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << std::endl; 
+    // PrintState(result);
     return result;
 }
 
@@ -202,6 +204,7 @@ class CurvePropagator {
      */
     template <typename RNG>
     std::optional<State> operator()(const State& from, const State& to, RNG& rng, const RealNum& curve_lim) {
+        // std::cout << "ConnectDirectly" << std::endl;
         return utils::ConnectPointWithCurveDirectly(from, to, rng, normal_, curve_lim, steer_step_);
     }
 
@@ -230,6 +233,7 @@ class RandomForwardPropagator {
      */
     template <typename RNG>
     std::optional<State> operator()(const State& from, const State& to, RNG& rng, RealNum& curve_lim) {
+        // std::cout << "RandomForward" << std::endl;
         return utils::RandomForward(from, to, rng, uniform_, curve_lim, steer_step_, num_attempt_, false);
     }
 

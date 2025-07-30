@@ -3,7 +3,7 @@ from needle import SteerableNeedle
 from environment import ReMINDEnvironment
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-
+import os
 I = 0
 
 def verify_var_curve(env, points_file, variable_curvature=True):
@@ -18,14 +18,14 @@ def verify_var_curve(env, points_file, variable_curvature=True):
     # print(points)
     # print([points[0,3], points[0,4], points[0,5], points[0,6]])
     # r = R.from_quat([points[1,3], points[1,4], points[1,5], points[1,6]], scalar_first=True)
-    r = R.from_quat([0.707107, 0.707107, 0.0, 0.0], scalar_first=False)
-    print(r.as_matrix())
+    # r = R.from_quat([0.707107, 0.707107, 0.0, 0.0], scalar_first=False)
+    # print(r.as_matrix())
 
 
-    r_ = R.from_quat([0.0, 0.0178562, 0.0, 0.999841], scalar_first=False)
-    print(r_.as_matrix())
+    # r_ = R.from_quat([0.0, 0.0178562, 0.0, 0.999841], scalar_first=False)
+    # print(r_.as_matrix())
 
-    print(np.matmul(r.as_matrix(),r_.as_matrix()))
+    # print(np.matmul(r.as_matrix(),r_.as_matrix()))
     samples = points[:,0:3]
     parents = points[:,3:6]
     gw = np.eye(4)
@@ -58,8 +58,13 @@ def verify_var_curve(env, points_file, variable_curvature=True):
 
     path, plan, phi, cost = rrt.rebuild_tree(pe.robot, pe.goal, phi_constraint=False)
 
-    pe.draw_path(None, rrt)
+    # pe.draw_path(None, rrt)
 
 
 if __name__=='__main__':
-    verify_var_curve("./envs/ReMIND_info_003.txt", "./../data/output/20250728-12-52-18_rrt_remind_003_ptcloud.txt")
+    dir = "./../data/output/"
+    files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt")]
+    print(files)
+    for file in files:
+        print(f"\nprocessing {file}...")
+        verify_var_curve("./envs/ReMIND_info_003.txt", dir + file)

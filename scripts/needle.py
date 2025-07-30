@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 import matplotlib.pyplot as plt
 from math import cos, sin, atan2, pi, inf
 from magnet import Magnet
@@ -14,20 +15,22 @@ _MAXPHI = np.pi/2
 _MAXK = 0.072
 
 
-
-
+# import warnings
+# warnings.filterwarnings("error", category=RuntimeWarning) # google AI Overview when searching try except runtime warning
 
 class SteerableNeedle:
     def __init__(self, needle_lims=None, p=None, gw=None, q=None, phi=0, l=0, phi_constraint=False, skull_tree=None, r_curvature_line=None, variable_curvature=False):
-        '''
+        """
         Steerable needle object that can be used to calculate forward kinematics, inverse kinematics, test reachability of an action, etc. 
-        needle_lims (array): [[arc min, arc max], [curvature min, curvature max], [theta min, theta max]]
-        p (array): [x, y, z] location of the needle in world frame, overriden by location specified in gw
-        gw (array): transformation matrix of the needle from needle to world frame
-        q (array): [l (arc), k (curvature), theta (angle)] the control action used to get to the current needle location/pose
-        skull_tree (kdtree): kdtree used to find the closest point in the skull
-        r_curvature_line (array): array holding values for defining the curvature best fit line
-        '''
+
+        Parameters:
+            needle_lims (3x2 ndarray): [[arc min, arc max], [curvature min, curvature max], [theta min, theta max]]
+            p (array): [x, y, z] location of the needle in world frame, overriden by location specified in gw
+            gw (3x3 ndarray): transformation matrix of the needle from needle to world frame
+            q (tuple[float, float , float]): [l (arc), k (curvature), theta (angle)] the control action used to get to the current needle location/pose
+            skull_tree (kdtree): kdtree used to find the closest point in the skull
+            r_curvature_line (array): array holding values for defining the curvature best fit line
+        """
         if q is None:
             self.q = np.array([0, 0, 0])
         else:
@@ -59,13 +62,15 @@ class SteerableNeedle:
         self.variable_curvature = variable_curvature
 
     def fk(self, q):
-        '''
-        Compute forward kinematics for the robot using action q
-        q (array): [l (arc), k (curvature), theta (angle)] the action to apply to move the current needle
+        """
+        Compute forward kinematics for the robot using action q.
+
+        Parameters:
+            q (tuple[float, float, float]): [l (arc), k (curvature), theta (angle)] the action to apply to move the current needle
+
         Returns:
-        g_new (array): a transformation matrix g_new from the resulting needle pose to world frame
-        
-        '''
+            g_new (3x3 ndarray): a transformation matrix g_new from the resulting needle pose to world frame
+        """
         l = q[0]
         k = q[1]
         theta = q[2]
@@ -83,13 +88,16 @@ class SteerableNeedle:
         return g_new
 
     def ik(self, p, print_=False):
-        '''
-        Compute inverse kinematics for the robot with position p
-        p (array): [x, y, z] desired location of the needle in world frame
+        """
+        Compute inverse kinematics for the robot with position p.
+
+        Parameters:
+            p (array): [x, y, z] desired location of the needle in world frame
+
         Returns:
-        q (array): [l (arc), k (curvature), theta (angle)] the action used to move the current needle to the specified p
-                        None if the desired p is not reachable
-        '''
+            q (tuple[float, float, float] | None): [l (arc), k (curvature), theta (angle)] the action used to move the current needle to the specified p
+                            None if the desired p is not reachable
+        """
         dp = np.matmul(self.gw_inv, np.transpose(np.append(p,1)))
         px = dp[0]
         py = dp[1]
@@ -102,7 +110,6 @@ class SteerableNeedle:
                 print(f"not reachable {print_str} k: {self.needle_lims[1,1]}")
             return None, None
         if np.linalg.norm(dp[0:3]) < 5e-10:
-            # print(f"close enough sample: {np.round(p.reshape(3,),4)} parent: {np.round(self.p.reshape(3,),4)} dp: {np.round(dp[0:3],10)}")
             return (0, 0, 0), 0
 
         theta = atan2(py,px) 
@@ -110,61 +117,8 @@ class SteerableNeedle:
 
         k = (2*xy_sq)/(np.sum(np.square(dp[0:3])))
 
-        # if xy_sq < 1e-4:
-        #     print(xy_sq)
-        #     theta = np.pi/2 - theta
-        #     k = 0.0
-
-        # if k < 1e-3:
-        #     k = 0.0
-
-        # if xy_sq < 5e-3 and k < 1e-4 and (abs(theta) < np.pi/2-1e-2 or abs(theta) > np.pi/2 + 1e-2) :
-            
-        #     print(f"meets conditions sample: {np.round(p.reshape(3,),4)} parent: {np.round(self.p.reshape(3,),4)} dp: {np.round(dp[0:3],15)} xy_sq: {round(xy_sq,15)} k: {round(k,10)} theta: {round(theta,10)}")
-        #     k = 0.0
-            
-            # if theta < 0.5:
-            #     theta = -np.pi/2 #- theta
-            # else:
-            #     theta = np.pi/2
-
-            # if abs(p[0] + 54.8557) < 1e-3 and abs(p[1] - 9.2278) < 1e-3 and abs(p[2] - 35.8112) < 1e-3 and xy_sq < 1e-3:
-            #     # print(f"meets conditions sample: {np.round(p.reshape(3,),4)} parent: {np.round(self.p.reshape(3,),4)} dp: {np.round(dp[0:3],10)} xy_sq: {round(xy_sq,10)} k: {round(k,10)} theta: {round(theta,10)}")
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # if abs(p[0] + 53.81) < 1e-3 and abs(p[1] - 9.7224) < 1e-3 and abs(p[2] - 35.8112) < 1e-3 and xy_sq < 1e-3:
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # elif abs(p[0] + 57.7125) < 1e-3 and abs(p[1] - 8.0703) < 1e-3 and abs(p[2] - 36.0446) < 1e-3 and xy_sq < 1e-3:
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # elif abs(p[0] + 55.183) < 1e-3 and abs(p[1] - 10.3066) < 1e-3 and abs(p[2] - 39.6491) < 1e-3 and xy_sq < 1e-3:
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # elif abs(p[0] + 54.3057) < 1e-3 and abs(p[1] - 7.4147) < 1e-3 and abs(p[2] - 37.161) < 1e-3 and xy_sq < 5e-3:
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # elif abs(p[0] + 56.1111) < 1e-3 and abs(p[1] - 13.2681) < 1e-3 and abs(p[2] - 39.583) < 1e-3 and xy_sq < 5e-3:
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # elif abs(p[0] + 55.5102) < 1e-3 and abs(p[1] - 11.3855) < 1e-3 and abs(p[2] - 43.4869) < 1e-3 and xy_sq < 5e-3:
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # elif abs(p[0] + 56.7201) < 1e-3 and abs(p[1] - 13.8774) < 1e-3 and abs(p[2] - 39.1084) < 1e-3 and xy_sq < 5e-3:
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # elif abs(p[0] + 54.0318) < 1e-3 and abs(p[1] - 6.5118) < 1e-3 and abs(p[2] - 34.7374) < 1e-3 and xy_sq < 5e-3:
-            #     k = 0.0
-            #     theta = -np.pi/2
-            # else:
-                # if print_:
-                
-                # k = 0.0
-                # theta = -np.pi/2
-
 
         if k == 0.0 or k < 1e-5:
-            # print(f"going straight {p} theta: {theta}")
             l = pz
             k = 0.0
             phi = 0.0
@@ -174,8 +128,6 @@ class SteerableNeedle:
             r = (np.sum(np.square(dp[0:3])))/(2*xy_sq)
             k = 1/r
             phi = atan2(pz, r - xy_sq)
-            # if _DEBUG or print_:
-            #     print(f"phi: {phi} \tpz: {pz} \tr: {r} \txy_sq: {xy_sq} r-xy: {r-xy_sq}")
             if phi < 0:
                 phi = 2*np.pi + phi
             l = phi*r
@@ -233,11 +185,18 @@ class SteerableNeedle:
 
    
     def reachable(self, p, print_=False, check_y=False, oldcheck=False):
-        '''
-        Tests if a point p is reachable by the current pose of the needle given the curvature limits
-        p (array): [x, y, z] desired location of the needle in the current needle frame
-        Returns True if the point is reachable, False otherwise
-        '''
+        """
+        Tests if a point p is reachable by the current pose of the needle given the curvature limits.
+
+        Parameters:
+            p (array): [x, y, z] desired location of the needle in the current needle frame
+            print_ (bool): debugging print flag if True, default is False
+            check_y (bool): checks level of y if True and oldcheck is False, default is False
+            oldcheck (bool): performs older published Rg RRT reachability check if True, default is False
+
+        Returns:
+            reach (bool): True if the point is reachable, False otherwise
+        """
         if oldcheck:
             xy_sq = p[0]**2 + p[1]**2
             
@@ -266,20 +225,22 @@ class SteerableNeedle:
             dist_to_center = np.linalg.norm(np.array([x-1/self.needle_lims[1,1], y]))
             reach = dist_to_center >= 1/self.needle_lims[1,1] - 5e-2
             if (_DEBUG or print_)and not reach:
-                print(f"dp: {np.round(p,4)} \treach: {reach} \td: {round(d, 4)} \tdist to center: {round(dist_to_center,4)} \tlim: {round(1/self.needle_lims[1,1],4)}") #\ty: {round(y,4)} \tx: {round(x,4)}
+                print(f"dp: {np.round(p,4)} \treach: {reach} \td: {round(d, 4)} \tdist to center: {round(dist_to_center,4)} \tlim: {round(1/self.needle_lims[1,1],4)}")
 
-            # if not reach:
-            #     print(f"p: {np.round(p,4)} \treach: {reach} \td: {round(d, 4)} \tdist to center: {round(dist_to_center,4)} \tlim: {round(1/self.needle_lims[1,1],4)}") #\ty: {round(y,4)} \tx: {round(x,4)}                
             return reach
 
 
     def get_lims(self, gw, print_=False):
-        '''
-        Calulates limits for needle_lims based on position p.
-        p (array): [x, y, z] position of needle in BLANK frame
+        """
+        Calulates limits for needle_lims based on position and orientation in gw.
+
+        Parameters:
+            gw (4x4 ndarray): transformation matrix for the new point in hte world frame
+            print_ (bool): debugging print flag if True, default is False
+            
         Returns:
-        lims (array): [[arc min, arc max], [curvature min, curvature max], [theta min, theta max]]
-        '''
+            lims (3x2 ndarray): [[arc min, arc max], [curvature min, curvature max], [theta min, theta max]]
+        """
         if self.variable_curvature:
             # get the closest point on the skull from the screw, and its distance
             skullpoint = np.asarray(closestPoint(self.skull_tree, gw[0:3,3]))
@@ -290,7 +251,7 @@ class SteerableNeedle:
             other_vector = np.array([[gw[0,0]], [gw[1,0]], [gw[2,0]]])
             norm_m = screwmagdipole/np.linalg.norm(screwmagdipole)
             manipmagdipole = other_vector #np.cross(norm_m, other_vector, axis=0)
-            manipmagdipole = manipmagdipole/np.linalg.norm(manipmagdipole)
+            
 
             # has to be transposed because KD-tree expects 1x3 while Magnet Class expects 3x1
             skulltranspose = skullpoint.reshape(3,1)
@@ -301,7 +262,7 @@ class SteerableNeedle:
             screwMag = Magnet(screwtranspose, screwmagdipole, _SCREWMAG_STRENGTH)
 
             f, tau = screwMag.get_force_torque(manipMag)
-            # print(f"f: {f.reshape(-1,)} tau: {tau.reshape(-1)}")
+
             maxCurvature = (self.r_curvature_line[0] * np.linalg.norm(tau) + self.r_curvature_line[1])/1000
             if _DEBUG or print_:
                 print(f"skull point: {np.round(skullpoint,4)}  |r|: {round(np.linalg.norm(skullpoint - gw[0:3, 3]),4)} lim: {round(1/maxCurvature,10)} |tau|: {round(np.linalg.norm(tau),10)}")
@@ -317,7 +278,12 @@ class SteerableNeedle:
 
     def get_new_lims(self, p, print_=False):
         """
-        
+        Updates the curvature limits for the needle given the new target point.
+
+        Parameters:
+            p (3x1 ndarray): the new target point for the needle in the world frame
+            print_ (bool): debugging print flag if True, default is False
+
         """
         if self.variable_curvature:
             sg = p - self.p
@@ -331,7 +297,8 @@ class SteerableNeedle:
             # other_vector = np.array([[self.gw[0,0]], [self.gw[1,0]], [self.gw[2,0]]])
             # norm_m = screwmagdipole/np.linalg.norm(screwmagdipole)
             manipmagdipole = np.cross(sg_hat, screwmagdipole, axis=0)
-            manipmagdipole = manipmagdipole/np.linalg.norm(manipmagdipole)
+            if np.linalg.norm(manipmagdipole) < 1e-5:
+                manipmagdipole = np.array([[self.gw[0,0]],[self.gw[1,0]],[self.gw[2,0]]])
 
             # test =  self.gw[0:3,3].reshape(3,) - 10*manipmagdipole.reshape(3,)
             # test = test.reshape(3,1)
@@ -348,7 +315,6 @@ class SteerableNeedle:
             screwMag = Magnet(screwtranspose, screwmagdipole, _SCREWMAG_STRENGTH)
 
             f, tau = screwMag.get_force_torque(manipMag)
-            # print(f"f: {f.reshape(-1,)} tau: {tau.reshape(-1)}")
             maxCurvature = (self.r_curvature_line[0] * np.linalg.norm(tau) + self.r_curvature_line[1])/1000
             if _DEBUG or print_:
                 print("new lim calcs")
@@ -364,9 +330,15 @@ class SteerableNeedle:
     def move_needle(self, p, q=None, phi=0.0, print_=False):
         '''
         "Moves" the current needle to the new desired position p if reachable.
-        p (array): [x, y, z] desired location of the needle in world frame
+
+        Parameters:
+            p (array): [x, y, z] desired location of the needle in world frame
+            q (tuple[float, float, float] | None): the control action to move the needle with, default is None and acction will be found
+            phi (float): new phi amount between this needle and the new needle being created, default is 0.0 and will be found if q is None
+            print_ (bool): debugging print flag if True, default is False
+        
         Returns:
-        new_needle (SteerableNeedle): a new instance with the qualities resulting from moving the needle to p
+            new_needle (SteerableNeedle | None): a new instance with the qualities resulting from moving the needle to p
                         None if the point p is not reachable with needle constraints
         '''
         if q is None:
@@ -381,38 +353,55 @@ class SteerableNeedle:
         else:
             return None
 
-    def draw_fk(self, q, color='b', show=False, base_color='g'):
-        '''
-        Draw the robot with the provided configuration advancing using control action q
-        '''
+    def draw_fk(self, q, color='b', show=False):
+        """
+        Draw the needle with the provided configuration advancing using control action q.
+
+        Parameters:
+            q (tuple[float, float, float]): the control action to advance the needle
+            color (char): the color to draw the robot point, default is 'b' (blue)
+            show (bool): shows the plot with blocking if true, default is false
+        """
         g = self.fk(q)
         pts = g[0:3,3]
 
-        style = color+'o'
         plt.plot(pts[0], pts[1], pts[3], color)
         if show:
             plt.show(block=True)
 
-    def draw(self, p, color='b', show=False, base_color='g'):
-        '''
-        Draw the robot with the provided configuration/location p
-        '''
-        style = color+'o'
+    def draw(self, p, color='b', show=False):
+        """
+        Draw the robot with the provided configuration/location p.
+
+        Parameters:
+            p (3x1 ndarray): the point to draw the robot at
+            color (char): the color to draw the robot point, default is 'b' (blue)
+            show (bool): shows the plot with blocking if true, default is false
+        """
+
         plt.plot(p[0], p[1], p[2], color)
         if show:
             plt.show(block=True)
 
     def change_p(self, p):
-        '''
-        Changes the p, updating the transformation matrices in the process
-        '''
+        """
+        Changes the needle's p, updating the transformation matrices in the process.
+
+        Parameters:
+            p (3x1 ndarray): the new location for the needle
+
+        """
         self.gw[0:3,3] = p
         self.change_gw(self.gw)
 
-    def change_gw(self, gw):
-        '''
-        Changes the gw, updating the p and transformation matrices in the process
-        '''
+    def change_gw(self, gw:npt.NDArray):
+        """
+        Changes the needle's gw, updating the p and transformation matrices in the process.
+
+        Parameters:
+            gw (3x3 ndarray): the new tranformation matrix for the needle, containing the new location
+
+        """
         self.gw = gw
         self.gw_inv = np.linalg.inv(self.gw)
         self.p = gw[0:3,3]
@@ -420,42 +409,22 @@ class SteerableNeedle:
 
 
 # LIKELY NEEDS TO BE CHANGED
-def closestPoint(skulltree:KDTree, position):
+def closestPoint(skulltree:KDTree, position) -> npt.NDArray:
     """
     Given a skull segmentation and a point in 3D, returns the closest point on the skull to that point and its distance.
+
     Parameters:
-    skulltree (kdtree): kd tree made from a segmentation of the patients skull
-    position (1x3 numpy array): 3D point in the skull to find distance to
+        skulltree (kdtree): kd tree made from a segmentation of the patients skull
+        position (1x3 numpy array): 3D point in the skull to find distance to
     
     Returns:
-    distance (float64): distance from the given position to the closest point on the skull
-    skullPoint (1x3 numpy array):
+        skullpoint (1x3 ndarray): point of skull closest to position, with an extra amount of padding added for safety
 
     """
     padding = 20 # CHANGE this value to reflect real world, also might not be needed here
     # may need to convert the frame of points IMPORTANT
     
     dist_, ind= skulltree.query(position.reshape(1, -1), k = 1, return_distance=True) 
-    # p1 = skulltree.data[ind[0,0]]
-    # p2 = skulltree.data[ind[0,1]]
-    # p3 = skulltree.data[ind[0,2]]
-    # p4 = skulltree.data[ind[0,3]]
-    # p5 = skulltree.data[ind[0,4]]
-    # p6 = skulltree.data[ind[0,5]]
-    # p7 = skulltree.data[ind[0,6]]
-    # p8 = skulltree.data[ind[0,7]]
-    # p9 = skulltree.data[ind[0,8]]
-    # p10 = skulltree.data[ind[0,9]]
-    # print(f"{p1[0]} {p1[1]} {p1[2]}")
-    # print(f"{p2[0]} {p2[1]} {p2[2]}")
-    # print(f"{p3[0]} {p3[1]} {p3[2]}")
-    # print(f"{p4[0]} {p4[1]} {p4[2]}")
-    # print(f"{p5[0]} {p5[1]} {p5[2]}")
-    # print(f"{p6[0]} {p6[1]} {p6[2]}")
-    # print(f"{p7[0]} {p7[1]} {p7[2]}")
-    # print(f"{p8[0]} {p8[1]} {p8[2]}")
-    # print(f"{p9[0]} {p9[1]} {p9[2]}")
-    # print(f"{p10[0]} {p10[1]} {p10[2]}")
 
 
     skullpoint = skulltree.data[ind[0,0]] 

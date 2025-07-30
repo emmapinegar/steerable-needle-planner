@@ -1142,7 +1142,7 @@ class ValidatorBase {
     RealNum manip_mag_;
     RealNum torque_b_;
     RealNum torque_m_;
-    RealNum max_curvature_ = 20;
+    RealNum max_curvature_ = 14;
 };
 
 template<typename State>

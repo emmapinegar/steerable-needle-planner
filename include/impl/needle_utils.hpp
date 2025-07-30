@@ -563,6 +563,7 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
     const RealNum r = 0.5 * d / std::sqrt((1 - cos_alpha) / 2);
 
     if (std::isnan(r * std::acos(cos_alpha))) {
+        std::cout << "calpha: " << cos_alpha << " r: " << r << " st: " << st[0] << " " << st[1] << " " << st[2] << " gt: " << gt[0] << " " << gt[1] << " " << gt[2] << std::endl; 
         throw std::runtime_error("[CurveLength] Get nan curve length!");
     }
     // std::cout << "norm: " << normal_vec << " test: " << tesst_normal << std::endl;
