@@ -207,6 +207,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
 
 /**
  * verifies that the problem is at least potentially possible to solve
+ * 
  * @param start: the starting state for the motion planning problem
  * @param goal: the goal state for the motion planning problem
  * @param pos_tolerance: the postion tolerance used for saying not fully reached but "close enough"
@@ -294,6 +295,7 @@ bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNu
 
 /**
  * Checks if the state exceeds the angle constraint from the start, does not account for path. 
+ * 
  * @param s: the state s being considered
  * @param start: the starting state for the planner 
  * @param ang_constraint_rad: the maximum angle for the needle to follow (in radians)
@@ -309,7 +311,8 @@ bool ExceedAngleConstraint(const State& s, const State& start, const RealNum ang
 
 
 /**
- * Checks that the state s is collision-free, in the limits of the trumpet workspace, and capable of reaching the goal state
+ * Checks that the state s is collision-free, in the limits of the trumpet workspace, and capable of reaching the goal state.
+ * 
  * @param s: the state s being considered
  * @param start: the starting state for the planner 
  * @param goal: the goal state 
@@ -357,6 +360,7 @@ bool ValidFullState(const State& s, const State& start, const State& goal, EnvPt
 
 /**
  * Checks that the state s is collision-free and capable of reaching the goal state.
+ * 
  * @param s: the state s being considered
  * @param goal: the goal state
  * @param pos_tolerance: the tolerance for being "close enough" to the goal position
@@ -399,7 +403,16 @@ bool ValidStateWithGoalReachability(const State& s, const State& goal, const Rea
 }
 
 
-
+/**
+ * Gets the curvature limit at the specific position and orientation given the configuraion.
+ * 
+ * @param sp: the position vector in world frame
+ * @param sq: the quaternion representing the orientation in the world frame
+ * @param cfg: the configuration for the planning problem
+ * @param rad_curv: the global minimum feasible radius of curvature
+ * 
+ * @returns RealNum the local minimum radius of curvature for the orientation, greater than or equal to global minimum
+ */
 RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNum& rad_curv) {
 
     if (cfg->variable_curvature) {
@@ -443,7 +456,17 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
 }
 
 
-
+/**
+ * Gets the curvature limit at the specific position and motion direction given the configuraion.
+ * 
+ * @param sp: the position vector in world frame
+ * @param sq: the quaternion representing the orientation in the world frame, not of consequence to calcs here
+ * @param normal_vec: the vector that the motion is about, and torque consequently
+ * @param cfg: the configuration for the planning problem
+ * @param rad_curv: the global minimum feasible radius of curvature
+ * 
+ * @returns RealNum the local minimum radius of curvature for the orientation, greater than or equal to global minimum
+ */
 RealNum GetCurvature(const Vec3& sp, const Quat& sq, const Vec3& normal_vec, ConfigPtr cfg, const RealNum& rad_curv) {
 
     if (cfg->variable_curvature) {
@@ -502,6 +525,7 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, const Vec3& normal_vec, Con
  * @param env: environment to check against
  * @param rad_curv: radius of curvature minimum limit 
  * @param resolution: resolution to check along of the arc length of the path for collisions
+ * @param cfg: the configuration for the planning problem
  * 
  * @returns bool true if the motion is valid and collision free, false otherwise
  */
@@ -519,7 +543,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     }
 
     bool print_ = false;
-    // if (abs(gp[0] + 54.481084) < 1e-3) {
+    // if ((abs(gp[0] + 64.00000) < 1e-5) || (abs(gp[0] + 48.79248457) < 1e-5) || (abs(gp[0] + 49.55040879) < 1e-5) || (abs(gp[0] + 50.43421668) < 1e-5) || (abs(gp[0] + 50.97510645) < 1e-5) || (abs(gp[0] + 55.2979713) < 1e-5) || (abs(gp[0] + 56.01266512) < 1e-5)) {
     //     print_ = true;
     // }
 
@@ -543,6 +567,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
             result_p = sp + st * l;
             // TODO: check curvature along path
             if (!env->CollisionFree(result_p)) {
+                if (print_) {
+                    std::cout << "collision!" << std::endl;
+                }
                 return false;
             }
 
@@ -587,6 +614,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         }
 
         if (DistanceToTrumpetBoundary(sp, st, gp, result_rad) > EPS) {
+            if (print_) {
+                std::cout << "gp not reachable" << std::endl;
+            }
             return false;
         } 
 
@@ -599,6 +629,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         }
 
         if (DistanceToTrumpetBoundary(sp, st, gp, result_rad) > EPS) {
+            if (print_) {
+                std::cout << "sp not reachable" << std::endl;
+            }
             return false;
         }         
     }
@@ -673,6 +706,8 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
  * @param new_base: starting state
  * @param motion: motion from starting state, composed of other states
  * @param env: environment to collision check against 
+ * @param cfg: the configuration for the planning problem
+ * @param motion_rad: radius of the motion
  * @param offset: the offset index for the motion vector, states below the offset are ignored?? default is 0
  * 
  * @returns bool true if the motion is collision free, false otherwise
@@ -809,6 +844,8 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
  * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
  * @param motion: motion from starting state, composed of other states
  * @param env: environment to collision check against 
+ * @param cfg: the configuration for the planning problem
+ * @param motion_rad: radius of the motion
  * @param offset: the offset index for the motion vector, states below the offset are ignored?? default is 0
  * 
  * @returns bool true if the motion is collision free, false otherwise
@@ -830,7 +867,7 @@ bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const ConfigPtr c
     Quat result_q;
     RealNum result_rad;
 
-    std::cout << "offset: " << offset << " length: " << motion.size() << std::endl;
+    // std::cout << "offset: " << offset << " length: " << motion.size() << std::endl;
 
     // TODO: add checking base curvature limit for this function too?
 
@@ -852,7 +889,7 @@ bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const ConfigPtr c
             if (result_rad < motion_rad) {
                 return false;
             }
-            std::cout << "rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " size: " << motion.size() << std::endl;
+            // std::cout << "rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " size: " << motion.size() << std::endl;
         }
 
         if (p.first < middle) {

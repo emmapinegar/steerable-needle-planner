@@ -722,22 +722,25 @@ unbiasedSamplingLoop:
             planner.nn_.insert(newNode);
 
             if (isGoal) {
-                auto const& goalCurvature = scenario_.curvature(goalState);
-                auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
+                if (auto traj = validMotion(newState, goalState))
+                {
+                    auto const& goalCurvature = scenario_.curvature(goalState);
+                    auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
 
-                auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
-                if (scenario_.valid(goalState, goalLength, goalAngle)) {
-                    auto const& goalCost = newNode->cost() + scenario_.CurveCost(newState, goalState)
-                                            + scenario_.FinalStateCost(goalState);
+                    auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                    if (scenario_.valid(goalState, goalLength, goalAngle)) {
+                        auto const& goalCost = newNode->cost() + scenario_.CurveCost(newState, goalState)
+                                                + scenario_.FinalStateCost(goalState);
 
-                    if (goalCost < planner.bestCost_) {
-                        Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
-                        goalNode->length() = goalLength;
-                        goalNode->cost() = goalCost;
-                        goalNode->ang_total() = goalAngle;
-                        goalNode->curve_lim() = goalCurvature;
-                        // std::cout << "angle total: " << goalAngle << std::endl;
-                        planner.foundGoal(goalNode);
+                        if (goalCost < planner.bestCost_) {
+                            Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
+                            goalNode->length() = goalLength;
+                            goalNode->cost() = goalCost;
+                            goalNode->ang_total() = goalAngle;
+                            goalNode->curve_lim() = goalCurvature;
+                            // std::cout << "angle total: " << goalAngle << std::endl;
+                            planner.foundGoal(goalNode);
+                        }
                     }
                 }
             }

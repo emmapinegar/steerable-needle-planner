@@ -389,7 +389,12 @@ class RRT(object):
 
         
         print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
-        nearest_node.parent.needle_model.move_needle(nearest_node.needle_model.p, print_=True)
+        next_node = nearest_node
+        while next_node.parent is not None:
+            print()
+            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=True)
+            next_node = next_node.parent
+
         print("printing sample ik!")
         q, phi = nearest_node.needle_model.ik(sample, print_=True)
         nearest_node.needle_model.get_new_lims(sample, print_=True)

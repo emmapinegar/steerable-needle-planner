@@ -915,9 +915,9 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             if (!inevitableCollision) {
                 // std::cout << " refine longer! ";
                 auto longer = refine(planner, node, LONGER);
-                if (inheritValidation && longer) {
-                    longer->valid() = true;
-                }
+                // if (inheritValidation && longer) {
+                //     longer->valid() = true;
+                // }
             }
         }
         // std::cout << " refine left! ";
@@ -1017,11 +1017,11 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      * @returns (auto) bool true if the motion between the node and the state is valid, false otherwise 
      */
     decltype(auto) validMotion(Planner& planner, Node* node, const State& from) {
-        // if (node->valid()) {
-        //     std::cout << " node already valid ";
-        //     node->print();
-        //     // return true;
-        // }
+        if (node->valid()) {
+            // std::cout << " node already valid "; //TODO should I bring this back? need to make sure the inheiriting validity isn't wrong
+            // node->print();
+            return true;
+        }
 
         if (node->rank() == 0) {
             return true;

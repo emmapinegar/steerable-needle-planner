@@ -756,32 +756,37 @@ unbiasedSamplingLoop:
             planner.updateMaxCost(newCost);
 
             if (isGoal) {
-                auto const& goalCurvature = scenario_.curvature(goalState);
-                auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
-                auto const& goalCost = newNode->cost()
-                                       + scenario_.CurveCost(newState, goalState)
-                                       + scenario_.FinalStateCost(goalState);
-                auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
-
+                // std::cout << "is goal... ";
+                // PrintState(newState);
+                // PrintState(goalState);
                 
+                if (auto traj = validMotion(newState, goalState)) {
+                    // std::cout << "valid traj!" << std::endl;
+                    auto const& goalCurvature = scenario_.curvature(goalState);
+                    auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
+                    auto const& goalCost = newNode->cost()
+                                        + scenario_.CurveCost(newState, goalState)
+                                        + scenario_.FinalStateCost(goalState);
+                    auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 
-                if (!scenario_.valid(goalState, goalLength, goalAngle)) {
-                    return;
+
+                    if (!scenario_.valid(goalState, goalLength, goalAngle)) {
+                        return;
+                    }
+
+                    if (goalCost < planner.bestCost_) {
+                        Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
+                        goalNode->length() = goalLength;
+                        goalNode->cost() = newNode->cost()
+                                        + scenario_.CurveCost(newState, goalState)
+                                        + scenario_.FinalStateCost(goalState);
+                        goalNode->ang_total() = goalAngle;
+                        goalNode->curve_lim() = goalCurvature;
+                        planner.foundGoal(goalNode);
+                        // std::cout << "angle total: " << goalAngle << std::endl;
+                    }                    
                 }
 
-                
-
-                if (goalCost < planner.bestCost_) {
-                    Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
-                    goalNode->length() = goalLength;
-                    goalNode->cost() = newNode->cost()
-                                       + scenario_.CurveCost(newState, goalState)
-                                       + scenario_.FinalStateCost(goalState);
-                    goalNode->ang_total() = goalAngle;
-                    goalNode->curve_lim() = goalCurvature;
-                    planner.foundGoal(goalNode);
-                    // std::cout << "angle total: " << goalAngle << std::endl;
-                }
             }
             else if (!planner.solved() && goalDist < bestDist_) {
                 auto const& goalCurvature = scenario_.curvature(goalState); // TODO: add this to be saved somewhere??
