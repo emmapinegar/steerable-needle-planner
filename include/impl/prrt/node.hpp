@@ -50,7 +50,7 @@ class Node {
     Scalar traj_length_{0};
     Scalar cost_{0};
     Scalar ang_total_{0};
-    Scalar curve_lim_{0};
+    Scalar curve_lim_{global::needle_min_curve_rad};
 
   public:
     /**

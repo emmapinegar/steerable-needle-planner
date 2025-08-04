@@ -48,8 +48,8 @@ do
         echo "seed $i scan $j"
         echo ""
         # ./app/rrt -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 50000 -bias 0.05 -save_pc -save_interp -var_curve
-        # ./app/aorrt -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 50000 -bias 0.05 -save_pc -save_interp -var_curve
-        ./app/rcs -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 50000 -bias 0.05 -save_pc -save_interp -var_curve
+        ./app/aorrt -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 10 -bias 0.05 -save_pc -save_interp -var_curve
+        # ./app/rcs -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 50000 -bias 0.05 -save_pc -save_interp -var_curve
         # ./app/rcs_star -seed $i -scan $j -r 20 -l 400 -phi 360 -timeout 240000 -bias 0.05
         # ./app/rcs_star -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 50000 -bias 0.05 -save_pc -save_interp -var_curve
 

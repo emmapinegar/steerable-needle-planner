@@ -252,9 +252,29 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
         return validator_.InCollision(s);
     }
 
+    /**
+     * Gets the radius of curvature limit at the provided state.
+     * 
+     * @param s: State to calculate radius of curvature at
+     * 
+     * @returns RealNum the radius of curvature limit at s using the default dipole cofiguration
+     */
     RealNum curvature(const State& s) const {
         return validator_.GetCurvature(s);
     }
+
+    /**
+     * Gets the radius of curvature limit at the provided state.
+     * 
+     * @param s: State to calculate radius of curvature at
+     * @param g: State to use to get dipole configuration
+     * 
+     * @returns RealNum the radius of curvature limit at s using g to calculate dipole configuration
+     */    
+    RealNum curvature(const State& s, const State& g) const {
+        return validator_.GetCurvature(s, g);
+    }
+
 
     /**
      * Checks with the validator if there is a valid motion between the two states.
@@ -485,10 +505,28 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
         return validator_.InCollision(s);
     }
 
+    /**
+     * Gets the radius of curvature limit at the provided state.
+     * 
+     * @param s: State to calculate radius of curvature at
+     * 
+     * @returns RealNum the radius of curvature limit at s using the default dipole cofiguration
+     */    
     RealNum curvature(const State& s) const {
         return validator_.GetCurvature(s);
     }
 
+    /**
+     * Gets the radius of curvature limit at the provided state.
+     * 
+     * @param s: State to calculate radius of curvature at
+     * @param g: State to use to get dipole configuration
+     * 
+     * @returns RealNum the radius of curvature limit at s using g to calculate dipole configuration
+     */     
+    RealNum curvature(const State& s, const State& g) const {
+        return validator_.GetCurvature(s, g);
+    }    
 
     /**
      * Checks with the validator if there is a valid motion between the two states.

@@ -691,7 +691,8 @@ unbiasedSamplingLoop:
         if (scenario_.PositionDist(nearNode->state(), randState) < snp::EPS) {
             return;
         }
-        nearNode->curve_lim() = scenario_.curvature(nearNode->state());
+        // nearNode->curve_lim() = scenario_.curvature(nearNode->state());
+        // std::cout << " curve lim: " << nearNode->curve_lim() << std::endl;
         auto propagated = propagator_(nearNode->state(), randState, rng_, nearNode->curve_lim());
 
         if (!propagated) {
@@ -718,7 +719,7 @@ unbiasedSamplingLoop:
             newNode->length() = newLength;
             newNode->cost() = nearNode->cost() + scenario_.CurveCost(nearNode->state(), newState);
             newNode->ang_total() = newAngle;
-            newNode->curve_lim() = newCurvature;
+            // newNode->curve_lim() = newCurvature;
             planner.nn_.insert(newNode);
 
             if (isGoal) {
@@ -737,7 +738,7 @@ unbiasedSamplingLoop:
                             goalNode->length() = goalLength;
                             goalNode->cost() = goalCost;
                             goalNode->ang_total() = goalAngle;
-                            goalNode->curve_lim() = goalCurvature;
+                            // goalNode->curve_lim() = goalCurvature;
                             // std::cout << "angle total: " << goalAngle << std::endl;
                             planner.foundGoal(goalNode);
                         }
@@ -756,7 +757,7 @@ unbiasedSamplingLoop:
                         (*goalNode)->cost() = newNode->cost() + scenario_.CurveCost(newNode->state(), goalState)
                                               + scenario_.FinalStateCost(goalState);
                         (*goalNode)->ang_total() = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
-                        (*goalNode)->curve_lim() = goalCurvature;
+                        // (*goalNode)->curve_lim() = goalCurvature;
                         // std::cout << "angle total: " << (*goalNode)->ang_total() << std::endl;
                     }
                 }

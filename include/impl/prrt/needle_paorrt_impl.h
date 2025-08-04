@@ -702,7 +702,7 @@ unbiasedSamplingLoop:
         randState.cost() = planner.costUpperBound() * uniform01_(rng_);
 
         auto [nearNode, d] = nearest(planner, randState).value();
-        nearNode->curve_lim() = scenario_.curvature(nearNode->state());
+        // nearNode->curve_lim() = scenario_.curvature(nearNode->state(), randState);
 
         State newState = randState;
 
@@ -751,7 +751,7 @@ unbiasedSamplingLoop:
             newNode->length() = newLength;
             newNode->cost() = newCost;
             newNode->ang_total() = newAngle;
-            newNode->curve_lim() = newCurvature;
+            // newNode->curve_lim() = newCurvature;
             planner.nn_.insert(newNode);
             planner.updateMaxCost(newCost);
 
@@ -781,7 +781,7 @@ unbiasedSamplingLoop:
                                         + scenario_.CurveCost(newState, goalState)
                                         + scenario_.FinalStateCost(goalState);
                         goalNode->ang_total() = goalAngle;
-                        goalNode->curve_lim() = goalCurvature;
+                        // goalNode->curve_lim() = goalCurvature;
                         planner.foundGoal(goalNode);
                         // std::cout << "angle total: " << goalAngle << std::endl;
                     }                    

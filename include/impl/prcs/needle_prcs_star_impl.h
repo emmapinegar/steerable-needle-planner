@@ -735,11 +735,12 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         if (isGoal) {
             if (goalStates.size() < 2) {
                 auto const& goalState = goalStates[0];
+
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                 auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
-                                         + scenario_.FinalStateCost(goalState);
+                                        + scenario_.FinalStateCost(goalState);
                     if (goalCost < planner.bestCost_) {
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
                         goalNode->length() = goalLength;
@@ -750,6 +751,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
                     return true;
                 }
+            
             }
             else {
                 auto const goalLength0 = node->length() + snp::CurveLength(node->state(), goalStates[0]);
@@ -862,9 +864,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
             if (!inevitableCollision) {
                 auto longer = refine(planner, node, LONGER);
-                if (inheritValidation && longer) {
-                    longer->valid() = true;
-                }
+                // if (inheritValidation && longer) {
+                //     longer->valid() = true;
+                // }
             }
         }
 

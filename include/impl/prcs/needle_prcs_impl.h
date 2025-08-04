@@ -742,12 +742,13 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         if (isGoal) {
             if (goalStates.size() < 2) {
                 auto const& goalState = goalStates[0];
+
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                 auto const goalAngle = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
                 
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
-                                         + scenario_.FinalStateCost(goalState);
+                                        + scenario_.FinalStateCost(goalState);
                     if (goalCost < planner.bestCost_) {
                         // std::cout << "goal angle: " << goalAngle << std::endl;
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
@@ -759,6 +760,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
                     return true;
                 }
+                
             }
             else {
                 auto const goalLength0 = node->length() + snp::CurveLength(node->state(), goalStates[0]);
@@ -824,6 +826,8 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 recycle(node);
                 return;
             }
+            node->parent()->curve_lim() = scenario_.curvature(node->parent()->state(), node->state());
+
             // TODO: add node radius limit
             auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex(), node->parent()->curve_lim());
 

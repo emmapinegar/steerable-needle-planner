@@ -103,7 +103,7 @@ class NeedleGoalState {
 
     /**
      * performs the correct goal check depending on the planner configuration
-     * this is triggered by something in the planner implementations that calls a function from MPT that checks if a node is near the goal
+     * this is triggered by something in the planner implementations that calls a function from MPT scenario_goal.hpp that checks if a node is near the goal
      * called by goal_(space, state)
      */
     std::tuple<bool, Distance, States> operator() (const Space& space, const State& s) const {
