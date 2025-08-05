@@ -826,7 +826,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 recycle(node);
                 return;
             }
-            node->parent()->curve_lim() = scenario_.curvature(node->parent()->state(), node->state());
+            // node->parent()->curve_lim() = scenario_.curvature(node->parent()->state(), node->state());
 
             // TODO: add node radius limit
             auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex(), node->parent()->curve_lim());
@@ -841,7 +841,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
-            node->curve_lim() = scenario_.curvature(node->state());
+            // node->curve_lim() = scenario_.curvature(node->state());
         }
 
         const bool inheritValidation = node->valid();

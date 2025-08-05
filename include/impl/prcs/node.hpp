@@ -74,7 +74,7 @@ class Node {
     Scalar cost_to_come_{0};
     Scalar cost_to_go_{0};
     Scalar ang_total_{0};
-    Scalar curve_lim_{0};
+    Scalar curve_lim_{global::needle_min_curve_rad};
     bool valid_{false};
 
     unsigned rank_{0};
