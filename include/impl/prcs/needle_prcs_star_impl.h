@@ -117,6 +117,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Records that a goal has been reached with node.
+     * 
      * @param node: the node reaching the goal
      */
     void foundGoal(Node* node) {
@@ -139,6 +140,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Records that a goal has almost been reached with node.
+     * 
      * @param node: the node that approximately reached the goal
      * @param goalState: the goal state that was approximately reached
      * @param nodePool: 
@@ -195,6 +197,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Sets the maximum distance range for the problem.
+     * 
      * @param range: new maximum distance range
      */
     void setRange(Distance range) {
@@ -243,7 +246,8 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Adds a starting node to the queue.
-     * @param args:
+     * 
+     * @param args: TODO
      * 
      */
     template <typename ... Args>
@@ -263,6 +267,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Starts solving the problem by starting the workers.
+     * 
      * @param doneFn: function that determines when the worker is done
      * 
      * @returns 
@@ -317,6 +322,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
   private:
     /**
      * Calculates the cost and number of nodes of the path from the node to the root of the tree.
+     * 
      * @param n: the node to get the cost of 
      * 
      * @returns Distance the cost from the start to the node, size_t the number of nodes in the path
@@ -372,6 +378,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -388,6 +395,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -404,6 +412,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -474,6 +483,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
     /**
      * Gets the solution for the best solution. 
+     * 
      * @param fn: function to link the solution
      */ 
     template <typename Fn>
@@ -566,6 +576,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
   private:
     /**
      * Visits all of the nodes with the visitor. 
+     * 
      * @param visitor: visitor worker 
      * @param nodes: nodes for the worker to visit
      */
@@ -585,6 +596,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
   public:
     /**
      * Visits the nodes in the graph using workers.
+     * 
      * @param visitor: visitor worker 
      */
     template <typename Visitor>
@@ -676,6 +688,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Solves the motion planning problem.
+     * 
      * @param planner: planner for the problem 
      * @param done: the function that determines when the planner is done
      */
@@ -724,6 +737,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the node satisfies the termination conditions.
+     * 
      * @param planner: planner for the problem 
      * @param node: to to try to find the goal
      * 
@@ -801,6 +815,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Processes the node, validating and refining if applicable.
+     * 
      * @param planner: planner for the problem
      * @param node: node to process
      * @param done: function to determine if termination conditions are satisfied
@@ -880,6 +895,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
  
     /**
      * Checks if the state is too similar to a reference node before adding.
+     * 
      * @param planner: planner for the problem
      * @param refNode: potentially similar node
      * @param state: state to compare to node before it's added
@@ -914,7 +930,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if there is a node within a radius of the provided state.
-     * @param nn:
+     * 
+     * @param nn: TODO
      * @param state: state to compare to existing nodes
      * @param rad: radius to use to determine if states are too similar
      * 
@@ -935,6 +952,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the node is valid.
+     * 
      * @param planner: planner for the problem
      * @param node: node to validate
      * 
@@ -967,6 +985,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the motion from the provided state to the node is a valid motion.
+     * 
      * @param planner: planner for the problem 
      * @param node: node to add on top of in the validation process
      * @param from: state to add on top of the given node
@@ -997,6 +1016,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
  
     /**
      * Unknown action.
+     * 
      * @param planner: planner for the problem
      * @param node: node to block? 
      */
@@ -1010,6 +1030,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Expands off of the current node and adds them to the queue for processing.
+     * 
      * @param planner: planner for the problem 
      * @param node: node to expand from
      */
@@ -1028,6 +1049,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Refines the characterisitcs for the given node?
+     * 
      * @param planner: planner for the problem
      * @param node: node to refine
      * @param type: type of refinement (SHORTER, LONGER, LEFT, RIGHT)
@@ -1113,6 +1135,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Adds the new node to the queue for processing.
+     * 
      * @param planner:
      * @param parent: parent node for new node
      * @param radIndex: motion primitve radius of curvature index
@@ -1164,6 +1187,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Recycles the given node.
+     * 
      * @param node: node to be recycled
      */
     void recycle(Node* node) {

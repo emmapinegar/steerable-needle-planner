@@ -64,6 +64,7 @@ class NeedleSpreadingGoal {
 
     /**
      * Sets the list of goals to spread towards.
+     * 
      * @param goals: goals that the planner will try to reach
      */
     void ProvideGoalPoints(const std::vector<Vec3>& goals) {
@@ -81,6 +82,7 @@ class NeedleSpreadingGoal {
 
     /**
      * Gets a goal from the list of goals.
+     * 
      * @param idx: index of the goal to get
      * 
      * @returns const Vec3 goal at provided index
@@ -100,6 +102,7 @@ class NeedleSpreadingGoal {
 
     /**
      * Performs a goal check.
+     * 
      * @param space: space for the planning problem
      * @param s: state to use for the goal check
      * 
@@ -142,6 +145,11 @@ class GoalSampler<NeedleSpreadingGoal<Space>> {
   public:
     using Type = typename Space::Type;
 
+    /**
+     * Creates an instance of GoalSampler. 
+     * 
+     * @param goal: NeedleGoalState that should be used for the sampler. 
+     */
     GoalSampler(const NeedleSpreadingGoal<Space>& goal)
         : goal_(goal) {
     }
@@ -150,7 +158,7 @@ class GoalSampler<NeedleSpreadingGoal<Space>> {
      * Randomly samples a goal from the list of goals.
      * @param rng: random number generator
      * 
-     * @returns Type randomly sampled goal position (idk what this type business is)
+     * @returns SE3State the goal state sampled
      */
     template <typename RNG>
     Type operator() (RNG& rng) {

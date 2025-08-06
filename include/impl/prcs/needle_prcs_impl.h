@@ -115,6 +115,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Records that a goal has been reached with node.
+     * 
      * @param node: the node reaching the goal
      */
     void foundGoal(Node* node) {
@@ -137,10 +138,13 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Records that a goal has almost been reached with node.
+     * 
      * @param node: the node that approximately reached the goal
      * @param goalState: the goal state that was approximately reached
      * @param nodePool: 
      * @param dist: the distance between the node state and the goal state
+     * 
+     * @returns Node approximate goal if there is one, returns {} otherwise
      */
     std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool,
                                          Distance* dist) {
@@ -192,6 +196,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Sets the maximum distance range for the problem.
+     * 
      * @param range: new maximum distance range
      */
     void setRange(Distance range) {
@@ -240,8 +245,8 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Adds a starting node to the queue.
-     * @param args:
      * 
+     * @param args: TODO
      */
     template <typename ... Args>
     void addStart(Args&& ... args) {
@@ -259,9 +264,10 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Starts solving the problem by starting the workers.
+     * 
      * @param doneFn: function that determines when the worker is done
      * 
-     * @returns 
+     * @returns TODO
      */ 
     template <typename DoneFn>
     std::enable_if_t<std::is_same_v<bool, std::result_of_t<DoneFn()>>>
@@ -275,7 +281,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been solved.
      * 
      * @returns true if the problem has been solved, false otherwise
      */
@@ -284,7 +290,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been approximately solved.
      * 
      * @returns bool true if the problem has been approximately solved, false otherwise
      */
@@ -313,6 +319,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
   private:
     /**
      * Calculates the cost and number of nodes of the path from the node to the root of the tree.
+     * 
      * @param n: the node to get the cost of 
      * 
      * @returns Distance the cost from the start to the node, size_t the number of nodes in the path
@@ -335,7 +342,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
     }
 
     /**
-     * Finds he best cost to get to the goal or the approximate cost if the goal has not been reached yet. 
+     * Finds the best cost to get to the goal or the approximate cost if the goal has not been reached yet. 
      * 
      * @returns Distance the cost of the best solution (or approximate), size_t the number of nodes in the solution path, Node the goal with the best cost
      */ 
@@ -369,6 +376,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -385,6 +393,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -401,6 +410,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -471,6 +481,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
     /**
      * Gets the solution for the best solution. 
+     * 
      * @param fn: function to link the solution
      */
     template <typename Fn>
@@ -573,6 +584,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
   private:
     /**
      * Visits all of the nodes with the visitor. 
+     * 
      * @param visitor: visitor worker 
      * @param nodes: nodes for the worker to visit
      */
@@ -592,6 +604,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
   public:
     /**
      * Visits the nodes in the graph using workers.
+     * 
      * @param visitor: visitor worker 
      */
     template <typename Visitor>
@@ -683,6 +696,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Solves the motion planning problem.
+     * 
      * @param planner: planner for the problem 
      * @param done: the function that determines when the planner is done
      */
@@ -731,13 +745,14 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the node satisfies the termination conditions.
+     * 
      * @param planner: planner for the problem 
      * @param node: to to try to find the goal
      * 
      * @returns bool true if the planner has found a goal with the node
      */
     bool checkTerminateCondition(Planner& planner, Node* node) {
-        auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, node->state()); //TODO: where to heck is this defined
+        auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, node->state()); // calls MPT but is passed through to call operator() in needle_goal.h
 
         if (isGoal) {
             if (goalStates.size() < 2) {
@@ -810,6 +825,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Processes the node, validating and refining if applicable.
+     * 
      * @param planner: planner for the problem
      * @param node: node to process
      * @param done: function to determine if termination conditions are satisfied
@@ -936,6 +952,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the state is too similar to a reference node before adding.
+     * 
      * @param planner: planner for the problem
      * @param refNode: potentially similar node
      * @param state: state to compare to node before it's added
@@ -961,6 +978,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if there is a node within a radius of the provided state.
+     * 
      * @param nn:
      * @param state: state to compare to existing nodes
      * @param rad: radius to use to determine if states are too similar
@@ -982,6 +1000,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the node is valid.
+     * 
      * @param planner: planner for the problem
      * @param node: node to validate
      * 
@@ -1014,6 +1033,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the motion from the provided state to the node is a valid motion.
+     * 
      * @param planner: planner for the problem 
      * @param node: node to add on top of in the validation process
      * @param from: state to add on top of the given node
@@ -1054,6 +1074,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the motion from the provided state to the node is a valid motion.
+     * 
      * @param planner: planner for the problem 
      * @param node: node to add on top of in the validation process
      * @param from: state to add on top of the given node
@@ -1088,6 +1109,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Expands off of the current node and adds them to the queue for processing.
+     * 
      * @param planner: planner for the problem 
      * @param node: node to expand from
      */
@@ -1106,6 +1128,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Refines the characterisitcs for the given node?
+     * 
      * @param planner: planner for the problem
      * @param node: node to refine
      * @param type: type of refinement (SHORTER, LONGER, LEFT, RIGHT)
@@ -1159,7 +1182,6 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         }
 
         case LEFT: {
-            // std::cout << "indices " << newIndices[2] << " " << newIndices[2]*2;
             if (node->angleLevel() == 0) {
                 newIndices[2] += initNum_;
             }
@@ -1168,7 +1190,6 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             }
 
             newLevels[1]++;
-            // std::cout << " " << newIndices[2] << std::endl;
             break;
         }
 
@@ -1193,7 +1214,8 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Adds the new node to the queue for processing.
-     * @param planner:
+     * 
+     * @param planner: planner for the planning problem
      * @param parent: parent node for new node
      * @param radIndex: motion primitve radius of curvature index
      * @param lengthLevel: motion primitive length level
@@ -1215,17 +1237,16 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             bin_.pop();
             node->reset(linkTrajectory(true), parent, parent->state());
         }
-        // MPT_LOG(INFO) << "adding a new node";
+
         node->setResolution({lengthLevel, angleLevel}, {radIndex, lengthIndex, angleIndex});
         planner.queue_.push(node);
 
-
-        // std::cout << " added " << parent->state() << " level l: " << lengthLevel << " a: " << angleLevel << " index l: " << lengthIndex << " r: " << radIndex << " a: " << angleIndex << std::endl;
         return node;
     }
 
     /**
      * Recycles the given node.
+     * 
      * @param node: node to be recycled
      */
     void recycle(Node* node) {

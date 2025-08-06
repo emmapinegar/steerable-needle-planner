@@ -64,7 +64,7 @@ namespace unc::robotics::mpt {
 using namespace snp;
 
 /**
- * 
+ * The state used only for goal states of the planning problem.
  */
 template <typename Space>
 class NeedleGoalState {
@@ -81,7 +81,10 @@ class NeedleGoalState {
 
   public:
     /**
+     * Creates an instance of NeedleGoalState based on the planning configuration. 
      * 
+     * @param cfg: the configuration for the planning problem
+     * @param args: TODO
      */
     template <typename ... Args>
     NeedleGoalState(ConfigPtr cfg, Args&& ... args)
@@ -102,9 +105,13 @@ class NeedleGoalState {
     }
 
     /**
-     * performs the correct goal check depending on the planner configuration
-     * this is triggered by something in the planner implementations that calls a function from MPT scenario_goal.hpp that checks if a node is near the goal
-     * called by goal_(space, state)
+     * Performs the correct goal check depending on the planner configuration. This is triggered by something in the planner implementations 
+     * that calls a function from MPT scenario_goal.hpp that checks if a node is near the goal called by goal_(space, state).
+     * 
+     * @param space: space for the planning problem
+     * @param s: state to check if it connects to the goal
+     * 
+     * @returns bool true if the state can possibly connect to the goal, RealNum distance from the state to the goal, vector<State> the goal states for the planning problem
      */
     std::tuple<bool, Distance, States> operator() (const Space& space, const State& s) const {
         if (cfg_->constrain_goal_orientation) {
@@ -121,6 +128,7 @@ class NeedleGoalState {
   private:
     /**
      * Checks if the state is valid (collision free).
+     * 
      * @param s: state to validate
      * 
      * @returns bool true if the state is valid, false otherwise
@@ -131,7 +139,8 @@ class NeedleGoalState {
     }
 
     /**
-     * Checks if the motion between states is valid.
+     * Checks if the motion between states is valid. TODO
+     * 
      * @param motion: states comprising the motion
      * 
      * @returns bool true if all states in the motion are valid, false otherwise
@@ -170,6 +179,7 @@ class NeedleGoalState {
 
     /**
      * Checks if the goal has been reached.
+     * 
      * @param space: space for the planning problem
      * @param s: state to use for the goal check
      * 
@@ -185,9 +195,6 @@ class NeedleGoalState {
         auto const distToGoal = (pathToGoal.back().translation() - goal_p_).norm();
 
         if (distToGoal > cfg_->goal_pos_tolerance) {
-            // const Vec3& sp = s.translation();
-            // std::cout << "Invalid path to goal with err " << distToGoal << " state: " << sp[0] << " " << sp[1] << " " << sp[2] << std::endl;
-                    //   << std::endl;
             return {false, R_INF, {pathToGoal.back()}};
         }
 
@@ -199,7 +206,9 @@ class NeedleGoalState {
     }
 
     /**
-     * Checks if the goal has been reached. I don't know what the Dubins path shenanigans are about. 
+     * Checks if the goal has been reached. Uses Dubins path to get to goal instead of a constant curvature segment.
+     * Not compatible with other calculations at Utah currently but will be kept for posterity. 
+     * 
      * @param space: space for the planning problem
      * @param s: state to use for the goal check
      * 
@@ -215,8 +224,6 @@ class NeedleGoalState {
         auto const distToGoal = (pathToGoal.back().translation() - goal_p_).norm();
 
         if (distToGoal > cfg_->goal_pos_tolerance) {
-            // std::cout << "Invalid path to goal with err " << distToGoal
-            //           << std::endl;
             return {false, R_INF, {pathToGoal.back()}};
         }
 
@@ -232,7 +239,9 @@ class NeedleGoalState {
     }
 
     /**
-     * Checks if the goal has been reached. but like make it sequential?
+     * Checks if the goal has been reached. Interpolates along the path between the state and the goal state
+     * to check if the full path is valid. Not called anywhere in the code as far as I know.
+     * 
      * @param space: space for the planning problem
      * @param s: state to use for the goal check
      * 
@@ -280,7 +289,10 @@ class NeedleGoalState {
     }
 
     /**
-     * Checks if the goal has been reached. but like make it orientation?
+     * Checks if the goal has been reached. Interpolates along the path between the state and the goal state
+     * to check if the full path is valid. Checks include orientation for the goal in this implementation. 
+     * Only used if the check goal orientation option has been used in the command line flags.  
+     * 
      * @param space: space for the planning problem
      * @param s: state to use for the goal check
      * 
@@ -352,10 +364,22 @@ class GoalSampler<NeedleGoalState<Space>> {
   public:
     using Type = typename Space::Type;
 
+    /**
+     * Creates an instance of GoalSampler. 
+     * 
+     * @param goal: NeedleGoalState that should be used for the sampler. 
+     */
     GoalSampler(const NeedleGoalState<Space>& goal)
         : goal_(goal) {
     }
 
+    /**
+     * Gets the goal state.
+     * 
+     * @param rng: TODO
+     * 
+     * @returns SE3State the goal state sampled
+     */
     template <typename RNG>
     Type operator() (RNG&) const {
         return goal_.state();

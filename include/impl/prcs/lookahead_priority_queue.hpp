@@ -75,6 +75,7 @@ class LookaheadPriorityQueue {
 
     /**
      * Sets the number of places to lookahead in the queue.
+     * 
      * @param lookAhead: number of places to lookahead
      */
     void setLookAhead(const unsigned& lookAhead) {
@@ -92,6 +93,7 @@ class LookaheadPriorityQueue {
 
     /**
      * Adds node to the priority queue.
+     * 
      * @param node: node to add to the priority queue
      */
     void push(Node* node) {
