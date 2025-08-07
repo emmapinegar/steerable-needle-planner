@@ -84,7 +84,10 @@ struct WorkerStats<true> {
 
     /**
      * Adds the worker states of the provided worker to this worker.
+     * 
      * @param other: the worker with stats to add to this worker
+     * 
+     * @returns WorkerStats the object open which this was invoked TODO
      */
     WorkerStats& operator += (const WorkerStats& other) {
         iterations_ += other.iterations_;

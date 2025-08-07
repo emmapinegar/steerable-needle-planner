@@ -39,6 +39,7 @@ namespace unc::robotics::snp {
 
 /**
  * Creates an instance of ImageEnvironment. 
+ * 
  * @param ijk_to_ras: transformation matrix from image coordinates to world coordinates
  */
 ImageEnvironment::ImageEnvironment(const Affine& ijk_to_ras) {
@@ -60,6 +61,7 @@ ImageEnvironment::~ImageEnvironment() {
 
 /**
  * Sets the transformation between image coordinates and world coordinates.
+ * 
  * @param ijk_to_ras: transformation matrix from image coordinates to world coordinates
  */
 void ImageEnvironment::SetIjkToRasAffine(const Affine& ijk_to_ras) {
@@ -79,6 +81,7 @@ Affine ImageEnvironment::IjkToRasAffine() const {
 
 /**
  * Sets the image size.
+ * 
  * @param size: dimensions of the image
  */
 void ImageEnvironment::SetImageSize(const IdxPoint& size) {
@@ -87,6 +90,7 @@ void ImageEnvironment::SetImageSize(const IdxPoint& size) {
 
 /**
  * Sets the image size.
+ * 
  * @param size_x: size of image in the x dimension
  * @param size_y: size of image in the y dimension
  * @param size_z: size of image in the z dimension
@@ -111,6 +115,7 @@ IdxPoint ImageEnvironment::ImageSize() const {
 
 /**
  * Creates a new nearest neighbors from image if one has not been created for the image.
+ * 
  * @param image_name: name of the image to use to create new nearest neighbors
  * 
  * @returns bool true if nearest neighbors was created, false otherwise
@@ -132,6 +137,7 @@ bool ImageEnvironment::CreateNewNN(const Str image_name) {
 
 /**
  * Removes the nearest neighbors generated using the specified image if it exists.
+ * 
  * @param image_name: name of the image to remove from the nearest neighbors
  * 
  * @returns bool true if the nearest neighbors for the image was removed, false if it didn't exist in the first place
@@ -152,6 +158,7 @@ bool ImageEnvironment::RemoveNN(const Str image_name) {
 
 /**
  * Enables the nearest neighbors for the specified image if it exists. 
+ * 
  * @param image_name: name of the image to enable nearest neighbors for
  * 
  * @returns bool true if the nearest neighbors for the image was enabled, false if it didn't exist in the first place
@@ -170,6 +177,7 @@ bool ImageEnvironment::EnableNN(const Str image_name) {
 
 /**
  * Disables the nearest neighbors for the specified image if it exists. 
+ * 
  * @param image_name: name of the image to disable nearest neighbors for
  * 
  * @returns bool true if the nearest neighbors for the image was disabled, false if it didn't exist in the first place
@@ -220,6 +228,7 @@ std::vector<Str> ImageEnvironment::ListActiveNN() const {
 
 /**
  * Sets the image to the specified size with no obstacles.
+ * 
  * @param size_x: size of image in the x dimension
  * @param size_y: size of image in the y dimension
  * @param size_z: size of image in the z dimension
@@ -230,6 +239,7 @@ void ImageEnvironment::GenerateEmptyImage(const Idx size_x, const Idx size_y, co
 
 /**
  * Creates an environment using the provided file.
+ * 
  * @param file_name: file containing the environment 
  * 
  * @returns bool true if the environment was successfully created, false otherwise
@@ -312,6 +322,7 @@ bool ImageEnvironment::ConstructEnvironmentFromFile(const Str file_name) {
 
 /**
  * Creates a cost map using the provided file.
+ * 
  * @param file_name: file containing the cost map
  * 
  * @returns bool true if the cost map was successfully created, false otherwise
@@ -357,6 +368,7 @@ bool ImageEnvironment::ConstructCostFromFile(const Str file_name) {
 
 /**
  * Calculates the world (ras) coordinates for the given point in image (ijk) coordinates.
+ * 
  * @param p: ijk coordinate to convert
  * 
  * @returns Vec3 world coordinates for the provided image coordinates
@@ -367,6 +379,7 @@ Vec3 ImageEnvironment::IjkToRas(const IdxPoint& p) const {
 
 /**
  * Calculates the world (ras) coordinates for the given point in image (ijk) coordinates.
+ * 
  * @param i: i coordinate to convert
  * @param j: j coordinate to convert
  * @param k: k coordinate to convert
@@ -379,6 +392,7 @@ Vec3 ImageEnvironment::IjkToRas(const Idx& i, const Idx& j, const Idx& k) const 
 
 /**
  * Calculates the image (ijk) coordinates for the given point in world (ras) coordinates.
+ * 
  * @param p: ras coordinate to convert
  * 
  * @returns IdxPoint image coordinates for the provided world coordinates
@@ -400,6 +414,7 @@ IdxPoint ImageEnvironment::RasToIjk(const Vec3& p) const {
 
 /**
  * Calculates the image (ijk) coordinates for the given point in world (ras) coordinates.
+ * 
  * @param r: r coordinate to convert
  * @param a: a coordinate to convert
  * @param s: s coordinate to convert
@@ -412,6 +427,7 @@ IdxPoint ImageEnvironment::RasToIjk(const RealNum& r, const RealNum& a, const Re
 
 /**
  * Adds obstacle to the environment.
+ * 
  * @param p: location of obstacle in world (ras) coordinates
  * @param image_name: name of the image the obstacle should be added to for nearest neighbors 
  */
@@ -432,6 +448,7 @@ void ImageEnvironment::AddObstacle(const Vec3& p, const Str& image_name) {
 
 /**
  * Adds obstacle to the environment.
+ * 
  * @param p: location of obstacle in image (ijk) coordinates
  * @param image_name: name of the image the obstacle should be added to for nearest neighbors 
  */
@@ -446,6 +463,7 @@ void ImageEnvironment::AddObstacle(const IdxPoint& p, const Str& image_name) {
 
 /**
  * Adds cost to the cost map if it is within the bounds of the image.
+ * 
  * @param p: location of obstacle in image (ijk) coordinates
  * @param cost: cost at that location
  */
@@ -459,6 +477,7 @@ void ImageEnvironment::AddCost(const IdxPoint& p, const RealNum& cost) {
 
 /**
  * Checks if the provided coordinates are an obstacle.
+ * 
  * @param p: image (ijk) coordinates of the point to check for an obstacle
  * 
  * @returns bool true if the point is an obstacle center or the point is beyond the bounds of the image, false otherwise
@@ -474,6 +493,7 @@ bool ImageEnvironment::IsObstacle(const IdxPoint& p) const {
 
 /**
  * Checks if the provided coordinates are an obstacle.
+ * 
  * @param p: world (ras) coordinates of the point to check for an obstacle
  * 
  * @returns bool true if the point is an obstacle center, false otherwise
@@ -486,6 +506,7 @@ bool ImageEnvironment::IsObstacle(const Vec3& p) const {
 
 /**
  * Checks if the provided coordinates are the center of an obstacle. 
+ * 
  * @param p: world (ras) coordinates of the point to check for an obstacle
  * 
  * @returns bool true if the point is within EPS of an obstacle center
@@ -496,6 +517,7 @@ bool ImageEnvironment::IsObstacleCenter(const Vec3& p) const {
 
 /**
  * Gets the nearest obstacle to the specified coordinates. 
+ * 
  * @param p: image (ijk) coordinates of the point to find the closest obstacle
  * 
  * @returns IdxPoint closest obstacle to the point 
@@ -506,6 +528,7 @@ IdxPoint ImageEnvironment::NearestObstacle(const IdxPoint& p) const {
 
 /**
  * Gets the nearest obstacle to the specified coordinates. 
+ * 
  * @param p: world (ras) coordinates of the point to find the closest obstacle
  * 
  * @returns IdxPoint closest obstacle to the point 
@@ -522,6 +545,7 @@ IdxPoint ImageEnvironment::NearestObstacle(const Vec3& p) const {
 
 /**
  * Gets the nearest obstacle center to the specified coordinates. 
+ * 
  * @param p: world (ras) coordinates of the point to find the closest obstacle
  * 
  * @returns pair<Vec3, RealNum> center of the closest obstacle, the distance between the point and obstacle
@@ -546,6 +570,7 @@ std::pair<Vec3, RealNum> ImageEnvironment::NearestObstacleCenter(const Vec3& p) 
 
 /**
  * Gets the nearest obstacle center to the specified coordinates. 
+ * 
  * @param p: world (ras) coordinates of the point to find the closest obstacle
  * @param image_name: name of the image to search for the nearest obstacle
  * 
@@ -572,6 +597,7 @@ std::pair<Vec3, RealNum> ImageEnvironment::NearestObstacleCenter(const Vec3& p,
 
 /**
  * Calculates the distance from the point to the nearest obstacle center.
+ * 
  * @param p: world (ras) coordinates of the point to find the closest obstacle
  * 
  * @returns RealNum  minimum of the distance between point and nearest obstacle center and the nearest neighbors search radius
@@ -588,6 +614,7 @@ RealNum ImageEnvironment::DistanceToObstacleCenter(const Vec3& p) const {
 
 /**
  * Calculates the distance from the point to the nearest obstacle center.
+ * 
  * @param p: world (ras) coordinates of the point to find the closest obstacle
  * @param image_name: name of the image to search for the nearest obstacle
  * 
@@ -605,6 +632,7 @@ RealNum ImageEnvironment::DistanceToObstacleCenter(const Vec3& p, const Str& ima
 
 /**
  * Checks if the point is within the bounds of the image.
+ * 
  * @param p: world (ras) coordinates of the point to check 
  * 
  * @returns bool true if the converted ijk coordinates are within the image bounds, false otherwise
@@ -627,6 +655,7 @@ bool ImageEnvironment::WithinImage(const Vec3& p) const {
 
 /**
  * Checks if the point is within the bounds of the image.
+ * 
  * @param p: image (ijk) coordinates of the point to check 
  * 
  * @returns bool true if the converted ijk coordinates are within the image bounds, false otherwise
@@ -660,6 +689,7 @@ void ImageEnvironment::ClearWhiteList() {
 
 /**
  * Sets the "white list" flag to determine if it is used.
+ * 
  * @param flag: true if "white list" should be used, false otherwise
  */
 void ImageEnvironment::SetWhiteList(bool flag) {
@@ -668,6 +698,7 @@ void ImageEnvironment::SetWhiteList(bool flag) {
 
 /**
  * Checks if the provided coordinates are in the "white list" area.
+ * 
  * @param p: world (ras) coordinates of the point to check
  * 
  * @returns bool true if the cooridnates are within the "white list" area, false otherwise
@@ -684,6 +715,7 @@ bool ImageEnvironment::InWhiteListArea(const Vec3& p) const {
 
 /**
  * Adds the provided coordinates to the "white list" with the provided radius.
+ * 
  * @param p: world (ras) coordinates to add to "white list"
  * @param r: radius of area associated with this point
  */
@@ -693,6 +725,7 @@ void ImageEnvironment::AddToWhiteList(const Vec3& p, const RealNum r) {
 
 /**
  * Calculates the cost of the provided point.
+ * 
  * @param p: world (ras) coordinates to calculate the cost for
  * 
  * @returns RealNum cost at the provided point
@@ -703,6 +736,7 @@ RealNum ImageEnvironment::PointCost(const Vec3& p) const {
 
 /**
  * Calculates the cost of the provided point.
+ * 
  * @param p: world (ras) coordinates to calculate the cost for
  * @param cost_type: method to use to calculate the cost [NO_COST, GOAL_ORIENTATION, PATH_LENGTH, COST_MAP, DIST_TO_OBS]
  * 
@@ -740,6 +774,7 @@ RealNum ImageEnvironment::PointCost(const Vec3& p, const CostType cost_type) con
 
 /**
  * Gets the trilinear interpolation of the cost map and calculates cost.
+ * 
  * @param p: world (ras) coordinates to calculate the cost for
  * 
  * @returns RealNum cost at the provided point
@@ -791,6 +826,7 @@ RealNum ImageEnvironment::TrilinearInterpolatedCostFromMap(const Vec3& p) const 
 
 /**
  * Gets the cost of the provided point according to the cost map if it is within the limits of the environment.
+ * 
  * @param p: world (ras) coordinates to calculate the cost for
  * 
  * @returns RealNum cost at the provided point in the cost map
@@ -806,6 +842,7 @@ RealNum ImageEnvironment::CostInCostMap(const Vec3& p) const {
 
 /**
  * Sets the cost type that determines how PointCost calculates cost.
+ * 
  * @param type: cost type to use for cost calculations [NO_COST, GOAL_ORIENTATION, PATH_LENGTH, COST_MAP, DIST_TO_OBS]
  */
 void ImageEnvironment::SetCostType(const CostType type) {
@@ -889,6 +926,7 @@ ImageEnvironment::CostType ImageEnvironment::ActiveCostType() const {
 
 /**
  * Calculates the cost of the curve.
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -905,6 +943,7 @@ RealNum ImageEnvironment::CurveCost(const Vec3& sp, const Quat& sq, const Vec3& 
 
 /**
  * Calculates the cost of the curve.
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -960,6 +999,7 @@ RealNum ImageEnvironment::CurveCost(const Vec3& sp, const Quat& sq, const Vec3& 
 
 /**
  * Calculates the cost from the current state to the goal state.
+ * 
  * @param p: the current position of the needle
  * @param q: the current orientation of the needle
  * @param gp: the goal point of the needle
@@ -977,7 +1017,8 @@ RealNum ImageEnvironment::FinalStateCost(const Vec3& p, const Quat& q, const Vec
 }
 
 /**
- * Sets the minimum distance to obstacles?
+ * Sets the minimum distance to obstacles.
+ * 
  * @param dist: the new minimum distance from obstacles
  */
 void ImageEnvironment::SetMinDist(const RealNum dist) {
@@ -986,6 +1027,7 @@ void ImageEnvironment::SetMinDist(const RealNum dist) {
 
 /**
  * Gets the minimum distance to obstacles.
+ * 
  * @returns RealNum minimum distance from obstacles
  */
 RealNum ImageEnvironment::MinDist() const {
@@ -994,6 +1036,7 @@ RealNum ImageEnvironment::MinDist() const {
 
 /**
  * Checks if the provided point is collision free.
+ * 
  * @param p: world (ras) coordinates to check for collisions
  * 
  * @returns true if the point is not in collision with obstacles, false otherwise
@@ -1044,6 +1087,7 @@ bool ImageEnvironment::CollisionFree(const Vec3& p) const {
 
 /**
  * Checks if the provided point is collision free.
+ * 
  * @param p: world (ras) coordinates to check for collisions
  * @param image_name: name of the image to search for obstacles
  * 
@@ -1122,6 +1166,7 @@ void ImageEnvironment::DisableObstacles() {
 
 /**
  * Gets if hit detections are enabled.
+ * 
  * @returns bool true if hit detections are enabled, false otherwise
  */
 bool ImageEnvironment::HitDetectionsEnabled() const {
@@ -1144,6 +1189,7 @@ void ImageEnvironment::DisableHitDetection() {
 
 /**
  * Saves the obstacles in world coordinates as a point cloud.
+ * 
  * @param file_name: file ot save the obstacle point cloud to
  * 
  * @throws runtime_error if the specified file cannot be opened
@@ -1177,6 +1223,7 @@ void ImageEnvironment::SaveRasPtc(const Str& file_name) const {
 
 /**
  * Enables/disables trilinear interpolation.
+ * 
  * @param enable: if true enable interpolation, false disables interpolation
  */
 void ImageEnvironment::EnableTrilinearInterpolation(const bool enable) {
@@ -1184,7 +1231,7 @@ void ImageEnvironment::EnableTrilinearInterpolation(const bool enable) {
 }
 
 /**
- * Gets the minimum cost?
+ * Gets the minimum cost for the environment.
  * 
  * @returns RealNum minimum cost
  */
@@ -1193,7 +1240,8 @@ RealNum ImageEnvironment::MinCost() const {
 }
 
 /**
- * Gets cost k?
+ * Gets cost k.
+ * 
  * @returns RealNum cost k
  */
 RealNum ImageEnvironment::CostK() const {
@@ -1202,6 +1250,7 @@ RealNum ImageEnvironment::CostK() const {
 
 /**
  * Sets the workspace elements to value.
+ * 
  * @param value: bool value all workspace elements are set to
  */
 void ImageEnvironment::SetWorkspace(const bool value) {
@@ -1210,6 +1259,7 @@ void ImageEnvironment::SetWorkspace(const bool value) {
 
 /**
  * Sets the workspace element to value.
+ * 
  * @param x: x coordinate of workspace element
  * @param y: y coordinate of workspace element
  * @param z: z coordinate of workspace element
@@ -1221,6 +1271,7 @@ void ImageEnvironment::SetWorkspace(const Idx& x, const Idx& y, const Idx& z, co
 
 /**
  * Gets the value of the workspace element.
+ * 
  * @param x: x coordinate of workspace element
  * @param y: y coordinate of workspace element
  * @param z: z coordinate of workspace element

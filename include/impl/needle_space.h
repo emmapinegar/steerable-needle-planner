@@ -117,7 +117,6 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
         Distance y = sg.dot(tang);
 
         if (y < 0) {
-            // std::cout << "p: " << sp[0] << " " << sp[1] << " " << sp[2] << " y: " << y << std::endl;
             return double_range;
         }
 
@@ -131,7 +130,6 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
         Distance l = phi*r_;
 
         if (dist_to_center < rad_curv) {
-            // std::cout << "p: " << sp[0] << " " << sp[1] << " " << sp[2] << " dist: " << dist_to_center << " l: " << l << " phi: " << phi << " r_: " << r_ << std::endl;
             return (rad_curv - dist_to_center + max_range);
         }
 
@@ -142,10 +140,6 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
         Distance straight_portion = dist_to_center * std::sin(alpha);
         Distance curve_portion = ang * rad_curv;
 
-
-
-
-        // std::cout << "p: " << sp[0] << " " << sp[1] << " " << sp[2] << " d: " << curve_portion + straight_portion << " l: " << l << " phi: " << phi << " r_: " << r_ << std::endl;
         return l;
         // return curve_portion + straight_portion;
         // return snp::CurveLength(from, to);

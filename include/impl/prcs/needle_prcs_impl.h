@@ -66,6 +66,9 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
     static constexpr bool concurrent = maxThreads != 1;
     using NNConcurrency = std::conditional_t<concurrent, nigh::Concurrent, nigh::NoThreadSafety>;
 
+    /**
+     * Struct for nearest neighbors nodes coupling Nodes and States.
+     */
     struct NNNode {
         Node* node;
         State state;
@@ -75,6 +78,9 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
         }
     };
 
+    /**
+     * Struct for nearest neighbors keys using the NNNode state. 
+     */
     struct NNNodeKey {
         const State& operator() (const NNNode& n) const {
             return n.state;
@@ -526,30 +532,20 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
     /**
      * Gets the stats of the best solution. 
      * 
-     * @returns cost, size, goal node, path arc length, path total phi
+     * @returns cost, size, goal node, path arc length, path total phi, spreading, planner type
      */
     std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&> stats() const {
-        
         auto [cost, size, n] = bestSolution();
         RealNum length = n->length();
         RealNum ang_total = n->ang_total();
         Str planner_type = "3";
         return {cost, size, n, length, ang_total, false, planner_type};
-        // if (solved() || approxSolved()){
-
-        // } else {
-        //     std::size_t bestSize = 0;
-        //     const Node* bestGoal = nullptr;
-        //     Distance cost = 10000;
-        //     RealNum length = 10000;
-        //     return {cost, bestSize, bestGoal, length, length, true, planner_type};
-        // }
     }
 
     /**
-     * Gets the stats of the best solution. 
+     * Gets the stats of the planner when no solution has been found. 
      * 
-     * @returns cost, size, goal node, path arc length, path total phi
+     * @returns spreading, planner type
      */
     std::tuple<bool, Str&> failed_stats() const {
         Str planner_type = "3";
@@ -765,7 +761,6 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                         + scenario_.FinalStateCost(goalState);
                     if (goalCost < planner.bestCost_) {
-                        // std::cout << "goal angle: " << goalAngle << std::endl;
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
@@ -1042,8 +1037,6 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      */
     decltype(auto) validMotion(Planner& planner, Node* node, const State& from) {
         if (node->valid()) {
-            // std::cout << " node already valid "; //TODO should I bring this back? need to make sure the inheiriting validity isn't wrong
-            // node->print();
             return true;
         }
 
@@ -1054,9 +1047,6 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         Timer timer(Stats::validMotion());
         auto const& lengthIdx = node->lengthIndex();
         auto const& baseMotion = planner.propagator_.BaseMotion(node->radIndex(), lengthIdx);
-
-        // std::cout << "node level l: " << node->lengthLevel() << " a: " << node->angleLevel() << " index l: " << lengthIdx << " r: " << node->radIndex() << " a: " << node->angleIndex();
-        // std::cout << " base motion: " << baseMotion[0].rotation() << " next: " << baseMotion[1].rotation() << " third: " << baseMotion[2].rotation() << std::endl;
 
         unsigned offset = 0;
         if (lengthIdx > 0 && lengthIdx % 2 == 0) {
@@ -1127,7 +1117,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     }
 
     /**
-     * Refines the characterisitcs for the given node?
+     * Refines off of the current node's parent in a direction based on the given refinement type.
      * 
      * @param planner: planner for the problem
      * @param node: node to refine

@@ -107,6 +107,7 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Records that a goal has almost been reached with node.
+     * 
      * @param node: the node that approximately reached the goal
      * @param dist: the distance between the node state and the goal state
      */
@@ -128,6 +129,7 @@ class NeedleSpreadingPRRT : public
   public:
     /**
      * Creates an instance of NeedleSpreadingPRRT.
+     * 
      * @param scenario: scenario for the planning problem
      * @param seed: random number generator seed
      */
@@ -142,6 +144,7 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Sets the goal sampling bias (if 0 <= bias <= 1).
+     * 
      * @param bias: new sampling bias
      */
     void setGoalBias(Distance bias) {
@@ -160,6 +163,7 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Sets the maximum distance range for the problem.
+     * 
      * @param range: new maximum distance range
      */
     void setRange(Distance range) {
@@ -187,8 +191,8 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Adds a starting node to the queue.
-     * @param args:
      * 
+     * @param args: TODO
      */
     template <typename ... Args>
     void addStart(Args&& ... args) {
@@ -202,9 +206,10 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Starts solving the problem by starting the workers.
+     * 
      * @param doneFn: function that determines when the worker is done
      * 
-     * @returns 
+     * @returns TODO
      */
     template <typename DoneFn>
     std::enable_if_t<std::is_same_v<bool, std::result_of_t<DoneFn()>>>
@@ -217,7 +222,7 @@ class NeedleSpreadingPRRT : public
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been solved.
      * 
      * @returns true if the problem has been solved, false otherwise
      */
@@ -226,7 +231,7 @@ class NeedleSpreadingPRRT : public
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been approximately solved.
      * 
      * @returns bool true if the problem has been approximately solved, false otherwise
      */
@@ -246,6 +251,7 @@ class NeedleSpreadingPRRT : public
   private:
     /**
      * Calculates the cost and number of nodes of the path from the node to the root of the tree.
+     * 
      * @param n: the node to get the cost of 
      * 
      * @returns Distance the cost from the start to the node, size_t the number of nodes in the path
@@ -301,6 +307,7 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -317,6 +324,7 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -333,6 +341,7 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -403,6 +412,7 @@ class NeedleSpreadingPRRT : public
 
     /**
      * Gets the solution for the best solution. 
+     * 
      * @param fn: function to link the solution
      */
     template <typename Fn>
@@ -498,6 +508,7 @@ class NeedleSpreadingPRRT : public
   private:
     /**
      * Visits all of the nodes with the visitor. 
+     * 
      * @param visitor: visitor worker 
      * @param nodes: nodes for the worker to visit
      */
@@ -517,6 +528,7 @@ class NeedleSpreadingPRRT : public
   public:
     /**
      * Visits the nodes in the graph using workers.
+     * 
      * @param visitor: visitor worker 
      */
     template <typename Visitor>
@@ -555,6 +567,7 @@ class NeedleSpreadingPRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
   public:
     /**
      * Creates a worker using the parameters of another worker.
+     * 
      * @param other: the worker to use for the parameters to create this worker
      */
     Worker(Worker&& other)
@@ -569,6 +582,7 @@ class NeedleSpreadingPRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Creates a worker.
+     * 
      * @param no: worker number
      * @param scenario: scenario for the worker
      * @param seed: seed for the random number generator 
@@ -611,6 +625,7 @@ class NeedleSpreadingPRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Solves the motion planning problem.
+     * 
      * @param planner: planner for the problem 
      * @param done: the function that determines when the planner is done
      */
@@ -657,6 +672,7 @@ unbiasedSamplingLoop:
 
     /**
      * Attempts to add sample to motion plan.
+     * 
      * @param planner: planner for the problem
      * @param sample: sampled state to try to add
      */
@@ -668,6 +684,7 @@ unbiasedSamplingLoop:
 
     /**
      * Finds the node with the state closest to the provided state. 
+     * 
      * @param planner: planner for the problem
      * @param state: state to search for nodes near
      * 
@@ -680,6 +697,7 @@ unbiasedSamplingLoop:
 
     /**
      * Attempts to add sample motion.
+     * 
      * @param planner: planner for the problem 
      * @param randState: random state to try to add
      */
@@ -716,17 +734,11 @@ unbiasedSamplingLoop:
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
-        // std::cout << "angle total: " << newAngle << std::endl;
-        // MPT_LOG(INFO) << "checking if new state will be valid";
         if (!scenario_.valid(newState, newLength, newAngle)) {
             return;
         }
-
-        // auto const& newCost = nearNode->cost() + scenario_.CurveCost(nearNode->state(), newState);
-        // newState.cost() = newCost;
         
         if (auto traj = validMotion(nearNode->state(), newState)) {
-            // MPT_LOG(INFO) << "motion is valid";
             auto [isGoal, goalDist, goalState] = scenario_goal<Scenario>::check(scenario_, newState);
 
             Node* newNode = nodePool_.allocate(linkTrajectory(traj), nearNode, newState);
@@ -741,8 +753,6 @@ unbiasedSamplingLoop:
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 MPT_LOG(INFO) << "calculating goal angle";
                 auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
-
-                // std::cout << "angle total: " << goalAngle << std::endl;
 
                 if (!scenario_.valid(goalState, goalLength, goalAngle)) {
                     return;
@@ -769,10 +779,6 @@ unbiasedSamplingLoop:
                     return;
                 }
 
-                // if (!scenario_.valid(goalLength)) {
-                //     return;
-                // }
-                // std::cout << "angle total: " << goalAngle << std::endl;
                 bestDist_ = goalDist;
                 planner.foundApproxGoal(newNode, &bestDist_);
             }
@@ -784,7 +790,7 @@ unbiasedSamplingLoop:
      * @param a: starting state
      * @param b: target state
      * 
-     * @returns ?? 
+     * @returns bool true if the motion between states is valid, false otherwise 
      */
     decltype(auto) validMotion(const State& a, const State& b) {
         Timer timer(Stats::validMotion());

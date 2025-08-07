@@ -55,9 +55,10 @@ class Node {
   public:
     /**
      * Creates a Node object for an RRT based planner.
+     * 
      * @param traj: trajectory the node belongs to
      * @param parent: parent node 
-     * @param args: ??
+     * @param args: TODO
      * 
      * @returns Node node in the trajectory with the given parent node
      */
@@ -169,6 +170,9 @@ class Node {
     }
 };
 
+/**
+ * Struct for Node keys using the node's state.
+ */
 struct NodeKey {
     template <typename State, typename Traj>
     const State& operator() (const Node<State, Traj>* node) const {

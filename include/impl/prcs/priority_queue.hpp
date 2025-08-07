@@ -48,7 +48,18 @@ template <typename State, typename Traj>
 class PriorityQueue {
     using Node = prcs::Node<State, Traj>;
 
+    /**
+     * Comparator struct for comparing the ranks of nodes.
+     */
     struct cmp {
+        /**
+         * Compares the rank of two nodes.
+         * 
+         * @param n1: first Node to compare
+         * @param n2: second Node to compare
+         * 
+         * @returns bool true if n1's rank is greater than n2's rank
+         */
         bool operator() (const Node* n1, const Node* n2) const {
             return n1->rank() > n2->rank();
         }
@@ -64,6 +75,7 @@ class PriorityQueue {
 
     /**
      * Adds node to the priority queue.
+     * 
      * @param node: node to add to the priority queue
      */
     void push(Node* node) {

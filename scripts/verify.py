@@ -66,7 +66,7 @@ if __name__=='__main__':
     # verify_var_curve("./envs/ReMIND_info_003.txt", dir + "20250804-11-25-29_aorrt_remind_003_ptcloud.txt")
 
 
-    files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt")]
+    files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("20250807")]
     print(files)
     for file in files:
         print(f"\nprocessing {file}...")

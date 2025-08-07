@@ -35,8 +35,8 @@ cd ./build
 
 # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
 
-# seed_array=(8972 1784 7583 3829 6784 8392 7489 3423 5432 2349 8753 4637 9874 4812 13242 9238 16458 5435 1658 535 4326)
-seed_array=(4545 3746 4654 8796 1564 3034 8653 4854 1318 5624) # 8965 6341 4389 6532 3063 2164 1167 7890 6114 2631 9296 1743 8294 4326 4439 7010 3880) #) # 
+# seed_array=(8972 1784 7583 3829 6784 8392 7489 8753 4637 9874 4812 13242 9238 16458 5435 1658 535 4326)
+seed_array=(8965 6341 4389 6532 3063 2164 1167 7890 6114 2631 9296 1743 8294 4326 4439 7010 3880 3423 5432 2349) #(4545 3746 4654 8796 1564 3034 8653 4854 1318 5624)
 scan_array=(3) # 8 9)
 
 
@@ -45,8 +45,8 @@ do
     echo ""
     echo "scan $j"
     echo ""
-    ./app/rcs -seed 4545 -scan $j -r 14 -l 100 -phi 360 -timeout 100000 -bias 0.05 -save_pc -save_interp -var_curve
-    ./app/rcs_star -seed 4545 -scan $j -r 14 -l 100 -phi 360 -timeout 100000 -bias 0.05 -save_pc -save_interp -var_curve
+    ./app/rcs -seed 4545 -scan $j -r 16 -l 100 -phi 360 -timeout 100000 -bias 0.05 -save_pc -save_interp -var_curve
+    ./app/rcs_star -seed 4545 -scan $j -r 16 -l 100 -phi 360 -timeout 100000 -bias 0.05 -save_pc -save_interp -var_curve
 
     for i in ${seed_array[@]}
     do

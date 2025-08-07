@@ -84,6 +84,7 @@ struct WorkerStats<true> {
 
     /**
      * Adds the worker states of the provided worker to this worker.
+     * 
      * @param other: the worker with stats to add to this worker
      */
     WorkerStats& operator += (const WorkerStats& other) {

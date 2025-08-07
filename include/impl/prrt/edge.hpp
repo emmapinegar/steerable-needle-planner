@@ -41,6 +41,9 @@ namespace unc::robotics::mpt::impl::prrt {
 template <typename State, typename Traj>
 class Node;
 
+/**
+ * Edge between two nodes in the tree.
+ */
 template <typename State, typename Traj>
 class Edge : public Link<Traj> {
     using Node = prrt::Node<State, Traj>;
@@ -48,15 +51,32 @@ class Edge : public Link<Traj> {
     Node *to_;
 
   public:
+
+    /**
+     * Creates an instance of Edge.
+     * 
+     * @param traj: trajectory between Nodes
+     * @param to: Node the trajectory is moving to
+     */
     Edge(Traj&& traj, Node* to)
         : Link<Traj>(std::move(traj))
         , to_(to) {
     }
 
+    /**
+     * Gets the Node the Edge is directed towards.
+     * 
+     * @returns Node the destination of the Edge
+     */
     operator Node* () {
         return to_;
     }
 
+    /**
+     * Gets the Node the Edge is directed towards.
+     * 
+     * @returns Node the destination of the Edge
+     */
     operator const Node* () const {
         return to_;
     }

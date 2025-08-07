@@ -43,6 +43,9 @@ namespace unc::robotics::snp {
 const Vec3 kOrgP(0, 0, 0);
 const Quat kOrgQ(1, 0, 0, 0);
 
+/**
+ * MotionPrimitive class for base motions for RCS planners.
+ */
 template<typename State>
 class MotionPrimitive {
   public:
@@ -86,6 +89,7 @@ class MotionPrimitive {
     /**
      * Steers the needle from the state using the given motion primitives.
      * No collision checking is performed. 
+     * 
      * @param s: starting state
      * @param length: the length to insert
      * @param rad: the radius of curvature
@@ -126,9 +130,7 @@ class MotionPrimitive {
                 tmp.translation() = proceed_quat*(p - center) + center;
                 tmp.rotation() = (proceed_quat*q).normalized();
                 states.emplace_back(tmp);
-                // std::cout << "[motion_primitive.h SteerFrom] p: " << tmp.translation()[0] << " " <<  tmp.translation()[1] << " " << tmp.translation()[2] << " q: " <<  tmp.rotation() << " y: " << (tmp.rotation()*Vec3::UnitY())[0] << " " <<  (tmp.rotation()*Vec3::UnitY())[1] << " " << (tmp.rotation()*Vec3::UnitY())[2] << " z: " << (tmp.rotation()*Vec3::UnitZ())[0] << " " <<  (tmp.rotation()*Vec3::UnitZ())[1] << " " << (tmp.rotation()*Vec3::UnitZ())[2]  <<std::endl;
             }
-            // std::cout << "[motion_primitive.h SteerFrom] p: " << p[0] << " " <<  p[1] << " " << p[2] << " q: " <<  q << std::endl;
             Quat proceed_quat(AngleAxis(max_ang, normal_vec));
             tmp.translation() = proceed_quat*(p - center) + center;
             tmp.rotation() = (proceed_quat*q).normalized();

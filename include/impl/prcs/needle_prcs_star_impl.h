@@ -68,6 +68,9 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     static constexpr bool concurrent = maxThreads != 1;
     using NNConcurrency = std::conditional_t<concurrent, nigh::Concurrent, nigh::NoThreadSafety>;
 
+    /**
+     * Struct for nearest neighbors nodes coupling Nodes and States.
+     */    
     struct NNNode {
         Node* node;
         State state;
@@ -77,6 +80,9 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
         }
     };
 
+    /**
+     * Struct for nearest neighbors keys using the NNNode state. 
+     */    
     struct NNNodeKey {
         const State& operator() (const NNNode& n) const {
             return n.state;
@@ -284,7 +290,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been solved.
      * 
      * @returns true if the problem has been solved, false otherwise
      */
@@ -293,7 +299,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been approximately solved.
      * 
      * @returns bool true if the problem has been approximately solved, false otherwise
      */
@@ -528,7 +534,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     /**
      * Gets the stats of the best solution. 
      * 
-     * @returns cost, size, goal node, path arc length, path total phi
+     * @returns cost, size, goal node, path arc length, path total phi, spreading, planner type
      */
     std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&> stats() const {
         auto [cost, size, n] = bestSolution();
@@ -539,9 +545,9 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     }
 
     /**
-     * Gets the stats of the best solution. 
+     * Gets the stats of the planner when no solution has been found. 
      * 
-     * @returns cost, size, goal node, path arc length, path total phi
+     * @returns spreading, planner type
      */
     std::tuple<bool, Str&> failed_stats() const {
         Str planner_type = "4";
@@ -823,17 +829,16 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     template <typename DoneFn>
     void process(Planner& planner, Node* node, DoneFn done) {
         State from = node->state();
-        // MPT_LOG(INFO) << "node state " << from.rotation();
+
         if (node->parent()) {
             if (planner.bestCost_ < node->parent()->f() + EPS) {
                 recycle(node);
                 return;
             }
-            // TODO: find how to check curvature limit?? 
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             from = planner.propagator_.ComputeStartPose(node->parent()->state(), node->angleIndex());
-            // MPT_LOG(INFO) << "parent ang " << node->parent()->ang_total() << " node ang " << DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
-            node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation()); // TODO: this may need to go somewhere else
+
+            node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
         }
 
         const bool inheritValidation = node->valid();
@@ -879,9 +884,6 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
             if (!inevitableCollision) {
                 auto longer = refine(planner, node, LONGER);
-                // if (inheritValidation && longer) {
-                //     longer->valid() = true;
-                // }
             }
         }
 
@@ -931,7 +933,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     /**
      * Checks if there is a node within a radius of the provided state.
      * 
-     * @param nn: TODO
+     * @param nn: nearest neighbors tree
      * @param state: state to compare to existing nodes
      * @param rad: radius to use to determine if states are too similar
      * 
@@ -959,10 +961,6 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      * @returns (auto) bool true if the node is valid, false otherwise
      */
     decltype(auto) validNode(Planner& planner, Node* node) {
-        // if (node->ang_total() > 2.0) {
-        //     std::cout << "ang total: " << node->ang_total() << " valid: " << scenario_.valid(node->state(), node->length(), node->ang_total()) << std::endl;
-        // }
-        
         if (!scenario_.valid(node->state(), node->length(), node->ang_total()) || planner.bestCost_ < node->f() + EPS) {
             node->valid() = false;
             return false;
@@ -1015,10 +1013,10 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     }
  
     /**
-     * Unknown action.
+     * Marks indices of the current node's parent explored.
      * 
      * @param planner: planner for the problem
-     * @param node: node to block? 
+     * @param node: node whose parent to use for mark exploration
      */
     void block(Planner& planner, Node* node) {
         NodeIndices indices = node->indices();
@@ -1048,7 +1046,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     }
 
     /**
-     * Refines the characterisitcs for the given node?
+     * Refines off of the current node's parent in a direction based on the given refinement type.
      * 
      * @param planner: planner for the problem
      * @param node: node to refine
@@ -1149,9 +1147,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     Node* addNewNode(Planner& planner, Node* parent, const unsigned& radIndex, const unsigned& lengthLevel,
                      const unsigned& angleLevel, const unsigned& lengthIndex=0, const unsigned& angleIndex=0) {
         const State& pState = parent->state();
-        // if (parent->curve_lim() == 0) {
-        //     parent->curve_lim() = scenario_.curvature(parent->state());
-        // }
+
         auto from = planner.propagator_.ComputeStartPose(pState, angleIndex);
         auto duplicatedStart = similarState(planner, parent, from);
 
@@ -1180,7 +1176,6 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         node->cost() = parent->cost() + scenario_.CurveCost(pState, endState);
         node->costToGo() = scenario_.validator().CostToGo(endState);
         node->ang_total() = node->parent()->ang_total() + DirectionDifference(pState.rotation(), endState.rotation());
-        // node->curve_lim() = scenario_.curvature(node->state());
         planner.queue_.push(node);
         return node;
     }

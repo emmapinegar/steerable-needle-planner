@@ -48,6 +48,7 @@ using NodeIndices = std::array<unsigned, 3>;
 
 /**
  * Converts Idx to a string (idx[0],idx[1],idx[2]).
+ * 
  * @param idx: index to convert
  * 
  * @returns Str version of index
@@ -86,10 +87,11 @@ class Node {
 
   public:
     /**
-     * Creates a Node object for an RRT based planner.
+     * Creates a Node object for a RCS based planner.
+     * 
      * @param traj: trajectory the node belongs to
      * @param parent: parent node 
-     * @param args: ??
+     * @param args: TODO
      * 
      * @returns Node node in the trajectory with the given parent node
      */
@@ -101,9 +103,10 @@ class Node {
 
     /**
      * Resets the node (state, parent, costs, validity, rank, levels, indices, explored set).
+     * 
      * @param traj: trajectory 
      * @param parent: parent node
-     * @param args: extra args idk what they would be :(
+     * @param args: TODO
      */
     template <typename ... Args>
     void reset(Traj&& traj, Node* parent, Args&& ... args) {
@@ -120,6 +123,7 @@ class Node {
     }
 
     /**
+     * Set the resolutions for node ranks, levels, and indices.
      * 
      * @param levels: levels for the node [length, angle]
      * @param indices: indices for the node [radius, length, angle]
@@ -368,6 +372,7 @@ class Node {
 
     /**
      * Checks if the provided indices have been explored?? adds them to explored list if they were not found.
+     * 
      * @param indices: indices to check for exploration
      * 
      * @returns bool true if the indices have been explored, false otherwise
@@ -385,6 +390,7 @@ class Node {
 
     /**
      * Writes the details of the node (levels, indices, rank, parent) to an output stream.
+     * 
      * @param out: stream to write the node information to
      */
     void print(std::ostream& out=std::cout) const {
@@ -408,6 +414,7 @@ class Node {
 
     /**
      * Writes the details of the state (position, quaternion) to an output stream.
+     * 
      * @param state: state with information to write
      * @param out: stream to write the node information to
      */
@@ -420,6 +427,7 @@ class Node {
             // << std::endl;
     }
 };
+
 
 struct NodeKey {
     template <typename State, typename Traj>

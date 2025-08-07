@@ -103,6 +103,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Makes the bounds for the planning problem based off of the starting position and needle limits.
+     * 
      * @param start: starting state of the needle
      * @param goal: goal state for the needle
      * @param length: needle insertion limit
@@ -126,6 +127,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
     /**
      * Gets the curvature status for the planning problem based on the distance between the start and goal
      * and where it falls with the different configuration thresholds. 
+     * 
      * @param start: starting state of the needle
      * @param goal: goal state for the needle
      * @param cfg: planning configuration
@@ -191,6 +193,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the state is valid in the planning context.
+     * 
      * @param s: the state to check
      * 
      * @returns bool true if the state is valid, false otherwise
@@ -201,6 +204,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the length is valid in the planning context.
+     * 
      * @param length: the insertion length of a state
      * 
      * @returns bool true if the length is valid, false otherwise
@@ -222,6 +226,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the state, length, and angle are valid.
+     * 
      * @param s: the state to check
      * @param length: the insertion length of state
      * @param angle: the accumulated angle of the state from the start
@@ -244,6 +249,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the state is in collision.
+     * 
      * @param s: the state to collision check
      * 
      * @returns bool true if the state is in collision, false otherwise
@@ -278,6 +284,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if there is a valid motion between the two states.
+     * 
      * @param from: starting state
      * @param to: target state
      * 
@@ -289,6 +296,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Calculates the euclidean distance between the two state positions.
+     * 
      * @param s1: first state
      * @param s2: second state
      * 
@@ -300,6 +308,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Gets the cost of the curve between the states from the configuration environment.
+     * 
      * @param s1: starting state
      * @param s2: target state
      * 
@@ -312,6 +321,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Gets the cost to get to the goal state from the current state from the configuration environment.
+     * 
      * @param s: the current state
      * 
      * @returns Scalar cost to get from s to the goal state
@@ -345,7 +355,6 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
      * @returns Goal goal for the planning problem
      */
     const Goal& goal() const {
-        // std::cout << "goal: " << goal_ << std::endl;
         return goal_;
     }
 
@@ -399,6 +408,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Makes the bounds for the planning problem based off of the starting position and needle limits.
+     * 
      * @param start: starting state of the needle
      * @param length: needle insertion limit
      * 
@@ -444,6 +454,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Attempts to connect to the state directly from the start using the validator.
+     * 
      * @param s: the state to try to connect to 
      * 
      * @returns State the resulting state if the connection was successful 
@@ -454,6 +465,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the state is valid in the planning context.
+     * 
      * @param s: the state to check
      * 
      * @returns bool true if the state is valid, false otherwise
@@ -464,6 +476,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the length is valid in the planning context.
+     * 
      * @param length: the insertion length of a state
      * 
      * @returns bool true if the length is valid, false otherwise
@@ -474,6 +487,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the state and length are valid independently.
+     * 
      * @param s: the state to check
      * @param length: the insertion length of state
      * 
@@ -485,6 +499,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the state, length, and angle are valid.
+     * 
      * @param s: the state to check
      * @param length: the insertion length of state
      * @param angle: the accumulated angle of the state from the start
@@ -497,6 +512,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if the state is in collision.
+     * 
      * @param s: the state to collision check
      * 
      * @returns bool true if the state is in collision, false otherwise
@@ -530,6 +546,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Checks with the validator if there is a valid motion between the two states.
+     * 
      * @param from: starting state
      * @param to: target state
      * 
@@ -541,6 +558,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Calculates the euclidean distance between the two state positions.
+     * 
      * @param s1: first state
      * @param s2: second state
      * 
@@ -552,6 +570,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Gets the cost of the curve between the states from the configuration environment.
+     * 
      * @param s1: starting state
      * @param s2: target state
      * 
@@ -564,6 +583,7 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
 
     /**
      * Gets the cost to get to the goal state from the current state from the configuration environment.
+     * 
      * @param s: the current state
      * 
      * @returns Scalar cost to get from s to the goal state

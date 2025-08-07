@@ -114,6 +114,7 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Records that a goal has been reached with node.
+     * 
      * @param node: the node reaching the goal
      */
     void foundGoal(Node* node) {
@@ -136,9 +137,10 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Records that a goal has almost been reached with node.
+     * 
      * @param node: the node that approximately reached the goal
      * @param goalState: the goal state that was approximately reached
-     * @param nodePool: 
+     * @param nodePool: TODO
      * @param dist: the distance between the node state and the goal state
      */
     std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool,
@@ -191,6 +193,8 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Sets the ratio for adding starts (as long as 0 <= ratio <= 1) if HEALPix is used.
+     * Not really used for our purposes, kept around for posterity.
+     * 
      * @param ratio: ratio for adding starts
      */
     void setAddStartRatio(Distance ratio) {
@@ -200,6 +204,7 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Gets the ratio used for adding starts if HEALPix is used.
+     * Not really used for our purposes, kept around for posterity.
      * 
      * @returns Distance the current ratio for adding starts
      */
@@ -209,6 +214,7 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Sets the maximum distance range for the problem.
+     * 
      * @param range: new maximum distance range
      */
     void setRange(Distance range) {
@@ -242,8 +248,8 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Adds a starting node to the queue.
-     * @param args:
      * 
+     * @param args: TODO
      */
     template <typename ... Args>
     void addStart(Args&& ... args) {
@@ -260,9 +266,10 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Starts solving the problem by starting the workers.
+     * 
      * @param doneFn: function that determines when the worker is done
      * 
-     * @returns 
+     * @returns TODO
      */
     template <typename DoneFn>
     std::enable_if_t<std::is_same_v<bool, std::result_of_t<DoneFn()>>>
@@ -276,7 +283,7 @@ class NeedleSpreadingPRCS : public
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been found.
      * 
      * @returns true if the problem has been solved, false otherwise
      */
@@ -285,7 +292,7 @@ class NeedleSpreadingPRCS : public
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been approximately solved. 
      * 
      * @returns bool true if the problem has been approximately solved, false otherwise
      */
@@ -314,6 +321,7 @@ class NeedleSpreadingPRCS : public
   private:
     /**
      * Calculates the cost and number of nodes of the path from the node to the root of the tree.
+     * 
      * @param n: the node to get the cost of 
      * 
      * @returns Distance the cost from the start to the node, size_t the number of nodes in the path
@@ -328,7 +336,6 @@ class NeedleSpreadingPRCS : public
 
             for (const Node *p ; (p = n->parent()) != nullptr ; n = p) {
                 cost += workers_[0].scenario().CurveCost(p->state(), n->state());
-                // std::cout << "l: " << n->length() << std::endl;
                 ++size;
             }
         }
@@ -370,6 +377,7 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -386,6 +394,7 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -402,6 +411,7 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -472,6 +482,7 @@ class NeedleSpreadingPRCS : public
 
     /**
      * Gets the solution for the best solution. 
+     * 
      * @param fn: function to link the solution
      */
     template <typename Fn>
@@ -516,7 +527,7 @@ class NeedleSpreadingPRCS : public
     /**
      * Gets the stats of the best solution. 
      * 
-     * @returns cost, size, goal node, path arc length, path total phi
+     * @returns cost, size, goal node, path arc length, path total phi, spreading, planner type
      */
     std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&> stats() const {
         auto [cost, size, n] = bestSolution();
@@ -526,10 +537,10 @@ class NeedleSpreadingPRCS : public
         return {cost, size, n, length, ang_total, true, planner_type};
     }
 
-        /**
-     * Gets the stats of the best solution. 
+    /**
+     * Gets the stats of the planner when no solution has been found.
      * 
-     * @returns cost, size, goal node, path arc length, path total phi
+     * @returns spreading, planner type
      */
     std::tuple<bool, Str&> failed_stats() const {
         Str planner_type = "7";
@@ -564,6 +575,7 @@ class NeedleSpreadingPRCS : public
   private:
     /**
      * Visits all of the nodes with the visitor. 
+     * 
      * @param visitor: visitor worker 
      * @param nodes: nodes for the worker to visit
      */
@@ -583,6 +595,7 @@ class NeedleSpreadingPRCS : public
   public:
     /**
      * Visits the nodes in the graph using workers.
+     * 
      * @param visitor: visitor worker 
      */
     template <typename Visitor>
@@ -669,6 +682,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Solves the motion planning problem.
+     * 
      * @param planner: planner for the problem 
      * @param done: the function that determines when the planner is done
      */
@@ -682,8 +696,6 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         if(no_ == 0 && planner.addStartRatio_ > 0) {
             scaledRatio = planner.addStartRatio_ * planner.workers_.size();
             MPT_LOG(INFO) << "using scaled add start ratio of " << scaledRatio;
-
-            // scenario_.validator().InitHEALPix();
         }
 
         configTolerance_ = scenario_.validator().ConfigTolerance();
@@ -740,22 +752,17 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Adds a new start if the next start state is not too similar to existing start states. 
+     * 
      * @param planner: planner for the problem
      * 
      * @returns bool true if new start state was added to the planner, false otherwise
      */
     bool addNewStart(Planner& planner) {
-        auto randState = csampler_(rng_); //scenario_.validator().IterateNextStart();
-        // randState.translation() = scenario_.StartState().translation() + 0.1*randState.translation();
-        // std::cout << randState <<  std::endl;
+        auto randState = csampler_(rng_); 
         auto startState = scenario_.DirectConnectingStart(randState);
-        // std::cout << startState2 << std::endl;
-        // auto startState = scenario_.validator().IterateNextStart();
-        // std::cout << startState << std::endl;
+
         if (startState) {
-            // MPT_LOG(INFO) << "checking if there's a similar state..";
             if (!similarStart(planner, *startState)) {
-                // MPT_LOG(INFO) << "no similar start found, trying to add..";
                 planner.addStart(*startState);
                 return true;
             }
@@ -766,6 +773,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Processes the node, validating and refining if applicable.
+     * 
      * @param planner: planner for the problem
      * @param node: node to process
      * @param done: function to determine if termination conditions are satisfied
@@ -789,12 +797,10 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 return;
             }
 
-
             node->state() = *propagated;
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
-            node->curve_lim() = scenario_.curvature(node->state());
         }
 
         const bool inheritValidation = node->valid();
@@ -805,7 +811,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 if (isGoal) {
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation()); 
-                    // MPT_LOG(INFO) << "calculating goal angle";
+
                     if (scenario_.valid(goalState, goalLength, goalAngle)) {
                         auto const& goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                              + scenario_.FinalStateCost(goalState);
@@ -864,11 +870,12 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if there exists a similar start already in the tree.
+     * 
      * @param planner: planner for the problem
      * @param parent: parent node for the state
      * @param state: state to check for similar starts
      * 
-     * @returns bool true if there is a similar start for the state?? 
+     * @returns bool true if there is a similar start for the state 
      */
     bool similarStart(Planner& planner, Node* parent, State from) {
         Timer timer(Stats::nearest());
@@ -895,6 +902,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if there exists a similar start already in the tree.
+     * 
      * @param planner: planner for the problem
      * @param state: state to check for similar starts
      * 
@@ -904,7 +912,6 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         Timer timer(Stats::nearest());
         from.rotation().normalize();
         auto [nearNode, d] = planner.nn_.nearest(from).value();
-        // MPT_LOG(INFO) << "d: " << d;
         if (d < configTolerance_) {
             return true;
         }
@@ -914,6 +921,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the node is valid.
+     * 
      * @param planner: planner for the problem
      * @param node: node to validate
      * 
@@ -945,6 +953,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Checks if the motion from the provided state to the node is a valid motion.
+     * 
      * @param planner: planner for the problem 
      * @param node: node to add on top of in the validation process
      * @param from: state to add on top of the given node
@@ -975,6 +984,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Expands off of the current node and adds them to the queue for processing.
+     * 
      * @param planner: planner for the problem 
      * @param node: node to expand from
      */
@@ -992,7 +1002,8 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
     }
 
     /**
-     * Refines the characterisitcs for the given node?
+     * Refines off of the current node's parent in a direction based on the given refinement type.
+     * 
      * @param planner: planner for the problem
      * @param node: node to refine
      * @param type: type of refinement (SHORTER, LONGER, LEFT, RIGHT)
@@ -1078,6 +1089,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Adds the new node to the queue for processing.
+     * 
      * @param planner:
      * @param parent: parent node for new node
      * @param radIndex: motion primitve radius of curvature index
@@ -1108,6 +1120,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Recycles the given node.
+     * 
      * @param node: node to be recycled
      */
     void recycle(Node* node) {

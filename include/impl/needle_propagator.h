@@ -46,6 +46,7 @@ namespace utils {
 
 /**
  * Attemtps to connect states directly.
+ * 
  * @param from: start state
  * @param to: target state
  * @param rng: random number generator
@@ -80,7 +81,7 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
     if (cos_theta > 0) {
         r = std::fmax(rad_curv, 0.5*d/std::sin(std::acos(cos_theta)));
     }
-    // std::cout << "r: " << r << std::endl;
+
     const Vec3 normal = (st.cross(sg)).normalized();
     const Vec3 center = sp + r*(normal.cross(st));
     const RealNum max_ang = std::acos(((gp - center).normalized()).dot((sp - center).normalized()));
@@ -101,11 +102,8 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
 
     result.translation() = proceed_quat*(sp - center) + center;
     result.rotation() = (proceed_quat*sq).normalized();
-    // PrintState(result);
-    // std::cout << "[ConnectWithCurveDirectly]" << std::endl;
+
     if (std::isnan(result.rotation().w())) {
-        // PrintState(from);
-        // PrintState(to);
         throw std::runtime_error("[ConnectPointWithCurveDirectly] Get nan result quaternion!");
     }
 
@@ -113,7 +111,8 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
 }
 
 /**
- * Transforms the state to be in the frame of new_base?
+ * Transforms the state to be in the frame of new_base.
+ * 
  * @param state: state that is being transformed
  * @param new_base: base frame to move to
  * 

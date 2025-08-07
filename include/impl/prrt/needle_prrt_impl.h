@@ -85,6 +85,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Records that a goal has been reached with node.
+     * 
      * @param node: the node reaching the goal
      */
     void foundGoal(Node* node) {
@@ -107,10 +108,13 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Records that a goal has almost been reached with node.
+     * 
      * @param node: the node that approximately reached the goal
      * @param goalState: the goal state that was approximately reached
      * @param nodePool: 
      * @param dist: the distance between the node state and the goal state
+     * 
+     * @returns Node if there is an approximate solution, {} if there is not
      */
     std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool,
                                          Distance* dist) {
@@ -145,6 +149,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Sets the goal sampling bias (if 0 <= bias <= 1).
+     * 
      * @param bias: new sampling bias
      */
     void setGoalBias(Distance bias) {
@@ -163,6 +168,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Sets the maximum distance range for the problem.
+     * 
      * @param range: new maximum distance range
      */
     void setRange(Distance range) {
@@ -190,8 +196,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Adds a starting node to the queue.
-     * @param args:
      * 
+     * @param args: TODO
      */
     template <typename ... Args>
     void addStart(Args&& ... args) {
@@ -205,9 +211,10 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Starts solving the problem by starting the workers.
+     * 
      * @param doneFn: function that determines when the worker is done
      * 
-     * @returns 
+     * @returns TODO
      */
     template <typename DoneFn>
     std::enable_if_t<std::is_same_v<bool, std::result_of_t<DoneFn()>>>
@@ -221,7 +228,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been solved.
      * 
      * @returns true if the problem has been solved, false otherwise
      */
@@ -230,7 +237,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
     }
 
     /**
-     * Unknown action
+     * Checks if the planning problem has been approximately solved.
      * 
      * @returns bool true if the problem has been approximately solved, false otherwise
      */
@@ -250,6 +257,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
   private:
     /**
      * Calculates the cost and number of nodes of the path from the node to the root of the tree.
+     * 
      * @param n: the node to get the cost of 
      * 
      * @returns Distance the cost from the start to the node, size_t the number of nodes in the path
@@ -305,6 +313,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -321,6 +330,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -337,6 +347,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Links the solution from node back to root.
+     * 
      * @param node: node to use to link the solution back to root
      * @param fn: function to link the solution
      * 
@@ -407,6 +418,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
     /**
      * Gets the solution for the best solution. 
+     * 
      * @param fn: function to link the solution
      */
     template <typename Fn>
@@ -461,7 +473,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
         return {cost, size, n, length, ang_total, false, planner_type};
     }
 
-        /**
+    /**
      * Gets the stats of the best solution. 
      * 
      * @returns cost, size, goal node, path arc length, path total phi
@@ -499,6 +511,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
   private:
     /**
      * Visits all of the nodes with the visitor. 
+     * 
      * @param visitor: visitor worker 
      * @param nodes: nodes for the worker to visit
      */
@@ -519,6 +532,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
   public:
     /**
      * Visits the nodes in the graph using workers.
+     * 
      * @param visitor: visitor worker 
      */
     template <typename Visitor>
@@ -599,6 +613,7 @@ class NeedlePRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
     /**
      * Solves the motion planning problem.
+     * 
      * @param planner: planner for the problem 
      * @param done: the function that determines when the planner is done
      */
@@ -620,7 +635,7 @@ class NeedlePRRT<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     Stats::countIteration();
 
                     if (planner.goalCount_.load(std::memory_order_relaxed) >= 1) {
-                        goto unbiasedSamplingLoop;                                      // GOTO BAD we should change if we can get around it
+                        goto unbiasedSamplingLoop;                                     
                     }
 
                     if (uniform01(rng_) < scaledBias) {
@@ -649,6 +664,7 @@ unbiasedSamplingLoop:
 
     /**
      * Attempts to add sample to motion plan.
+     * 
      * @param planner: planner for the problem
      * @param sample: sampled state to try to add
      */
@@ -660,6 +676,7 @@ unbiasedSamplingLoop:
 
     /**
      * Finds the node with the state closest to the provided state. 
+     * 
      * @param planner: planner for the problem
      * @param state: state to search for nodes near
      * 
@@ -672,6 +689,7 @@ unbiasedSamplingLoop:
 
     /**
      * Attempts to add sample motion.
+     * 
      * @param planner: planner for the problem 
      * @param randState: random state to try to add
      */
@@ -680,19 +698,14 @@ unbiasedSamplingLoop:
             return;
         }
 
-
         auto [nearNode, d] = nearest(planner, randState).value();
-        
-        // std::cout << "neighbor: " << nearNode->state().translation()[0] << " " << nearNode->state().translation()[1] << " " << nearNode->state().translation()[2] << " d: " << d << std::endl; 
-
 
         State newState = randState;
 
         if (scenario_.PositionDist(nearNode->state(), randState) < snp::EPS) {
             return;
         }
-        // nearNode->curve_lim() = scenario_.curvature(nearNode->state());
-        // std::cout << " curve lim: " << nearNode->curve_lim() << std::endl;
+
         auto propagated = propagator_(nearNode->state(), randState, rng_, nearNode->curve_lim());
 
         if (!propagated) {
@@ -704,8 +717,6 @@ unbiasedSamplingLoop:
         auto const& newCurvature = scenario_.curvature(newState);
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
-
-        // std::cout << "angle total: " << newAngle << std::endl;
 
         if (!scenario_.valid(newState, newLength, newAngle)) {
             return;
@@ -719,7 +730,6 @@ unbiasedSamplingLoop:
             newNode->length() = newLength;
             newNode->cost() = nearNode->cost() + scenario_.CurveCost(nearNode->state(), newState);
             newNode->ang_total() = newAngle;
-            // newNode->curve_lim() = newCurvature;
             planner.nn_.insert(newNode);
 
             if (isGoal) {
@@ -738,8 +748,6 @@ unbiasedSamplingLoop:
                             goalNode->length() = goalLength;
                             goalNode->cost() = goalCost;
                             goalNode->ang_total() = goalAngle;
-                            // goalNode->curve_lim() = goalCurvature;
-                            // std::cout << "angle total: " << goalAngle << std::endl;
                             planner.foundGoal(goalNode);
                         }
                     }
@@ -757,8 +765,6 @@ unbiasedSamplingLoop:
                         (*goalNode)->cost() = newNode->cost() + scenario_.CurveCost(newNode->state(), goalState)
                                               + scenario_.FinalStateCost(goalState);
                         (*goalNode)->ang_total() = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
-                        // (*goalNode)->curve_lim() = goalCurvature;
-                        // std::cout << "angle total: " << (*goalNode)->ang_total() << std::endl;
                     }
                 }
             }
@@ -767,10 +773,11 @@ unbiasedSamplingLoop:
 
     /**
      * Checks if the motion from the provided state to the other state is a valid motion.
+     * 
      * @param a: starting state
      * @param b: target state
      * 
-     * @returns ?? 
+     * @returns bool true if the motion between states is valid, false otherwise
      */
     decltype(auto) validMotion(const State& a, const State& b) {
         Timer timer(Stats::validMotion());

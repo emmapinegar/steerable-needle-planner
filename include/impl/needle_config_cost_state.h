@@ -114,10 +114,11 @@ class ConfigCostState {
 
     /**
      * Prints the translation, rotation, and cost of the configuration cost state to the stream.
+     * 
      * @param out: output stream to write information to
      * @param q: configuration cost state to use to get information
      * 
-     * @returns ?? addition of translation, rotation, and cost to the stream
+     * @returns TODO addition of translation, rotation, and cost to the stream
      */
     template <typename Char, typename Traits>
     friend decltype(auto)
