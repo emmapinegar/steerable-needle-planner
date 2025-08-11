@@ -99,6 +99,7 @@ struct Space<mpt::SE3State<Scalar>, NonMetric<0>> {
     /**
      * Calculates the distance between two states.
      * Attempts to do shortest distance??
+     * 
      * @param from: starting state
      * @param to: target state
      * 
@@ -164,6 +165,7 @@ struct Space<mpt::ConfigCostState<Scalar>, NonMetric<1>> {
 
     /**
      * Checks that all values for position and orientation are valid (finite).
+     * 
      * @param s: state to validate
      * 
      * @returns bool true if all values are finite, false otherwise
@@ -193,6 +195,7 @@ struct Space<mpt::ConfigCostState<Scalar>, NonMetric<1>> {
     /**
      * Calculates the distance between two states.
      * Attempts to do shortest distance??
+     * 
      * @param from: starting state
      * @param to: target state
      * 

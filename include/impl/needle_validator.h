@@ -45,9 +45,9 @@ namespace unc::robotics::snp {
 namespace utils {
 
 /**
- * checks if the workspace between the start (s) and goal are connected and within the limits of the needle uses the 
+ * Checks if the workspace between the start (s) and goal are connected and within the limits of the needle uses the 
  * intersection of the trumpet shaped workspace created by the radius of curvature limit and the rugby/olive shaped 
- * workspace created by the points from which the goal is still reachable given the start
+ * workspace created by the points from which the goal is still reachable given the start.
  * 
  * @param s: the starting state for the motion planning problem
  * @param goal: the goal state for the motion planning problem
@@ -73,10 +73,6 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     const RealNum& voxel_rad = env->VoxelRadius();
     const RealNum y = sg.dot(st);
 
-
-    // std::cout << "st: " << st[0] << " " << st[1] << " " << st[2] << std::endl;
-    // std::cout << "sg: " << sg[0] << " " << sg[1] << " " << sg[2] << std::endl;
-    // std::cout << "y: " << y << std::endl;
 
     RealNum max_h;
     if (2 * rad_curv - pos_tolerance < d) {
@@ -106,9 +102,8 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
 
     bool connected = false;
     std::queue<IntPoint> queue;
-    auto const start_ijk = env->RasToIjk(sp).cast<int>();   // TODO: has something like this changed behavior in debugging?
+    auto const start_ijk = env->RasToIjk(sp).cast<int>();   // Note: this occassionally misbehaves (I think just in debugging), see README for work around
 
-    // std::cout << "start ijk: " << start_ijk[0] << " " << start_ijk[1] << " " << start_ijk[2] << " voxel rad: " << voxel_rad <<std::endl;
     queue.push(start_ijk);
     if constexpr (Init) {
         env->SetWorkspace(start_ijk[0], start_ijk[1], start_ijk[2]);
@@ -118,26 +113,17 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     IntPoint cur_ijk, inc;
     IdxPoint inc_ijk;
     SizeType counter = 0;
-    // std::cout << "max size: " << max_size << " init: " << Init << std::endl;
+
     while (!queue.empty()) {
         cur_ijk = queue.front();
         queue.pop();
         ++counter;
-        // if (counter % 1000 == 0)
-        // {
-        //     std::cout << "\rChecked points: " << counter << std::flush;
-        // }
-        
-        // std::cout << "counter: " << counter << " ijk: " << cur_ijk[0] << " " << cur_ijk[1] << " " << cur_ijk[2] << std::endl;
+
         if constexpr (!Init) {
             if (counter > max_size) {
                 return true;
             }
         }
-
-        // if (counter > 1000000) {
-        //         return true;
-        // }
 
         for (auto const& n : neig) {
             inc = cur_ijk + n;
@@ -182,9 +168,7 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
                 if (valid) {
                     if ((inc_ras - gp).norm() < voxel_rad + pos_tolerance) {
                         connected = true;
-                        // std::cout << "counter: " << counter << std::endl;
                         if constexpr (!Init) {
-                            // std::cout << std::endl;
                             return connected;
                         }
                     }
@@ -200,13 +184,13 @@ bool CheckWorkspaceConnected(const State& s, const State& goal, const RealNum& r
     if constexpr (Init) {
         max_size = counter;
     }
-    // std::cout << "counter: " << counter << std::endl;
+
     return connected;
 }
 
 
 /**
- * verifies that the problem is at least potentially possible to solve
+ * Verifies that the problem is at least potentially possible to solve.
  * 
  * @param start: the starting state for the motion planning problem
  * @param goal: the goal state for the motion planning problem
@@ -229,11 +213,6 @@ bool ValidPoint2PointProblem(const State& start, const State& goal, const RealNu
                              EnvPtr env, const RealNum& rad_curv, const RealNum& ins_length,
                              const RealNum& ang_constraint_rad, const bool constrain_goal_orientation,
                              BoolArray3& visited, unsigned& max_size) {
-    // if (ang_constraint_rad > 2*M_PI + EPS) {
-    //     std::cout << "Using an angular constraint of " << ang_constraint_rad* RAD_TO_DEGREE <<
-    //               " (> 270) degrees! Not supported yet!" << std::endl;
-    //     return false;
-    // }
 
     const Vec3& start_p = start.translation();
     const Quat start_q = start.rotation().normalized();
@@ -420,17 +399,12 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
         auto [skull_point, r_mag] = cfg->skull->NearestObstacleCenter(sp);
         skull_point = skull_point / 1000;
         Vec3 p = sp/1000;
-        // Vec3 test = Vec3(-68.224633, 18.392204, 74.247634);
-        // auto [test_point, test_r] = cfg->skull->NearestObstacleCenter(test);
-        
-        // Vec3 test_diff = Vec3(test_point[0] - 1000*p[0], test_point[1] - 1000*p[1], test_point[2] - 1000*p[2]);
-        // std::cout << "test: " << test_point[0] << " " << test_point[1] << " " << test_point[2] << " r: " << test_r << " diff: " << test_diff[0] << " " << test_diff[1] << " " << test_diff[2] << "r: " << test_diff.norm() << std::endl;
 
         Vec3 r = Vec3(skull_point[0] - p[0], skull_point[1] - p[1], skull_point[2] - p[2]);
         Vec3 r_hat = r.normalized();
-        r_mag = r.norm() + 0.020; // adding buffer for physical magnet radius
+        r_mag = r.norm() + 0.020;                                                                               // adding buffer for physical magnet radius
         Vec3 mag_point = Vec3(p[0] + r_hat[0]*(r_mag), p[1] + r_hat[1]*(r_mag), p[2] + r_hat[2]*(r_mag));
-        auto r_outer = r_hat * r_hat.transpose(); // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
+        auto r_outer = r_hat * r_hat.transpose();                                                               // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
         Vec3 needle_mag = sq.normalized() * Vec3::UnitZ();
         Vec3 manip_mag = normal_vec;
 
@@ -440,25 +414,19 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
         Vec3 tau = cfg->needle_mag* needle_mag.cross(b);
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
-        // std::cout << "r_outer: " << r_outer << std::endl;
-        // std::cout << "r_mat: " << r_mat << std::endl;
 
         // std::cout  << " curvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm() << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2];
         // std::cout  << " state: " << p[0] << " " << p[1] << " " << p[2] << " skull point: " << skull_point[0] << " " << skull_point[1] << " " << skull_point[2] << " r: " << r[0] << " " << r[1] << " " << r[2] << " mag point: " << mag_point[0] << " " << mag_point[1] << " " << mag_point[2] << std::endl;
         // std::cout << "manip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " y: " << y.transpose() << " q: " << sq.normalized() << std::endl;  
- 
-        
-        // return curvature_lim;
+
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
         } 
         else {
-            // std::cout << "new limit: " << curvature_lim << std::endl;
             return curvature_lim;
         }
     }
     else {
-        // std::cout << "lim: " << max_curvature_ << std::endl;
         return cfg->rad_curv;
     }
 
@@ -485,11 +453,11 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
         Vec3 p = sp/1000;
         Vec3 r = Vec3(skull_point[0] - p[0], skull_point[1] - p[1], skull_point[2] - p[2]);
         Vec3 r_hat = r.normalized();
-        r_mag = r.norm() + 0.020; // adding buffer for physical magnet radius
+        r_mag = r.norm() + 0.020;                                                                               // adding buffer for physical magnet radius
         Vec3 mag_point = Vec3(p[0] + r_hat[0]*(r_mag), p[1] + r_hat[1]*(r_mag), p[2] + r_hat[2]*(r_mag));
-        auto r_outer = r_hat * r_hat.transpose(); // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
+        auto r_outer = r_hat * r_hat.transpose();                                                               // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
         Vec3 needle_mag = sq.normalized() * Vec3::UnitZ();
-        Vec3 x = sq.normalized() * Vec3::UnitX(); //r_hat.cross(s.rotation().normalized() * Vec3::UnitX()).normalized();//needle_mag.cross(r_hat);
+
         Vec3 manip_mag = sq.normalized() * Vec3::UnitY();
 
         auto r_mat = 3*r_outer - Eigen::Matrix3d::Identity();
@@ -498,22 +466,18 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
         Vec3 tau = cfg->needle_mag* needle_mag.cross(b);
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
-        // std::cout << "r_outer: " << r_outer << std::endl;
-        // // std::cout << "r_mat: " << r_mat << std::endl;
         // std::cout  << " curvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
         // std::cout  << " state: " << p[0] << " " << p[1] << " " << p[2] << " skull point: " << skull_point[0] << " " << skull_point[1] << " " << skull_point[2] << " r: " << r[0] << " " << r[1] << " " << r[2] << " mag point: " << mag_point[0] << " " << mag_point[1] << " " << mag_point[2] << std::endl;
         // std::cout << "manip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " y: " << y.transpose() << " q: " << sq.normalized() << std::endl;            
-        // return curvature_lim;
+
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
         } 
         else {
-            // std::cout << "new limit: " << curvature_lim << std::endl;
             return curvature_lim;
         }
     }
     else {
-        // std::cout << "lim: " << max_curvature_ << std::endl;
         return cfg->rad_curv;
     }
 
@@ -533,54 +497,20 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
  */
 RealNum GetCurvature(const Vec3& sp, const Quat& sq, const Vec3& normal_vec, ConfigPtr cfg, const RealNum& rad_curv) {
     return GetCurvatureNormal(sp, sq, normal_vec, cfg, rad_curv);
-    // if (cfg->variable_curvature) {
-    //     auto [skull_point, r_mag] = cfg->skull->NearestObstacleCenter(sp);
-    //     skull_point = skull_point / 1000;
-    //     Vec3 p = sp/1000;
-    //     // Vec3 test = Vec3(-68.224633, 18.392204, 74.247634);
-    //     // auto [test_point, test_r] = cfg->skull->NearestObstacleCenter(test);
-        
-    //     // Vec3 test_diff = Vec3(test_point[0] - 1000*p[0], test_point[1] - 1000*p[1], test_point[2] - 1000*p[2]);
-    //     // std::cout << "test: " << test_point[0] << " " << test_point[1] << " " << test_point[2] << " r: " << test_r << " diff: " << test_diff[0] << " " << test_diff[1] << " " << test_diff[2] << "r: " << test_diff.norm() << std::endl;
-
-    //     Vec3 r = Vec3(skull_point[0] - p[0], skull_point[1] - p[1], skull_point[2] - p[2]);
-    //     Vec3 r_hat = r.normalized();
-    //     r_mag = r.norm() + 0.020; // adding buffer for physical magnet radius
-    //     Vec3 mag_point = Vec3(p[0] + r_hat[0]*(r_mag), p[1] + r_hat[1]*(r_mag), p[2] + r_hat[2]*(r_mag));
-    //     auto r_outer = r_hat * r_hat.transpose(); // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
-    //     Vec3 needle_mag = sq.normalized() * Vec3::UnitZ();
-    //     Vec3 manip_mag = normal_vec;
-
-    //     auto r_mat = 3*r_outer - Eigen::Matrix3d::Identity();
-
-    //     Vec3 b = cfg->manip_mag*(1e-7/(r_mag*r_mag*r_mag))*r_mat * manip_mag;
-    //     Vec3 tau = cfg->needle_mag* needle_mag.cross(b);
-    //     RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
-
-    //     // std::cout << "r_outer: " << r_outer << std::endl;
-    //     // std::cout << "r_mat: " << r_mat << std::endl;
-
-    //     std::cout  << " curvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm() << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2];
-    //     std::cout  << " state: " << p[0] << " " << p[1] << " " << p[2] << " skull point: " << skull_point[0] << " " << skull_point[1] << " " << skull_point[2] << " r: " << r[0] << " " << r[1] << " " << r[2] << " mag point: " << mag_point[0] << " " << mag_point[1] << " " << mag_point[2] << std::endl;
-    //     // std::cout << "manip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " y: " << y.transpose() << " q: " << sq.normalized() << std::endl;  
- 
-        
-    //     // return curvature_lim;
-    //     if (curvature_lim < cfg->rad_curv) {
-    //         return cfg->rad_curv;
-    //     } 
-    //     else {
-    //         // std::cout << "new limit: " << curvature_lim << std::endl;
-    //         return curvature_lim;
-    //     }
-    // }
-    // else {
-    //     // std::cout << "lim: " << max_curvature_ << std::endl;
-    //     return cfg->rad_curv;
-    // }
-
 }
 
+/**
+ * Prints the step information for validating a motion.
+ * 
+ * @param i: int index of the step in the motion validation
+ * @param ang: RealNum the angle step
+ * @param result_rad: RealNum magnetic radius of curvature limit 
+ * @param result_p: Vec3 result of step motion
+ * @param result_q: Quat result of step rotation
+ * @param normal_vec: Vec3 vector the motion takes place about
+ * @param cfg: ConfigPtr configuration for the planning problem
+ * @param print_: prints step information if true, no action if false
+ */
 void PrintStep(int i, RealNum ang, RealNum result_rad, Vec3 result_p, Quat result_q, Vec3 normal_vec, ConfigPtr cfg, bool print_) {
     if (print_) {
         std::cout << "new ind: " << i << " angle: " << ang << " rad: " << result_rad << " lim: " << cfg->rad_curv << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2];
@@ -591,12 +521,13 @@ void PrintStep(int i, RealNum ang, RealNum result_rad, Vec3 result_p, Quat resul
 
 /**
  * Checks if the motion starting at from moving toward to is valid for the limits of the needle and the obstacles in the environment. 
- * @param from: starting state
- * @param to: target state
- * @param env: environment to check against
- * @param rad_curv: radius of curvature minimum limit 
- * @param resolution: resolution to check along of the arc length of the path for collisions
- * @param cfg: the configuration for the planning problem
+ * 
+ * @param from: State starting state
+ * @param to: State target state
+ * @param env: EnvPtr environment to check against
+ * @param rad_curv: RealNum radius of curvature minimum limit 
+ * @param resolution: RealNum resolution to check along of the arc length of the path for collisions
+ * @param cfg: ConfigPtr the configuration for the planning problem
  * 
  * @returns bool true if the motion is valid and collision free, false otherwise
  */
@@ -649,9 +580,6 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 if (DistanceToTrumpetBoundary(sp, st, result_p, result_rad) > EPS) {
                     return false;
                 }
-                // if (result_rad < rad_curv) {
-                //     return false;
-                // }
             }            
         }
         std::cout << "\tp: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " verified !!!!!!!!!!!!!!! straight traj" << std::endl;
@@ -702,7 +630,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     // getting the center of the circle to rotate about it
     const Vec3 center_diff = r*(normal_vec.cross(st));
     const Vec3 center = sp + center_diff;
-    const RealNum max_angle = DirectionDifference(sq_normalized, gq_normalized);//std::acos(((gp - center).normalized()).dot((sp - center).normalized()));
+    const RealNum max_angle = DirectionDifference(sq_normalized, gq_normalized);
     const RealNum angle_step = resolution / r;
     int i = 0;
 
@@ -737,13 +665,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 return false;
             }
             i++;
-            // if (result_rad < rad_curv) {
-            //     return false;
-            // }
         }
-
-
     }
+
     if (print_) {
         std::cout << "motion valid!!!\n\n\n" << std::endl;
     }
@@ -752,6 +676,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
 /**
  * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
+ * 
  * @param new_base: starting state
  * @param motion: motion from starting state, composed of other states
  * @param env: environment to collision check against 
@@ -791,12 +716,7 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
         return false;                                        
     }                              
 
-    // if (abs(result_p[0] + 50.9382384) < 1e-2) {
-    //     print_ = true;
-    // }
-    // if (motion_rad > 100) {
-    //     print_ = true;
-    // }
+
     if (cfg->variable_curvature) {
 
         result_q = (base_q*motion[motion.size()-1].rotation()).normalized();
@@ -809,47 +729,46 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
             std::cout << "offset " << offset << " len: " << motion.size() << " p: " << base_p[0] << " " << base_p[1] << " " << base_p[2] << " base: " << base_t[0] << " " << base_t[1] << " " << base_t[2] << " q: " << base_q;
             std::cout  << " final: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << std::endl;
         }
-    
+
         result_rad = GetCurvature(base_p, base_q, normal_vec, cfg, cfg->rad_curv);
         if (result_rad > motion_rad) {
-            // std::cout << "radius not in curvature limits!!!!!! at base" << std::endl;
             return false;
         }
         if (print_) {
             std::cout << "new index -1  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << base_p[0] << " " << base_p[1] << " " << base_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << base_t[0] << " " << base_t[1] << " " << base_t[2] << " y: " << (base_q*Vec3::UnitY()).normalized()[0] << " " << (base_q*Vec3::UnitY()).normalized()[1] << " " << (base_q*Vec3::UnitY()).normalized()[2] << " x: " << (base_q*Vec3::UnitX()).normalized()[0] << " " << (base_q*Vec3::UnitX())[1] << " " << (base_q*Vec3::UnitX())[2];
             std::cout << std::endl;
-        }        
-
-        for (unsigned i = 0; i < motion.size(); i++) {
-            result_p = base_q * motion[i].translation() + base_p;
-            if (!env->CollisionFree(result_p)) {
-                // std::cout << "collision! " << i << std::endl; 
-                return false;                                    
-            }                              
-
-            if (cfg->variable_curvature) {
-
-                result_q = (base_q*motion[i].rotation().normalized()).normalized();
-                result_t = (result_q*Vec3::UnitZ()).normalized();
-                result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, cfg->rad_curv);
-
-                if (result_rad > motion_rad) {
-                    // std::cout << "radius not in curvature limits!!!!!! " << i << std::endl;
-                    return false;
-                }
-                if (print_) {
-                    std::cout << "new index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2];
-                    std::cout << " q: " << motion[i].rotation().normalized() << " translation: " << motion[i].translation()[0] << " " << motion[i].translation()[1] << " " << motion[i].translation()[2];
-                    std::cout << std::endl;
-                }
-            }
-        } // TODO continue printing out the state before the offset to see what's going wrong at -55.1047  13.8953  57.182
-        if (print_)
-        {
-            std::cout << "motion valid!!!" << std::endl;
-        }
-        return true;
+        }   
     }
+
+
+    for (unsigned i = 0; i < motion.size(); i++) {
+        result_p = base_q * motion[i].translation() + base_p;
+        if (!env->CollisionFree(result_p)) {
+            return false;                                    
+        }                              
+
+        if (cfg->variable_curvature) {
+
+            result_q = (base_q*motion[i].rotation().normalized()).normalized();
+            result_t = (result_q*Vec3::UnitZ()).normalized();
+            result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, cfg->rad_curv);
+
+            if (result_rad > motion_rad) {
+                return false;
+            }
+            if (print_) {
+                std::cout << "new index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2];
+                std::cout << " q: " << motion[i].rotation().normalized() << " translation: " << motion[i].translation()[0] << " " << motion[i].translation()[1] << " " << motion[i].translation()[2];
+                std::cout << std::endl;
+            }
+        }
+    } 
+
+    if (print_) {
+        std::cout << "motion valid!!!" << std::endl;
+    }
+    
+
 
 
     // while (!queue.empty()) {
@@ -891,6 +810,7 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
 
 /**
  * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
+ * 
  * @param motion: motion from starting state, composed of other states
  * @param env: environment to collision check against 
  * @param cfg: the configuration for the planning problem
@@ -916,10 +836,6 @@ bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const ConfigPtr c
     Quat result_q;
     RealNum result_rad;
 
-    // std::cout << "offset: " << offset << " length: " << motion.size() << std::endl;
-
-    // TODO: add checking base curvature limit for this function too?
-
 
     while (!queue.empty()) {
         auto p = queue.front();
@@ -938,7 +854,6 @@ bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const ConfigPtr c
             if (result_rad < motion_rad) {
                 return false;
             }
-            // std::cout << "rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " size: " << motion.size() << std::endl;
         }
 
         if (p.first < middle) {
@@ -955,6 +870,7 @@ bool ValidMotion(const std::vector<State>& motion, EnvPtr env, const ConfigPtr c
 
 /**
  * Attempts to connect the start state directly to the state s, checking for collisions along the path.
+ * 
  * @param s: target state to connect with
  * @param start: starting state
  * @param env: environment to collision check against
@@ -993,6 +909,7 @@ std::optional<State> DirectConnecting(const State& s, const State& start, EnvPtr
 
 /**
  * Attempts to connect the start state with the state s without checking for collisions along the path.
+ * 
  * @param s: target state to connect with
  * @param start: starting state
  * @param env: environment to collision check against
@@ -1023,6 +940,7 @@ std::optional<State> DirectConnectingWithoutCollisionCheck(const State& s, const
 
 /**
  * Checks if the insertion length viiolates the constraints of the needle.
+ * 
  * @param l: the insertion length
  * @param max_l: the maximum insertion length limit for the needle
  * 
@@ -1034,6 +952,7 @@ inline bool ValidLength(const RealNum& l, const RealNum& max_l) {
 
 /**
  * Calculates the maximum arc length to reach the goal connecting the start and goal with a single arc ignoring orientation. 
+ * 
  * @param s: starting position
  * @param g: goal position
  * @param rad_curv: radius of curvature minimum limit
@@ -1058,6 +977,7 @@ RealNum MaxCurveLength(const Vec3& s, const Vec3& g, const RealNum& rad_curv) {
 
 /**
  * Checks if the goal is reachable with a buffer region. 
+ * 
  * @param s: starting state
  * @param goals: goal positions
  * @param rad_curv: radius of curvature minimum limit
@@ -1086,10 +1006,11 @@ bool GoalSpheresReachable(const State& s, const std::vector<Vec3>& goals, const 
 }
 
 /**
+ * Gets the length step based on the minimum length step.
  * 
- * @param min_length_step:
+ * @param min_length_step: minimum length step
  * 
- * @returns RealNum
+ * @returns RealNum length step
  */
 RealNum QueryLS(const RealNum& min_length_step) {
     // These values are emprically determined.
@@ -1149,6 +1070,7 @@ class ValidatorBase {
 
     /**
      * Checks if the state is in collision with the environment.
+     * 
      * @param s: the state to collision check
      * 
      * @returns bool true if the state is in collision, false otherwise
@@ -1159,6 +1081,7 @@ class ValidatorBase {
 
     /**
      * Checks if the state is in collision with the environment.
+     * 
      * @param p: the position to collision check
      * 
      * @returns bool true if the position is in collision, false otherwise
@@ -1169,6 +1092,7 @@ class ValidatorBase {
 
     /**
      * Checks if the insertion length violates the constraints of the needle.
+     * 
      * @param l: the insertion length
      * 
      * @returns bool true if the insertion length is within the limits of the needle, false otherwise
@@ -1259,6 +1183,7 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
 
     /**
      * Checks if the state is valid and respects the limits of the needle.
+     * 
      * @param s: the state to check
      * @param length: the accumulated insertion length of the state from the start, default is 0
      * @param ang_total: the accumulated angle of the state from the start, default is 0
@@ -1284,10 +1209,11 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
     }
 
     /**
-     * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
-     * @param from: starting state
-     * @param motion: motion from starting state, composed of other states
-     * @param offset: the offset index for the motion vector, states below the offset are ignored??
+     * Checks that the motion is collision free and feasible based on curvature limits.
+     * 
+     * @param from: State starting state
+     * @param to: State target state
+     * @param cfg: ConfigPtr configuration for the planning problem
      * 
      * @returns bool true if the motion is collision free, false otherwise
      */
@@ -1332,7 +1258,8 @@ class SpreadingValidator : public ValidatorBase<State> {
 
     /**
      * Sets the goal positions for the spreading validator.
-     * @param goals: goal positions to use
+     * 
+     * @param goals: vector<vec3> goal positions to use
      */
     void ProvideGoalPoints(const std::vector<Vec3>& goals) {
         goals_ = goals;
@@ -1367,9 +1294,10 @@ class SpreadingValidator : public ValidatorBase<State> {
 
     /**
      * Checks if the state is valid and respects the limits of the needle.
-     * @param s: the state to check
-     * @param length: the accumulated insertion length of the state from the start, default is 0
-     * @param ang_total: the accumulated angle of the state from the start, default is 0
+     * 
+     * @param s: State the state to check
+     * @param length: RealNum the accumulated insertion length of the state from the start, default is 0
+     * @param ang_total: RealNum the accumulated angle of the state from the start, default is 0
      * 
      * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
      */
@@ -1394,9 +1322,11 @@ class SpreadingValidator : public ValidatorBase<State> {
     }
 
     /**
-     * Checks if the motion between the two states is valid.
-     * @param from: the starting state
-     * @param to: the target state
+     * Checks if the motion between the two states is valid, collision free, and feasible with curvature limits.
+     * 
+     * @param from: State the starting state
+     * @param to: State the target state
+     * @param cfg: ConfigPtr configuration for the planning problem
      * 
      * @returns bool true if the motion is in the limits of the needle and collision free
      */
@@ -1406,6 +1336,7 @@ class SpreadingValidator : public ValidatorBase<State> {
 
     /**
      * Attempts to connect from that starting state to the provided state.
+     * 
      * @param s: the target state to connect to
      * 
      * @returns State the resulting state after connecting if it is reachable
@@ -1502,9 +1433,10 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
 
     /**
      * Checks if the state is valid and respects the limits of the needle.
-     * @param s: the state to check
-     * @param length: the accumulated insertion length of the state from the start, default is 0
-     * @param ang_total: the accumulated angle of the state from the start, default is 0
+     * 
+     * @param s: State the state to check
+     * @param length: RealNum the accumulated insertion length of the state from the start, default is 0
+     * @param ang_total: RealNum the accumulated angle of the state from the start, default is 0
      * 
      * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
      */
@@ -1532,7 +1464,8 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
 
     /**
      * Checks if the workspace between the state and goal are connected up to some point.
-     * @param s: the state to use as the starting state for the worksapce calculations
+     * 
+     * @param s: State the state to use as the starting state for the worksapce calculations
      * 
      * @returns bool true if the workspace is connect to a point and the goal is reachable given the starting state
      */
@@ -1541,10 +1474,13 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
     }
 
     /**
-     * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
-     * @param from: starting state
-     * @param motion: motion from starting state, composed of other states
-     * @param offset: the offset index for the motion vector, states below the offset are ignored??
+     * Checks if the motion starting at the state is valid, collision free, and feasible with curvature limits. 
+     * 
+     * @param from: State starting state
+     * @param motion: vector<State> motion from starting state, composed of other states
+     * @param cfg: ConfigPtr configuration for the planning problem
+     * @param motion_rad: RealNum radius of curvature for the motion
+     * @param offset: unsigned the offset index for the motion vector, states below the offset are ignored??
      * 
      * @returns bool true if the motion is collision free, false otherwise
      */
@@ -1553,8 +1489,9 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
     }
 
     /**
-     * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
-     * @param motion: motion from starting state, composed of other states
+     * Checks if the motion is valid, collision free, and feasible with curvature limits. 
+     * 
+     * @param motion: vector<State> motion from starting state, composed of other states
      * 
      * @returns bool true if the motion is collision free, false otherwise
      */
@@ -1573,7 +1510,8 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
 
     /**
      * Calculates the cost to get from the current state to the goal position, depends on the cost calculation settings of the environment.
-     * @param s: the current state
+     * 
+     * @param s (State) the current state
      * 
      * @returns RealNum the cost to get from the current state to the goal, 1000 if it's out of the needle limits, 0 if the cost setting is not handled
      */
@@ -1606,7 +1544,8 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
 
     /**
      * Calculates the IJK index of the state position.
-     * @param s: the state to use in calculations
+     * 
+     * @param s: State the state to use in calculations
      * 
      * @returns IdxPoint IJK index of the state
      */
@@ -1624,7 +1563,7 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
     }
 
     /**
-     * Gets the position tolerance for reachign the goal.
+     * Gets the position tolerance for reaching the goal.
      * 
      * @returns RealNum the position tolerance for the validator
      */
@@ -1697,7 +1636,8 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
 
     /**
      * Sets the goal positions for the spreading validator.
-     * @param goals: goal positions to use
+     * 
+     * @param goals: vector<Vec3> goal positions to use
      */
     void ProvideGoalPoints(const std::vector<Vec3>& goals) {
         goals_ = goals;
@@ -1732,9 +1672,10 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
 
     /**
      * Checks if the state is valid and respects the limits of the needle.
-     * @param s: the state to check
-     * @param length: the accumulated insertion length of the state from the start, default is 0
-     * @param ang_total: the accumulated angle of the state from the start, default is 0
+     * 
+     * @param s: State the state to check
+     * @param length: RealNum the accumulated insertion length of the state from the start, default is 0
+     * @param ang_total: RealNum the accumulated angle of the state from the start, default is 0
      * 
      * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
      */
@@ -1755,9 +1696,12 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
     }
 
     /**
-     * Kinda seems like a binary search of the motion vector or something to speed up collision checks.
-     * @param from: starting state
-     * @param motion: motion from starting state, composed of other states
+     * Checks if the motion starting at the state is valid, collision free, and feasible with curvature limits. 
+     * 
+     * @param from: State starting state
+     * @param motion: vector<State> motion from starting state, composed of other states
+     * @param cfg: ConfigPtr configuration for the planning problem
+     * @param motion_rad: RealNum the radius of curvature for the motion
      * @param offset: the offset index for the motion vector, states below the offset are ignored??
      * 
      * @returns bool true if the motion is collision free, false otherwise
@@ -1776,8 +1720,9 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
     }
 
     /**
-     * Attempts to connect from that starting state to the provided state.
-     * @param s: the target state to connect to
+     * Attempts to connect from the starting state to the provided state.
+     * 
+     * @param s: State the target state to connect to
      * 
      * @returns State the resulting state after connecting if it is reachable
      */

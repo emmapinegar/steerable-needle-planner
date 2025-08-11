@@ -35,6 +35,7 @@ namespace unc::robotics::snp {
 /**
  * Checks if the goal point gp is within the limited trumpet boundary of the start point & z axis, sp & st.
  * The trumpet boundary is currently limited to prevent points that required over 90 degrees from being considered.
+ * 
  * @param sp: the starting position of the needle & its trumpet
  * @param st: the starting z axis of the needle & its trumpet
  * @param gp: the goal position of the needle to test
@@ -64,6 +65,7 @@ bool InTrumpet(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& ra
 /**
  * Checks if the goal point gp is within the limited trumpet boundary of the start point & z axis, sp & st.
  * The trumpet boundary is currently limited to prevent points that required over 90 degrees from being considered.
+ * 
  * @param sp: the starting position of the needle & its trumpet
  * @param sq: the starting orientation (quaternion) of the needle & its trumpet
  * @param gp: the goal position of the needle to test
@@ -77,6 +79,7 @@ bool InTrumpet(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& ra
 
 /**
  * Calculates the radius of curvature required to move from the starting point to the goal point.
+ * 
  * @param sp: the starting point of the needle
  * @param st: the starting z axis of the needle
  * @param gp: the goal point of the needle
@@ -97,6 +100,7 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp) {
 
 /**
  * Calculates the radius of curvature required to move from the starting point to the goal point.
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -109,6 +113,7 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp) {
 
 /**
  * Calculates the radius of curvature required to move from the starting point to the goal point.
+ * 
  * @param sp: the starting point of the needle
  * @param st: the starting z axis of the needle
  * @param gp: the goal point of the needle
@@ -137,6 +142,7 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp,
 
 /**
  * Calculates the radius of curvature required to move from the starting point to the goal point.
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -151,8 +157,9 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp,
 }
 
 /**
- * Calculates the distance to the center of the center of one of the circles comprising the trumpet boundary
+ * Calculates the distance to the center of the center of one of the circles comprising the trumpet boundary.
  * currently limited to checking segments of 180 degrees or less
+ * 
  * @param sp: the starting position for the needle
  * @param st: the starting z axis for the needle
  * @param gp: the goal position for the needle
@@ -173,8 +180,6 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
 
     const Vec3 tang = st.normalized();
     const RealNum y = sg.dot(tang);
-
-    //std::cout << "tang: " << tang[0] << " " << tang[1] << " " << tang[2] << " y: " << y << std::endl;
 
     if (y > 0) {                                                            
         const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));                 // TODO: fix this for angles greater than 180
@@ -197,6 +202,7 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
 
 /**
  * Calculates the maximum distance to the trumpet boundary. 
+ * 
  * @param sp: the starting position for the needle
  * @param st: the starting z axis for the needle
  * @param gp: the goal position for the needle
@@ -231,6 +237,7 @@ RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3&
 
 /**
  * Checks if the workspace is connected.
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -282,6 +289,7 @@ bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Qu
 
 /**
  * Checks if the workspace is connected.
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -321,6 +329,7 @@ bool WorkspaceConnected(const Vec3& sp, const Quat& sq, const Vec3& gp, const Qu
 
 /**
  * Attempts to extend from sp to gp while respecting the limits of the needle. 
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -357,6 +366,7 @@ std::tuple<Vec3, Quat, RealNum> ForwardToCore(const Vec3& sp, const Quat& sq, co
 
 /**
  * Attempts to move starting at from towards to while respecting the limits of the needle. 
+ * 
  * @param from: starting state
  * @param to: target state
  * @param rad: the radius of curvature limit
@@ -371,6 +381,7 @@ State ForwardTo(const State& from, const State& to, const RealNum& rad) {
 
 /**
  * Attempts to move starting at from towards gp while respecting the limits of the needle. 
+ * 
  * @param from: starting state
  * @param gp: target position
  * @param rad: the radius of curvature limit
@@ -385,6 +396,7 @@ State ForwardTo(const State& from, const Vec3& gp, const RealNum& rad) {
 
 /**
  * Attempts to extend from sp to gp while respecting the limits of the needle. 
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -400,6 +412,7 @@ State ForwardTo(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& r
 
 /**
  * Attempts to move starting at from towards gp while respecting the limits of the needle. 
+ * 
  * @param from: starting state
  * @param gp: target position
  * @param rad: the radius of curvature limit
@@ -448,6 +461,7 @@ std::pair<std::vector<State>, RealNum> ForwardToWithPath(const State& from, cons
 
 /**
  * Attempts to move starting at from towards gp with the shortest distance while respecting the limits of the needle. 
+ * 
  * @param from: starting state
  * @param gp: target position
  * @param rad: the radius of curvature limit
@@ -532,6 +546,7 @@ std::tuple<std::vector<State>, RealNum, std::optional<State>> ShortestForwardToW
 
 /**
  * Calculates the arc length between the start and goal. 
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -549,13 +564,9 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
     if (d < EPS || cos_alpha > 1 - EPS) {
         return d;
     }
-    const Vec3 tesst_normal = (st.cross(sg.normalized())).normalized();
     const Vec3 normal_vec = (st.cross(gt)).normalized();
 
     if (normal_vec.dot(sg.normalized()) > EPS) {
-        // TODO: remove other prints
-        std::cerr << "d: " << d << " calpha: " << cos_alpha << " norm vec: " << normal_vec << " sg: " << sg << std::endl;
-        // end of prints to remove
         std::cerr << "[CurveLength] Not on a plane, returning approximate length." << std::endl;
         return d;
     }
@@ -563,15 +574,15 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
     const RealNum r = 0.5 * d / std::sqrt((1 - cos_alpha) / 2);
 
     if (std::isnan(r * std::acos(cos_alpha))) {
-        std::cout << "calpha: " << cos_alpha << " r: " << r << " st: " << st[0] << " " << st[1] << " " << st[2] << " gt: " << gt[0] << " " << gt[1] << " " << gt[2] << std::endl; 
         throw std::runtime_error("[CurveLength] Get nan curve length!");
     }
-    // std::cout << "norm: " << normal_vec << " test: " << tesst_normal << std::endl;
+
     return r * std::acos(cos_alpha);
 }
 
 /**
  * Calculates the arc length between the start and goal. 
+ * 
  * @param from: starting state
  * @param to: target state
  * 
@@ -584,6 +595,7 @@ RealNum CurveLength(const State& from, const State& to) {
 
 /**
  * Interpolates the path between start and goal.
+ * 
  * @param sp: the starting point of the needle
  * @param sq: the starting orientation of the needle
  * @param gp: the goal point of the needle
@@ -640,6 +652,7 @@ std::vector<State> Interpolate(const Vec3& sp, const Quat& sq, const Vec3& gp, c
 
 /**
  * Interpolates the path between start and goal.
+ * 
  * @param from: starting state
  * @param to: target state
  * @param rad: the radius of curvature limit
@@ -657,6 +670,7 @@ std::vector<State> Interpolate(const State& from, const State& to, const RealNum
 
 /**
  * Accurately interpolates the path between start and goal.
+ * 
  * @param from: starting state
  * @param to: target state
  * @param rad: the radius of curvature limit
@@ -724,6 +738,7 @@ std::vector<State> AccurateInterpolate(const State& from, const State& to, const
 
 /**
  * Interpolates the path between start and goal.
+ * 
  * @param path: path between states
  * @param rad: the radius of curvature limit
  * @param step_size: step size between points on the path
@@ -759,6 +774,7 @@ std::vector<State> InterpolatePath(const std::vector<State>& path, const RealNum
 
 /**
  * Interpolates the path between start and goal.
+ * 
  * @param from: starting state
  * @param gp: target position
  * @param rad_curv: the radius of curvature limit
@@ -811,6 +827,7 @@ RealNum ShortestDistance(const State& from, const Vec3& gp, const RealNum& rad_c
 
 /**
  * Calculates the angle between the to given vectors.
+ * 
  * @param t0: the first vector
  * @param t1: the second vector
  * 
@@ -823,6 +840,7 @@ RealNum DirectionDifference(const Vec3& t0, const Vec3& t1) {
 
 /**
  * Calculates the angle between the to given quaternions.
+ * 
  * @param q0: the first quaternion
  * @param q1: the second quaternion
  * 
@@ -834,6 +852,7 @@ RealNum DirectionDifference(const Quat& q0, const Quat& q1) {
 
 /**
  * Checks if the two states are too similar.
+ * 
  * @param a: the first state
  * @param b: the second state
  * 
@@ -855,7 +874,8 @@ bool IsTheSameState(const State& a, const State& b) {
 
 
 /**
- * Calculates the distance between the two states while accounting for orientation
+ * Calculates the distance between the two states while accounting for orientation.
+ * 
  * @param from: starting state
  * @param to: target state
  * @param rad: the radius of curvature limit
@@ -891,6 +911,7 @@ RealNum DirectionalDistance(const State& from, const State& to, const RealNum& r
 /**
  * Prints information for a state to a stream.
  * Prints p_x p_y p_z q_w q_x q_y q_z of the state.
+ * 
  * @param s: state to print information of 
  * @param out: stream to print information to
  */
@@ -906,6 +927,7 @@ void PrintState(const State& s, std::ostream& out) {
 /**
  * Prints position information for a state to a stream.
  * Prints p_x p_y p_z of the state.
+ * 
  * @param s: state to print information of 
  * @param out: stream to print information to
  */
@@ -917,6 +939,7 @@ void PrintPosition(const State& s, std::ostream& out) {
 
 /**
  * Prints information for states in a path to a stream.
+ * 
  * @param path: path of states to print information of 
  * @param out: stream to print information to
  * @param full_state: if true prints all state info, false prints just position info
@@ -935,6 +958,7 @@ void PrintPath(const std::vector<State>& path, std::ostream& out, const bool ful
 
 /**
  * Writes information for states in a path to a file.
+ * 
  * @param path: path of states to print information of 
  * @param file_name: name of file to write path info to
  * @param full_state: if true writes all state info, false writes just position info
@@ -964,7 +988,22 @@ bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
 
 
 /**
+ * Writes the stats of the planner to the provided file.
  * 
+ * @param curvature: radius of curvature limit
+ * @param path_length: cumulative path arc length of the best solution
+ * @param ang_total: cumulative phi of the best solution
+ * @param elapsed: time elapsed during planning
+ * @param success: bool true if a path was found, false otherwise
+ * @param approx_success: bool true if an approximate path was found, false otherwise
+ * @param spreading: bool true if spreading planner, false otherwise
+ * @param planner_type: Str containing an int 1-7 indicating the planner used
+ * @param file_root: Str the directory containing the planner stats file
+ * @param file_name: Str name of the file to write the planner stats to
+ * @param results: vector<tuple<float, RealNum, RealNum, RealNum>> vector of the stats of all of the solutions found by the planner (planning time, plan cost, path length, path angle)
+ * @param show_log: bool prints results to console if true
+ * 
+ * @returns bool true if stats were written to file, false otherwise
  */
 bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
                       const bool spreading, const Str& planner_type, const Str& file_root, const Str& file_name, const std::vector<std::tuple<float, RealNum, RealNum, RealNum>>& results, const bool show_log)
@@ -1010,9 +1049,10 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
 
 /**
  * Calculates how much time has passed since start.
+ * 
  * @param start: start time to use for calculating difference
  * 
- * @returns double amount of time that has passed from start to now in seconds?
+ * @returns double amount of time that has passed from start to now in seconds
  */
 double RelativeTime(const TimePoint& start) {
     return std::chrono::duration_cast<std::chrono::duration<double>>(Clock::now() - start).count();
@@ -1020,9 +1060,10 @@ double RelativeTime(const TimePoint& start) {
 
 /**
  * Calculates how much time has elasped.
+ * 
  * @param elasped: clock duration used
  * 
- * @returns double amount of time that elapsed on the clock in seconds?
+ * @returns double amount of time that elapsed on the clock in seconds
  */
 double TimeDuration(const Clock::duration& elapsed) {
     return std::chrono::duration_cast<std::chrono::duration<double>>(elapsed).count();

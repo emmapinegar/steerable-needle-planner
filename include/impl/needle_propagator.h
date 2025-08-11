@@ -131,7 +131,8 @@ State TransformToNewBase(const State& state, const State& new_base) {
 }
 
 /**
- * Rotates about the provide orientation's z axis
+ * Rotates about the provide orientation's z axis.
+ * 
  * @param init_q: orientation with z axis to rotate about
  * @param angle: amount the to rotate by
  * 
@@ -145,13 +146,14 @@ Quat RotateAroundZ(Quat init_q, const RealNum& angle) {
 }
 
 /**
- * attempts to move forward a random amount 
+ * Attempts to move forward a random amount in a random direction.
+ * 
  * @param from: starting state
- * @param to: target state
+ * @param to: target state (unused)
  * @param rng: random number generator
  * @param uniform_dist: uniform distribution
  * @param rad_curv: the radius of curvature minimum limit 
- * @param steer_step: the step size?
+ * @param steer_step: the step size
  * @param num_attempt: number of attempts? (unused)
  * @param return_first: return first? (unused)
  * 
@@ -178,8 +180,7 @@ std::optional<State> RandomForward(const State& from, const State& to, RNG& rng,
     Quat proceed_quat(AngleAxis(max_ang, normal_vec));
     result.translation() = proceed_quat*(p - center) + center;
     result.rotation() = (proceed_quat*q).normalized();
-    // std::cout << "theta: " << theta << " ell: " << ell << " center: " << center[0] << " " << center[1] << " " << center[2] << " max angle: " << max_ang <<  " rad: " << rad_curv << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << std::endl; 
-    // PrintState(result);
+
     return result;
 }
 
@@ -195,6 +196,7 @@ class CurvePropagator {
 
     /**
      * Attempts to connect the two states directly.
+     * 
      * @param from: starting state
      * @param to: target state
      * @param rng: random number generator
@@ -203,7 +205,6 @@ class CurvePropagator {
      */
     template <typename RNG>
     std::optional<State> operator()(const State& from, const State& to, RNG& rng, const RealNum& curve_lim) {
-        // std::cout << "ConnectDirectly" << std::endl;
         return utils::ConnectPointWithCurveDirectly(from, to, rng, normal_, curve_lim, steer_step_);
     }
 
@@ -224,15 +225,15 @@ class RandomForwardPropagator {
 
     /**
      * Attempts to move forward randomly.
+     * 
      * @param from: starting state
-     * @param to: target state
+     * @param to: target state (will not truly be targeted)
      * @param rng: random number generator
      * 
      * @returns State resulting state if connection was "successful"
      */
     template <typename RNG>
     std::optional<State> operator()(const State& from, const State& to, RNG& rng, RealNum& curve_lim) {
-        // std::cout << "RandomForward" << std::endl;
         return utils::RandomForward(from, to, rng, uniform_, curve_lim, steer_step_, num_attempt_, false);
     }
 
@@ -303,29 +304,30 @@ class MotionPrimitivePropagator {
     }
 
     /**
-     * Transforms the needle to a new base frame.
-     * @param from: state to transform
+     * Transforms the needle to a new state.
+     * 
+     * @param from: starting state
      * @param indices: indices of motion primitives [radius, length, angle]
      * 
-     * @returns State from after being transformed into the base frame of the provided motion primitives if successful
+     * @returns State from after being moved using the motion primitives specified if successful
      */
     std::optional<State> operator()(const State& from, const std::array<unsigned, 3>& indices, const RealNum& curve_lim) const {
         auto const& base_state = motion_primitives_[indices[0]][indices[1]].FinalState();
         RealNum rad = RadiusOfCurvature(indices[0]);
         
         if (curve_lim < rad) {
-            // std::cout << "radius: " << rad << " lim: " << curve_lim << std::endl;
             return utils::TransformToNewBase(base_state, this->ComputeStartPose(from, indices[2]));
         } 
     }
 
     /**
-     * Transforms the needle to a new base frame.
-     * @param from: state to transform
+     * Transforms the needle to a new state.
+     * 
+     * @param from: starting state
      * @param rad_idx: radius of curvature index of the base state
      * @param length_ind: length index of the base state
      * 
-     * @returns State from after being transformed into the base frame of the provided motion primitives if successful
+     * @returns State from after being moved using the motion primitives specified if successful
      */
     std::optional<State> operator()(const State& from, const unsigned& rad_idx,
                                     const unsigned& length_idx, const RealNum& curve_lim) const {
@@ -339,6 +341,7 @@ class MotionPrimitivePropagator {
 
     /**
      * Computes the start state after a rotation.
+     * 
      * @param from: initial state
      * @param angle_idx: index of the angle level for the rotation
      * 
@@ -353,6 +356,7 @@ class MotionPrimitivePropagator {
 
     /**
      * Gets the states for the motion primitive indices.
+     * 
      * @param rad_idx: index of the radius of curvature level
      * @param length_idx: index of the length level
      * 
@@ -364,6 +368,7 @@ class MotionPrimitivePropagator {
 
     /**
      * Gets the radius of curvature in the sequence at the provided index.
+     * 
      * @param rad_idx: index of the radius of curvature
      * 
      * @returns RealNum the radius of curvature at the index
@@ -383,6 +388,7 @@ class MotionPrimitivePropagator {
 
     /**
      * Gets the length in the sequence at the provided index.
+     * 
      * @param length_idx: index of the length
      * 
      * @returns RealNum the length at the index
@@ -393,6 +399,7 @@ class MotionPrimitivePropagator {
 
     /**
      * Gets the angle in the sequence at the provided index.
+     * 
      * @param angle_idx: index of the angle
      * 
      * @returns RealNum the angle at the index
@@ -402,7 +409,7 @@ class MotionPrimitivePropagator {
     }
 
     /**
-     * Get the initial number of orientations of?
+     * Get the initial number of orientations of the start. TODO
      * 
      * @returns Idx the number of initial orientations
      */

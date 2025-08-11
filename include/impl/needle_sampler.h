@@ -52,9 +52,10 @@ namespace utils {
 
 /**
  * Gets a random sample within a unit sphere.
+ * 
  * @param rng: random number generator 
- * @param uniform: uniform distribution?
- * @param normal: normal distribution?
+ * @param uniform: uniform distribution
+ * @param normal: normal distribution
  * 
  * @returns Vec3 sampled position within unit sphere
  */
@@ -73,12 +74,13 @@ Vec3 SampleInUnitSphere(RNG& rng, Uniform& uniform, Normal& normal) {
 
 /**
  * Gets a random orientation sample.
+ * 
  * @param sp: starting position
  * @param p: position
  * @param rad_curv: the minimum radius of curvature limit
  * @param rng: random number generator
- * @param uniform: uniform distribution?
- * @param normal: normal distribution?
+ * @param uniform: uniform distribution
+ * @param normal: normal distribution
  * 
  * @returns Quat randomly sampled orientation
  */
@@ -104,14 +106,15 @@ Quat SampleOrientation(const Vec3& sp, const Vec3& p, const RealNum& rad_curv, R
 
 /**
  * Gets a random orientation sample.
+ * 
  * @param sp: starting position
  * @param gp: target position
  * @param p: position for orientation sample
  * @param max_iter: maximum number of iterations to try to get a valid orientation sample
  * @param rad_curv: the minimum radius of curvature limit
  * @param rng: random number generator
- * @param uniform: uniform distribution?
- * @param normal: normal distribution?
+ * @param uniform: uniform distribution
+ * @param normal: normal distribution
  * 
  * @returns Quat randomly sampled orientation
  */
@@ -153,8 +156,9 @@ Quat SampleOrientation(const Vec3& sp, const Vec3& gp, const Vec3& p, const Idx&
 
 /**
  * Gets a randomly sampled orientation.
+ * 
  * @param rng: random number generator 
- * @param uniform: uniform distribution?
+ * @param uniform: uniform distribution
  * 
  * @returns Quat randomly sampled orientation
  */
@@ -168,10 +172,11 @@ Quat SampleOrientation(RNG& rng, Uniform& uniform) {
 
 /**
  * Gets a random sample within the unit circle.
- * @param rng: random number generator 
- * @param uniform: uniform distribution?
  * 
- * @returns pair<RealNum, RealNum> angle and radius of sample in unit circle?
+ * @param rng: random number generator 
+ * @param uniform: uniform distribution
+ * 
+ * @returns pair<RealNum, RealNum> angle and radius of sample in unit circle
  */
 template<typename RNG, typename Uniform>
 std::pair<RealNum, RealNum> SampleInUnitCircle(RNG& rng, Uniform& uniform) {
@@ -185,9 +190,10 @@ std::pair<RealNum, RealNum> SampleInUnitCircle(RNG& rng, Uniform& uniform) {
 // TODO: does this function need to be changed to work for >90 or >180? 
 /**
  * Gets a random sample within the bounds of the trumpet.
+ * 
  * @param rad_curv: the radius of curvature minimum limit
  * @param ins_length: the maximum insertion length
- * @param max_r: 
+ * @param max_r: TODO
  * @param rng: random number generator
  * @param uniform: uniform distribution
  * @param normal: normal distribution
@@ -228,12 +234,13 @@ Vec3 SampleInTrumpet(const RealNum& rad_curv, const RealNum& ins_length, const R
 
 /**
  * Calculates a virtual goal position.
+ * 
  * @param start: starting position
  * @param goal: goal position
  * @param rad_curv: the radius of curvature minimum limit
  * @param tolerance: tolerance outside the trumpet limits 
  * 
- * @returns Vec3 a virtual goal?? 
+ * @returns Vec3 a virtual goal along the along the vector between start/goal
  */
 Vec3 VirtualGoal(const Vec3& start, const Vec3& goal, const RealNum& rad_curv,
                  const RealNum& tolerance) {
@@ -259,6 +266,7 @@ class NeedleSampler<State, null_sampler> {
 
     /**
      * Returns the start state.
+     * 
      * @param rng: random number generator (not used)
      * 
      * @returns State start state every time
@@ -286,6 +294,7 @@ class NeedleSampler<State, sample_random> {
 
     /**
      * Gets a random sample that within the sphere of the maximum insertion limit of the needle and randomly sampled orientation.
+     * 
      * @param rng: random number generator
      * 
      * @returns State randomly sampled state
@@ -330,6 +339,7 @@ class NeedleSampler<State, sample_sphere> {
 
     /**
      * Gets a random sample that within the sphere of the maximum insertion limit of the needle that may have a reachable orientation for the needle.
+     * 
      * @param rng: random number generator
      * 
      * @returns State randomly sampled state
@@ -404,6 +414,7 @@ class NeedleSampler<State, sample_trumpet> {
 
     /**
      * Gets a random sample that within the trumpet of the needle that may have a reachable orientation for the needle.
+     * 
      * @param rng: random number generator
      * 
      * @returns State randomly sampled state
@@ -476,6 +487,7 @@ class NeedleSampler<State, sample_rugby> {
 
     /**
      * Gets a random sample based on the configuration of the sampler.
+     * 
      * @param rng: random number generator
      * 
      * @returns State randomly generated state
@@ -524,6 +536,7 @@ class NeedleSampler<State, sample_rugby> {
 
     /**
      * Gets a sample that is within rugby shape.
+     * 
      * @param rng: random number generator
      * 
      * @returns Vec3 randomly sampled position
@@ -556,6 +569,7 @@ class NeedleSampler<State, sample_rugby> {
 
     /**
      * Gets a sample that is within the needle limits sphere shape.
+     * 
      * @param rng: random number generator
      * 
      * @returns Vec3 randomly sampled position
@@ -614,6 +628,7 @@ class NeedleSampler<State, sample_intersection> {
 
     /**
      * Gets a random sample based on the configuration of the sampler.
+     * 
      * @param rng: random number generator
      * 
      * @returns State randomly generated state
@@ -665,6 +680,7 @@ class NeedleSampler<State, sample_intersection> {
 
     /**
      * Gets a sample that is within the intersection of the rugby and trumpet shape.
+     * 
      * @param rng: random number generator
      * 
      * @returns Vec3 randomly sampled position
@@ -707,6 +723,7 @@ class NeedleSampler<State, sample_intersection> {
 
     /**
      * Gets a sample that is within the intersection of the insertion limit sphere and trumpet shape.
+     * 
      * @param rng: random number generator
      * 
      * @returns Vec3 randomly sampled position

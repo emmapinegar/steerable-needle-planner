@@ -1,5 +1,34 @@
 # Steerable Needle Planner
 
+#### Planner Modes
+
+There are 8 planner modes with different terminating conditions as outlined below. As part of the template I can't make it a command line argument, but the mode can be changed manually then recompiled.
+
+##### Mode 0
+Runs for a specified amount of time before terminating regardless of the number of solutions found. This is the version generally used. Timeout can be specified using `-timeout <timeout in ms>`.
+
+##### Mode 1
+Runs until a specific number of nodes have been added to the tree. Number of nodes can be specified using the `-nodes` option, the default is 10,000 nodes.
+
+##### Mode 2
+Runs until the first solution is found or the planner is exhausted.
+
+##### Mode 3
+Runs until the first solution is found or the planner reaches the specified number of nodes.
+
+##### Mode 4
+Runs until the first solution is found or until the specified amount of time has passed. Timeout can be specified using `-timeout <timeout in ms>`.
+
+##### Mode 5
+Runs until N plans are found or until the specified amount of time has passed. Timeout can be specified using `-timeout <timeout in ms>`.
+
+##### Mode 6
+Runs until the planner is exhausted. Should only be used for RCS based planners that have a notion of being exhausted.
+
+##### Mode 7
+Runs until the planner is exhausted or until the specified amount of time has passed. Timeout can be specified using `-timeout <timeout in ms>`.
+
+
 #### Update 11/11/2024 by Emma Pinegar
 I changed the command line args and global common parameters set up to be better for experiments later. For the spreading planners the argument order is now `./app/*_spreading multithreading seed scan_number min_curv_rad suffix`. For the other planners the argument order is now `./app/* constrain_goal_orientation multithreading seed scan_number min_curv_rad suffix`
 
