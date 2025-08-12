@@ -110,12 +110,20 @@ class NeedleSpreadingGoal {
      */
     std::tuple<bool, Distance, State> operator() (const Space& space, const State& s) const {
         const Vec3& pos = s.translation();
-
+        State approx_goal;
+        Distance new_dist;
+        Vec3 new_goal;
         if (goals_.size() > 0) {
             Distance dist = R_INF;
 
             for (auto const& p : goals_) {
-                dist = std::min((pos - p).norm(), dist);
+                new_dist = (pos - p).norm();
+                if (new_dist < dist) {
+                    dist = new_dist;
+                    new_goal = p;
+                    // auto [pathToGoal, dist_] = ForwardToWithPath(s, p, cfg_->rad_curv, cfg_->validity_res);
+                    // approx_goal = pathToGoal.back();
+                }
             }
 
             if (dist < cfg_->goal_pos_tolerance) {

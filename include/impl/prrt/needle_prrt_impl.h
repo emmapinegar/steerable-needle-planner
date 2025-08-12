@@ -714,7 +714,7 @@ unbiasedSamplingLoop:
 
         newState = *propagated;
 
-        auto const& newCurvature = scenario_.curvature(newState);
+        // auto const& newCurvature = scenario_.curvature(newState);
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
@@ -735,7 +735,7 @@ unbiasedSamplingLoop:
             if (isGoal) {
                 if (auto traj = validMotion(newState, goalState))
                 {
-                    auto const& goalCurvature = scenario_.curvature(goalState);
+                    // auto const& goalCurvature = scenario_.curvature(goalState);
                     auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
 
                     auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
@@ -754,7 +754,7 @@ unbiasedSamplingLoop:
                 }
             }
             else if (!planner.solved() && goalDist < bestDist_) {
-                auto const& goalCurvature = scenario_.curvature(goalState);
+                // auto const& goalCurvature = scenario_.curvature(goalState);
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 auto const goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {

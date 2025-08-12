@@ -642,7 +642,10 @@ class NeedleSpreadingPAORRT<Scenario, maxThreads, reportStats, NNStrategy>::Work
             if (no_ == 0 && planner.goalBias_ > 0) {
                 scenario_goal_sampler_t<Scenario, RNG> goalSampler(scenario_);
                 Distance scaledBias = planner.goalBias_ * planner.workers_.size();
-
+                Distance scaledRatio = scenario_.Config()->start_connect_ratio * planner.workers_.size();
+                if (scaledRatio > 0) {
+                    MPT_LOG(INFO) << "using scaled add start ratio of " << scaledRatio;                    
+                }
                 MPT_LOG(TRACE) << "using scaled goal bias of " << scaledBias;
 
                 while (!done()) {
@@ -651,10 +654,14 @@ class NeedleSpreadingPAORRT<Scenario, maxThreads, reportStats, NNStrategy>::Work
                     if (planner.goalCount_.load(std::memory_order_relaxed) >= 1) {
                         goto unbiasedSamplingLoop;
                     }
-
-                    if (uniform01_(rng_) < scaledBias) {
+                    auto rng_samp = uniform01_(rng_);
+                    if (rng_samp < scaledBias) {
                         Stats::countBiasedSample();
                         addSample(planner, goalSampler(rng_));
+                    }
+                    else if (rng_samp < scaledBias + scaledRatio) {
+                        Stats::countAddedStart();
+                        addNewStart(planner);
                     }
                     else {
                         addSample(planner, csampler_(rng_));
@@ -686,6 +693,48 @@ unbiasedSamplingLoop:
             addSample(planner, *sample);
         }
     }
+
+    /**
+     * Adds a new start if the next start state is not too similar to existing start states. 
+     * 
+     * @param planner: planner for the problem
+     * 
+     * @returns bool true if new start state was added to the planner, false otherwise
+     */    
+    bool addNewStart(Planner& planner) {
+        auto randState = csampler_(rng_); 
+        auto startState = scenario_.DirectConnectingStart(randState);
+
+        if (startState) {
+            planner.addStart(*startState);
+            return true;
+            // if (!similarStart(planner, *startState)) {
+            //     planner.addStart(*startState);
+            //     return true;
+            // }
+        }
+
+        return false;        
+    }
+
+    // /**
+    //  * Checks if there exists a similar start already in the tree.
+    //  * 
+    //  * @param planner: planner for the problem
+    //  * @param state: state to check for similar starts
+    //  * 
+    //  * @returns bool true if there is a similar start for the state?? 
+    //  */
+    // bool similarStart(Planner& planner, State from) {
+    //     Timer timer(Stats::nearest());
+    //     from.rotation().normalize();
+    //     auto [nearNode, d] = planner.nn_.nearest(from).value();
+    //     if (d < configTolerance_) {
+    //         return true;
+    //     }
+
+    //     return false;
+    // }
 
     /**
      * Finds the node with the state closest to the provided state. 
@@ -721,13 +770,14 @@ unbiasedSamplingLoop:
             return;
         }
 
-        if (uniform01_(rng_) < scenario_.Config()->start_connect_ratio) {
-            auto startState = scenario_.DirectConnectingStart(randState);
+        // if (uniform01_(rng_) < scenario_.Config()->start_connect_ratio) {
+        //     auto startState = scenario_.DirectConnectingStart(randState);
 
-            if (startState) {
-                planner.addStart(*startState);
-            }
-        }
+        //     if (startState) {
+        //         planner.addStart(*startState);
+        //         Stats::countAddedStart();
+        //     }
+        // }
 
         auto propagated = propagator_(nearNode->state(), randState, rng_, nearNode->curve_lim());
 
@@ -737,7 +787,6 @@ unbiasedSamplingLoop:
 
         newState = *propagated;
 
-        auto const& newCurvature = scenario_.curvature(newState);
         auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
@@ -755,33 +804,32 @@ unbiasedSamplingLoop:
             newNode->length() = newLength;
             newNode->cost() = newCost;
             newNode->ang_total() = newAngle;
-            newNode->curve_lim() = newCurvature;
             planner.nn_.insert(newNode);
             planner.updateMaxCost(newCost);
 
             if (isGoal) {
-                auto const& goalCurvature = scenario_.curvature(goalState);
-                auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
-                auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                if (auto  traj = validMotion(newNode->state(), goalState)) {
+                    auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
+                    auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 
-                if (!scenario_.valid(goalLength)) {
-                    return;
-                }
+                    if (!scenario_.valid(goalLength)) {
+                        return;
+                    }
 
-                auto const& goalCost = newNode->cost()
-                                       + scenario_.CurveCost(newState, goalState)
-                                       + scenario_.FinalStateCost(goalState);
+                    auto const& goalCost = newNode->cost()
+                                        + scenario_.CurveCost(newState, goalState)
+                                        + scenario_.FinalStateCost(goalState);
 
-                if (snp::IsTheSameState(goalState, newState)) {
-                    planner.foundGoal(newNode);
-                }
-                else {
-                    Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
-                    goalNode->length() = goalLength;
-                    goalNode->cost() = goalCost;
-                    goalNode->ang_total() = goalAngle;
-                    goalNode->curve_lim() = goalCurvature;
-                    planner.foundGoal(goalNode);
+                    if (snp::IsTheSameState(goalState, newState)) {
+                        planner.foundGoal(newNode);
+                    }
+                    else {
+                        Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
+                        goalNode->length() = goalLength;
+                        goalNode->cost() = goalCost;
+                        goalNode->ang_total() = goalAngle;
+                        planner.foundGoal(goalNode);
+                    }
                 }
             }
             else if (!planner.solved() && goalDist < bestDist_) {

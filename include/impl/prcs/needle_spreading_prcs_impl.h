@@ -809,6 +809,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto [isGoal, goalDist, goalState] = scenario_goal<Scenario>::check(scenario_, node->state());
 
                 if (isGoal) {
+                    // TODO actually get it to add the goal to the tree and check it
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation()); 
 
@@ -854,9 +855,9 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 }
 
                 auto longer = refine(planner, node, LONGER);
-                if (inheritValidation && longer) {
-                    longer->valid() = true;
-                }
+                // if (inheritValidation && longer) {
+                //     longer->valid() = true;
+                // }
             }
 
             refine(planner, node, LEFT);

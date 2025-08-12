@@ -94,7 +94,6 @@ const RealNum kAngleConstraintDegree = 90.0;
 
 // Misc.
 Idx global_seed = 1;
-unsigned Mode = 0;
 bool global_show_logs = true;
 bool global_variable_curvature = false;
 int scan_number = 9;
@@ -201,9 +200,6 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
         }
         else if (std::strcmp(argv[i], "-tau") == 0) {
             global_goal_pos_tolerance = std::stod(argv[++i]);  
-        }
-        else if (std::strcmp(argv[i], "-mode") == 0) {
-            Mode = std::atoi(argv[++i]);  
         }
         else if (std::strcmp(argv[i], "-timeout") == 0) {
             global_timeout = std::atoi(argv[++i]);  

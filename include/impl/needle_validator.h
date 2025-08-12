@@ -556,7 +556,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     RealNum result_rad;
 
     if (print_) {
-    std::cout << "\n\tverifying p: " << gp[0] << " " << gp[1] << " " << gp[2] << std::endl;
+        std::cout << "\n\tverifying p: " << gp[0] << " " << gp[1] << " " << gp[2] << std::endl;
     }
     
 
@@ -582,7 +582,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 }
             }            
         }
-        std::cout << "\tp: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " verified !!!!!!!!!!!!!!! straight traj" << std::endl;
+        // std::cout << "\tp: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " verified !!!!!!!!!!!!!!! straight traj" << std::endl;
         return true;
     }
 

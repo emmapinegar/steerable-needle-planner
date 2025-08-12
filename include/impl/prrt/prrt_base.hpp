@@ -65,6 +65,7 @@ template <>
 struct WorkerStats<false> {
     void countIteration() const {}
     void countBiasedSample() const {}
+    void countAddedStarts() const {}
     auto& validMotion() { return TimerStat<void>::instance(); }
     auto& nearest() { return TimerStat<void>::instance(); }
 };
@@ -73,11 +74,13 @@ template <>
 struct WorkerStats<true> {
     mutable std::size_t iterations_{0};
     mutable std::size_t biasedSamples_{0};
+    mutable std::size_t addedStart_{0};
     mutable TimerStat<> validMotion_;
     mutable TimerStat<> nearest_;
 
     void countIteration() const { ++iterations_; }
     void countBiasedSample() const { ++biasedSamples_; }
+    void countAddedStart() const {++addedStart_; }
 
     TimerStat<>& validMotion() const { return validMotion_; }
     TimerStat<>& nearest() const { return nearest_; }
@@ -92,6 +95,7 @@ struct WorkerStats<true> {
     WorkerStats& operator += (const WorkerStats& other) {
         iterations_ += other.iterations_;
         biasedSamples_ += other.biasedSamples_;
+        addedStart_ += other.addedStart_;
         validMotion_ += other.validMotion_;
         nearest_ += other.nearest_;
         return *this;
@@ -102,7 +106,7 @@ struct WorkerStats<true> {
      */
     void print() const {
         MPT_LOG(INFO) << "iterations: " << iterations_;
-        MPT_LOG(INFO) << "biased samples: " << biasedSamples_;
+        MPT_LOG(INFO) << "biased samples: " << biasedSamples_ << " added start states: " << addedStart_;
         MPT_LOG(INFO) << "valid motion: " << validMotion_;
         MPT_LOG(INFO) << "nearest: " << nearest_;
     }

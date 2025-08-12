@@ -837,9 +837,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 recycle(node);
                 return;
             }
-            // node->parent()->curve_lim() = scenario_.curvature(node->parent()->state(), node->state());
 
-            // TODO: add node radius limit
             auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex(), node->parent()->curve_lim());
 
             if (!propagated) {
@@ -847,48 +845,18 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 return;
             }
 
-            // TODO: calculate and add the curvature limit to node 
             node->state() = *propagated;
             node->length() = node->parent()->length() + planner.propagator_.Length(node->lengthIndex());
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
-            // node->curve_lim() = scenario_.curvature(node->state());
         }
 
         const bool inheritValidation = node->valid();
         bool inevitableCollision = similarNode(planner.ic_invalid_nn_, node->state(), configTolerance_);
-        // std::cout << "\npopped & propagated ";
-        // node->print();
+
         if (!inevitableCollision && validNode(planner, node)) {
 
-            // if (auto traj = validMotion(planner, node, from)) {
-            //     auto const validResult = checkTerminateCondition(planner, node);
-
-            //     if (done()) {
-            //         return;
-            //     }
-
-            //     if (!validResult && node->parent() && node->rank() >= planner.minValidateRank_
-            //         && !similarNode(planner.ic_nn_, node->state(), 1.0))
-            //     {
-            //         if (!scenario_.validReachableSpace(node->state())) {
-            //             inevitableCollision = true;
-            //             planner.ic_invalid_nn_.insert(StateNode(node->state()));
-            //         }
-            //         else {
-            //             planner.ic_nn_.insert(StateNode(node->state()));
-            //         }
-            //     }
-
-            //     if (!inevitableCollision) {
-            //         expand(planner, node);
-            //         closed_.push_back(node);
-            //     }
-            // }
-
-
-            if (auto traj = validMotion(planner, node, from)) { //, motion)) {
-                // std::cout << " motion valid" << std::endl;
+            if (auto traj = validMotion(planner, node, from)) {
                 auto const validResult = checkTerminateCondition(planner, node);
 
                 if (done()) {
@@ -919,7 +887,6 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             return;
         }
 
-        // std::cout << " refine shorter! ";
         auto shorter = refine(planner, node, SHORTER);
         
         if (node->valid()) {
@@ -928,16 +895,14 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             }
 
             if (!inevitableCollision) {
-                // std::cout << " refine longer! ";
                 auto longer = refine(planner, node, LONGER);
                 // if (inheritValidation && longer) {
                 //     longer->valid() = true;
                 // }
             }
         }
-        // std::cout << " refine left! ";
+
         refine(planner, node, LEFT);
-        // std::cout << " refine right!" << std::endl;
         refine(planner, node, RIGHT);
 
         if (!node->valid()) {
