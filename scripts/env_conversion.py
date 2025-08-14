@@ -620,98 +620,21 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
 
     # plot_slices(scan_data, x, y, z, mask=False)
 
-    if os.path.exists(pyobstaclefilename):
-        obstacles = np.load(pyobstaclefilename)
-    else:
-        obstacles = np.logical_or(np.logical_not(scan_data == _BRAIN), scan_data == _VENTRICLES)
-        obstacles = np.logical_and(np.logical_not(scan_data == _START), obstacles)
-        obstacles = np.logical_and(np.logical_not(scan_data == _GOAL), obstacles)
-        obstacles = np.logical_and(np.logical_not(scan_data == _TUMOR), obstacles).astype(int)
-        np.save(pyobstaclefilename, obstacles)
-        np.save(segmentationfilename, scan_data)
-
-        obstacles_ = np.where(obstacles)
-        obstaclepoints = np.empty(np.shape(obstacles_))
-        if np.shape(obstacles_)[0] > 0:
-            for i in range(np.shape(obstacles_)[1]):
-                obstaclepoints[:,i] = np.array([obstacles_[0][i], obstacles_[1][i], obstacles_[2][i]])
-            obstaclepoints = np.transpose(obstaclepoints)
-            np.random.shuffle(obstaclepoints)
-
-        f = open(cppobstaclefilename, 'a')
-        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
-        np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
-        np.savetxt(f, obstaclepoints, fmt='%d', delimiter=" ")
+    write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cppobstaclefilename, transform, scandims)
 
 
     # plot_slices(obstacles, x, y, z, mask=True)  
 
+    write_segmentation_files(pyskullsegmentationfilename, scan_data, transform, cppskullsegmentationfilename, scandims)
 
-    if os.path.exists(pyskullsegmentationfilename):
-        skullpoints = np.loadtxt(pyskullsegmentationfilename, skiprows=5) # TODO: skip first 4 lines
-    else:
-        skull = np.where(scan_data == _SKULL)
-        skullpoints = np.empty(np.shape(skull))
-        if np.shape(skull)[0] > 0:
-            for i in range(np.shape(skull)[1]):
-                skullpoints[:,i] = np.array([skull[0][i], skull[1][i], skull[2][i]])
-            skullpoints = np.transpose(skullpoints)
-            np.random.shuffle(skullpoints)
-
-        f = open(pyskullsegmentationfilename, 'a')
-        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
-        np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
-        np.savetxt(f, skullpoints, fmt='%d', delimiter=" ")
-
-        f = open(cppskullsegmentationfilename, 'a')
-        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
-        np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
-        np.savetxt(f, skullpoints, fmt='%d', delimiter=" ")
 
 
     # plt.show()
     
-    if os.path.exists(pypairfilename):
-        sg_pairs = np.loadtxt(pypairfilename)
-        if len(sg_pairs) > 0:
-            np.random.shuffle(sg_pairs)
-            np.savetxt(pypairfilename, sg_pairs, fmt='%d')
+
+    write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename)
 
 
-    with open(pytextfilename, "w+") as textfile:
-        start = np.eye(4)
-        start[0,3] = xstart
-        start[1,3] = ystart
-        start[2,3] = zstart
-
-        lines = [f"Bounds: 0 {scandims[0]} 0 {scandims[1]} 0 {scandims[2]}\n", 
-                f"Transform: {transform[0,0]} {transform[0,1]} {transform[0,2]} {transform[0,3]} {transform[1,0]} {transform[1,1]} {transform[1,2]} {transform[1,3]} {transform[2,0]} {transform[2,1]} {transform[2,2]} {transform[2,3]} {transform[3,0]} {transform[3,1]} {transform[3,2]} {transform[3,3]}\n",
-                f"Start: {start[0,0]} {start[0,1]} {start[0,2]} {start[0,3]} {start[1,0]} {start[1,1]} {start[1,2]} {start[1,3]} {start[2,0]} {start[2,1]} {start[2,2]} {start[2,3]} {start[3,0]} {start[3,1]} {start[3,2]} {start[3,3]}\n", 
-                f"Goal: {xgoal} {ygoal} {zgoal}\n", 
-                f"Obstacles: {pyobstaclefilename}\n", 
-                f"Skull: {pyskullsegmentationfilename}\n",
-                f"Torque: {torque[0]} {torque[1]} {pytorquefilename}\n",
-                f"Pairs: {pypairfilename}\n",
-                f"NeedleRobot: 0 500 0 {_KAPPA} -3.14 3.14\n"]
-        
-        # min_k = get_min_curvature(lines, obstacles)
-        # lines += [f"MinK: {min_k}\n"]
-
-        if os.path.exists(pypairfilename):
-            sg_pairs = np.loadtxt(pypairfilename)
-            if len(sg_pairs) > 0:
-                start[0,3] = sg_pairs[0,0]
-                start[1,3] = sg_pairs[0,1]
-                start[2,3] = sg_pairs[0,2]
-                lines[2] = f"Start: {start[0,0]} {start[0,1]} {start[0,2]} {start[0,3]} {start[1,0]} {start[1,1]} {start[1,2]} {start[1,3]} {start[2,0]} {start[2,1]} {start[2,2]} {start[2,3]} {start[3,0]} {start[3,1]} {start[3,2]} {start[3,3]}\n"
-                lines[3] = f"Goal: {sg_pairs[0,3]} {sg_pairs[0,4]} {sg_pairs[0,5]}\n"
-        else:
-            sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals))
-            np.savetxt(pypairfilename, sg_pairs, fmt='%d')
-            if len(sg_pairs) == 0:
-                print("no start/goal pairs found with non trivial solutions")
-
-        textfile.writelines(lines)
 
     if os.path.exists(pypairfilename):
         sg_pairs = np.loadtxt(pypairfilename)
@@ -758,6 +681,98 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
                 for i in range(np.shape(inds)[0]):
                     goal = transform_xyz(transform, sg_pairs[i,3], sg_pairs[i,4], sg_pairs[i,5])
                     lines += [f"{goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]                    
+
+
+def write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cppobstaclefilename, transform, scandims):
+    if os.path.exists(pyobstaclefilename):
+        obstacles = np.load(pyobstaclefilename)
+    else:
+        obstacles = np.logical_or(np.logical_not(scan_data == _BRAIN), scan_data == _VENTRICLES)
+        obstacles = np.logical_and(np.logical_not(scan_data == _START), obstacles)
+        obstacles = np.logical_and(np.logical_not(scan_data == _GOAL), obstacles)
+        obstacles = np.logical_and(np.logical_not(scan_data == _TUMOR), obstacles).astype(int)
+        np.save(pyobstaclefilename, obstacles)
+        np.save(segmentationfilename, scan_data)
+
+        obstacles_ = np.where(obstacles)
+        obstaclepoints = np.empty(np.shape(obstacles_))
+        if np.shape(obstacles_)[0] > 0:
+            for i in range(np.shape(obstacles_)[1]):
+                obstaclepoints[:,i] = np.array([obstacles_[0][i], obstacles_[1][i], obstacles_[2][i]])
+            obstaclepoints = np.transpose(obstaclepoints)
+            np.random.shuffle(obstaclepoints)
+
+        f = open(cppobstaclefilename, 'a')
+        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
+        np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
+        np.savetxt(f, obstaclepoints, fmt='%d', delimiter=" ")
+
+
+def write_segmentation_files(pyskullsegmentationfilename, scan_data, transform, cppskullsegmentationfilename, scandims):
+    if os.path.exists(pyskullsegmentationfilename):
+        skullpoints = np.loadtxt(pyskullsegmentationfilename, skiprows=5) # TODO: skip first 4 lines
+    else:
+        skull = np.where(scan_data == _SKULL)
+        skullpoints = np.empty(np.shape(skull))
+        if np.shape(skull)[0] > 0:
+            for i in range(np.shape(skull)[1]):
+                skullpoints[:,i] = np.array([skull[0][i], skull[1][i], skull[2][i]])
+            skullpoints = np.transpose(skullpoints)
+            np.random.shuffle(skullpoints)
+
+        f = open(pyskullsegmentationfilename, 'a')
+        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
+        np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
+        np.savetxt(f, skullpoints, fmt='%d', delimiter=" ")
+
+        f = open(cppskullsegmentationfilename, 'a')
+        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
+        np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
+        np.savetxt(f, skullpoints, fmt='%d', delimiter=" ")
+
+
+def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename):
+    if os.path.exists(pypairfilename):
+        sg_pairs = np.loadtxt(pypairfilename)
+        if len(sg_pairs) > 0:
+            np.random.shuffle(sg_pairs)
+            np.savetxt(pypairfilename, sg_pairs, fmt='%d')
+
+
+    with open(pytextfilename, "w+") as textfile:
+        start = np.eye(4)
+        start[0,3] = xstart
+        start[1,3] = ystart
+        start[2,3] = zstart
+
+        lines = [f"Bounds: 0 {scandims[0]} 0 {scandims[1]} 0 {scandims[2]}\n", 
+                f"Transform: {transform[0,0]} {transform[0,1]} {transform[0,2]} {transform[0,3]} {transform[1,0]} {transform[1,1]} {transform[1,2]} {transform[1,3]} {transform[2,0]} {transform[2,1]} {transform[2,2]} {transform[2,3]} {transform[3,0]} {transform[3,1]} {transform[3,2]} {transform[3,3]}\n",
+                f"Start: {start[0,0]} {start[0,1]} {start[0,2]} {start[0,3]} {start[1,0]} {start[1,1]} {start[1,2]} {start[1,3]} {start[2,0]} {start[2,1]} {start[2,2]} {start[2,3]} {start[3,0]} {start[3,1]} {start[3,2]} {start[3,3]}\n", 
+                f"Goal: {xgoal} {ygoal} {zgoal}\n", 
+                f"Obstacles: {pyobstaclefilename}\n", 
+                f"Skull: {pyskullsegmentationfilename}\n",
+                f"Torque: {torque[0]} {torque[1]} {pytorquefilename}\n",
+                f"Pairs: {pypairfilename}\n",
+                f"NeedleRobot: 0 500 0 {_KAPPA} -3.14 3.14\n"]
+        
+        # min_k = get_min_curvature(lines, obstacles)
+        # lines += [f"MinK: {min_k}\n"]
+
+        if os.path.exists(pypairfilename):
+            sg_pairs = np.loadtxt(pypairfilename)
+            if len(sg_pairs) > 0:
+                start[0,3] = sg_pairs[0,0]
+                start[1,3] = sg_pairs[0,1]
+                start[2,3] = sg_pairs[0,2]
+                lines[2] = f"Start: {start[0,0]} {start[0,1]} {start[0,2]} {start[0,3]} {start[1,0]} {start[1,1]} {start[1,2]} {start[1,3]} {start[2,0]} {start[2,1]} {start[2,2]} {start[2,3]} {start[3,0]} {start[3,1]} {start[3,2]} {start[3,3]}\n"
+                lines[3] = f"Goal: {sg_pairs[0,3]} {sg_pairs[0,4]} {sg_pairs[0,5]}\n"
+        else:
+            sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals))
+            np.savetxt(pypairfilename, sg_pairs, fmt='%d')
+            if len(sg_pairs) == 0:
+                print("no start/goal pairs found with non trivial solutions")
+
+        textfile.writelines(lines)
 
 
 def verify_ReMIND_env(lines, starts, goals):
