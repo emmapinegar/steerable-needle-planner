@@ -567,6 +567,7 @@ RealNum CurveLength(const Vec3& sp, const Quat& sq, const Vec3& gp, const Quat& 
     const Vec3 normal_vec = (st.cross(gt)).normalized();
 
     if (normal_vec.dot(sg.normalized()) > EPS) {
+        std::cout << "sp: " << sp[0] << " " << sp[1] << " " << sp[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " " << " gp: " << gp[0] << " " << gp[1] << " " << gp[2] << " sg: " << sg[0] << " " << sg[1] << " " << sg[2] << std::endl;
         std::cerr << "[CurveLength] Not on a plane, returning approximate length." << std::endl;
         return d;
     }

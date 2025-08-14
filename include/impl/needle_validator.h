@@ -562,7 +562,10 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
     // checking that there aren't collisions along the path, if the path is relatively straight
     if (cos_theta > 1 - EPS) {
-        for (RealNum l = resolution; l < d; l += resolution) {              
+        RealNum l;
+        RealNum step_ = std::fmin(resolution, d);
+
+        for (l = 0; l <= d; l += step_) {              
             result_p = sp + st * l;
 
             if (!env->CollisionFree(result_p)) {
@@ -580,9 +583,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 if (DistanceToTrumpetBoundary(sp, st, result_p, result_rad) > EPS) {
                     return false;
                 }
-            }            
+            }        
         }
-        // std::cout << "\tp: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " verified !!!!!!!!!!!!!!! straight traj" << std::endl;
+        
         return true;
     }
 
@@ -609,18 +612,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 std::cout << "gp not reachable" << std::endl;
             }
             return false;
-        } 
-
-        result_rad = GetCurvature(sp, sq_normalized, -normal_vec, cfg, rad_curv);
-
-        PrintStep(-1, 0, result_rad, sp, sq_normalized, normal_vec, cfg, print_);
-
-        if (DistanceToTrumpetBoundary(sp, st, gp, result_rad) > EPS) {
-            if (print_) {
-                std::cout << "sp not reachable" << std::endl;
-            }
-            return false;
-        }         
+        }        
     }
    
 
@@ -639,7 +631,8 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         std::cout << " |r|: " << center_diff.norm()  << " |center|: " << center.norm() <<std::endl;
     }
 
-    for (RealNum ang = 0; ang <= max_angle; ang += angle_step) {
+    for (RealNum ang = 0; ang < max_angle + angle_step; ang += angle_step) {
+        ang = std::fmin(ang, max_angle);
         Quat proceed_quat(AngleAxis(ang, normal_vec));
         result_p = proceed_quat*(sp - center) + center;
         
@@ -934,6 +927,7 @@ std::optional<State> DirectConnectingWithoutCollisionCheck(const State& s, const
 
     const State start_state = ForwardTo<State>(p, q, start.translation(), rad_curv);
     result.rotation() = ((start_state.rotation())*pi_x).normalized();
+    PrintState(result);
     return result;
 }
 

@@ -98,8 +98,8 @@ bool global_show_logs = true;
 bool global_variable_curvature = false;
 int scan_number = 9;
 Str global_output_file_root = "../data/output/test";
-Str global_obstacle_file = "../data/input/remind_obstacles_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
-Str global_skull_file = "../data/input/remind_skull_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
+Str global_obstacle_file = "../data/input/remind_00" + std::to_string(scan_number) + "_obstacles.txt";
+Str global_skull_file = "../data/input/remind_00" + std::to_string(scan_number) + "_skull_outline_shuffled.txt";
 Str global_cost_file = "../data/input/costs.txt";
 Str global_healpix_file = "../data/input/HEALPix.txt";
 Str needle_parameter_file = "../data/input/needle_parameters.txt";
@@ -239,8 +239,8 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
     }
 
     start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
-    global_obstacle_file = "../data/input/remind_obstacles_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
-    global_skull_file = "../data/input/remind_skull_00" + std::to_string(scan_number) + "_outline_shuffled.txt";
+    global_obstacle_file = "../data/input/remind_00" + std::to_string(scan_number) + "_obstacles.txt";
+    global_skull_file = "../data/input/remind_00" + std::to_string(scan_number) + "_skull_outline_shuffled.txt";
     goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
     suffix = suffix + "_remind_00" + std::to_string(scan_number); 
     

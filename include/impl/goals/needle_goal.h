@@ -196,7 +196,7 @@ class NeedleGoalState {
 
         if (distToGoal > cfg_->goal_pos_tolerance) {
             Vec3 back_ = pathToGoal.back().translation();
-            std::cout << " false! goal: " << goal_p_[0] << " " << goal_p_[1] << " " << goal_p_[2] << " back: " << back_[0] << " " << back_[1] << " " << back_[2] << std::endl; 
+            // std::cout << " false! goal: " << goal_p_[0] << " " << goal_p_[1] << " " << goal_p_[2] << " back: " << back_[0] << " " << back_[1] << " " << back_[2] << std::endl; 
             return {false, R_INF, {pathToGoal.back()}};
         }
 
