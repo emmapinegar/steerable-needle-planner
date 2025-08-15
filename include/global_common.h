@@ -238,11 +238,14 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
         i++;
     }
 
-    start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
-    global_obstacle_file = "../data/input/remind_00" + std::to_string(scan_number) + "_obstacles.txt";
-    global_skull_file = "../data/input/remind_00" + std::to_string(scan_number) + "_skull_outline_shuffled.txt";
-    goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
-    suffix = suffix + "_remind_00" + std::to_string(scan_number); 
+    Str padded_scan_num = std::to_string(scan_number);
+    padded_scan_num = std::string(3 - padded_scan_num.length(), '0') + padded_scan_num;
+
+    start_and_goal_file = "../data/input/remind_" + padded_scan_num + "_start_and_goal_poses.txt";
+    global_obstacle_file = "../data/input/remind_" + padded_scan_num + "_obstacles.txt";
+    global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outline_shuffled.txt";
+    goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";
+    suffix = suffix + "_remind_" + padded_scan_num; 
     
 #ifdef HAVE_GLOBAL_VARIABLES
     global::needle_min_curve_rad = min_curve_rad;

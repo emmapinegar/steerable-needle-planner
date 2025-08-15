@@ -10,7 +10,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     pip3 install open3d
     pip3 install numpy==1.26.4
     # install dependencies for mpt
-    sudo apt install ninja eigen3 libfcl libassimp;
+    # sudo apt install ninja eigen3 libfcl libassimp;
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     # Mac OSX
