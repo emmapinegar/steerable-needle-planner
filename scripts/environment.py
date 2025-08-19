@@ -301,7 +301,7 @@ class ReMINDEnvironment:
                 valid = True
                 return samp
 
-    def test_collisions_world(self, p):
+    def test_collisions_world(self, p) -> bool:
         """
         Test collision for the robot position p.
 

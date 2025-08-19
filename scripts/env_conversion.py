@@ -547,6 +547,7 @@ def process_all_ReMIND(scanfolder, pythonenvfolder, cppenvfolder):
         # if not os.path.exists(obstaclefilename+".npy") or not os.path.exists(segmentationfilename) or not os.path.exists(skullsegmentationfilename) or not os.path.exists(textfilename) or not os.path.exists(startfilename):
         print(f"\nprocessing scan {scannum}")
         process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum)
+        exit()
 
 
 def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, goal=None):
@@ -632,7 +633,7 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
     # plt.show()
     
 
-    write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename)
+    write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename, starts, goals)
 
 
 
@@ -649,7 +650,14 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
             with open(cppstartgoaltext, "w+") as textfile:
                 start = transform_xyz(transform, xstart, ystart, zstart)
                 goal = transform_xyz(transform, xgoal, ygoal, zgoal)
-                r = R.from_matrix(start[0:3,0:3])
+
+                r = R.from_quat([0,0, 1, 0], scalar_first=False)
+                print(r.as_matrix())
+                # start_t = np.zeros((3,3))
+                # start_t[1,0] = 1
+                # start_t[0,1] = 1
+                # start_t[2,2] = -1
+                # r = R.from_matrix(start_t)
                 q = r.as_quat()
                 print(q)
                 lines = [f"{start[0,3]} {start[1,3]} {start[2,3]} {q[0]} {q[1]} {q[2]} {q[3]}\n", 
@@ -731,7 +739,7 @@ def write_segmentation_files(pyskullsegmentationfilename, scan_data, transform, 
         np.savetxt(f, skullpoints, fmt='%d', delimiter=" ")
 
 
-def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename):
+def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename, starts, goals):
     if os.path.exists(pypairfilename):
         sg_pairs = np.loadtxt(pypairfilename)
         if len(sg_pairs) > 0:
@@ -740,7 +748,11 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
 
 
     with open(pytextfilename, "w+") as textfile:
-        start = np.eye(4)
+        start = np.zeros((4,4))
+        start[0,1] = -1
+        start[1,0] = 1
+        start[2,2] = 1
+        start[3,3] = 1
         start[0,3] = xstart
         start[1,3] = ystart
         start[2,3] = zstart
@@ -795,7 +807,7 @@ def verify_ReMIND_env(lines, starts, goals):
                 rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
                 rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
 
-                (status, new_node) = rrt.extend(rrt.T, env.goal, rejection=True)
+                (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start)
                 if not status == _REACHED:
                     sg_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
                 # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
@@ -949,7 +961,7 @@ def create_test_env(r=150,spacing=150):
 if __name__ == "__main__":
     # visualize_start_goal_positions()
 
-    process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
+    process_all_ReMIND("./../../data/ReMIND/", "./envs/test/", "./../data/input/test/")
     
     # process_Pi_data("./data/PiGroup/curvature_pi_group_data.mat", "./ReMIND_envs/")
 

@@ -24,7 +24,7 @@ class TreeNode:
     Class to hold node state and connectivity for building an RRT
     """
 
-    def __init__(self, needle_model:SteerableNeedle, parent=None):
+    def __init__(self, needle_model:SteerableNeedle, parent:"TreeNode"=None):
         """
         Creates an instance of TreeNode.
 
@@ -84,7 +84,7 @@ class RRTSearchTree:
         Returns:
             nn,min_d (tuple[TreeNode,float]): the TreeNode nearest to the point, the distance between the query point and the TreeNode
         """
-        min_d = _UNREACHABLE*1000
+        min_d:float = _UNREACHABLE*1000
         nn = self.root
         for n_i in self.nodes:
             d = get_distance(s_query,n_i)
@@ -161,7 +161,7 @@ class RRTSearchTree:
         return plan
 
 
-def get_distance(state, node:TreeNode):
+def get_distance(state, node:TreeNode) -> float:
     """
     Gets the distance between state and TreeNode.
 
@@ -179,7 +179,7 @@ def get_distance(state, node:TreeNode):
         distance = get_state_distance(state, node.state)
     return distance
 
-def get_state_distance(state_a, state_b):
+def get_state_distance(state_a, state_b) -> float:
     """
     Gets the Euclidean distance between the two states.
 
@@ -190,7 +190,7 @@ def get_state_distance(state_a, state_b):
     Returns:
         magnitude (float): ||state_b - state_a||
     """
-    magnitude = np.linalg.norm(state_b - state_a)
+    magnitude = np.linalg.norm(state_b - state_a).astype(float)
     return magnitude
 
 
@@ -372,8 +372,8 @@ class RRT(object):
                         print("path not added due to collision")
                         return (_TRAPPED, nearest_node)
                 else:
-                    new_needle.ik(sample, print_=True)
-                    nearest_node.needle_model.ik(sample, print_=True)
+                    new_needle.ik(sample, print_=False)
+                    nearest_node.needle_model.ik(sample, print_=False)
                     print("q is None")
                     return (_TRAPPED, nearest_node)
 
@@ -388,20 +388,20 @@ class RRT(object):
                 return (_TRAPPED, new_node)
 
         
-        print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
+        # print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
         next_node = nearest_node
         while next_node.parent is not None:
             print()
-            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=True)
+            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=False)
             next_node = next_node.parent
 
-        print("printing sample ik!")
-        q, phi = nearest_node.needle_model.ik(sample, print_=True)
-        nearest_node.needle_model.get_new_lims(sample, print_=True)
+        # print("printing sample ik!")
+        q, phi = nearest_node.needle_model.ik(sample, print_=False)
+        nearest_node.needle_model.get_new_lims(sample, print_=False)
         return (_TRAPPED, None)
 
 
-    def fake_in_collision(self, q):
+    def fake_in_collision(self, q) -> bool:
         """
         Fake function where there are no collisions!
 

@@ -1,3 +1,4 @@
+from typing import Optional
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
@@ -19,7 +20,7 @@ _MAXK = 0.072
 # warnings.filterwarnings("error", category=RuntimeWarning) # google AI Overview when searching try except runtime warning
 
 class SteerableNeedle:
-    def __init__(self, needle_lims=None, p=None, gw=None, q=None, phi=0, l=0, phi_constraint=False, skull_tree=None, r_curvature_line=None, variable_curvature=False):
+    def __init__(self, needle_lims:npt.NDArray=None, p:npt.NDArray=None, gw:npt.NDArray=None, q:tuple[float,float,float]=None, phi:float=0.0, l:float=0.0, phi_constraint:bool=False, skull_tree:KDTree=None, r_curvature_line:npt.NDArray=np.array([0,0]), variable_curvature:bool=False):
         """
         Steerable needle object that can be used to calculate forward kinematics, inverse kinematics, test reachability of an action, etc. 
 
@@ -57,11 +58,11 @@ class SteerableNeedle:
         self.phi_constraint = phi_constraint
         self.phi = phi
         self.l = l
-        self.skull_tree = skull_tree
+        self.skull_tree:KDTree = skull_tree
         self.r_curvature_line = r_curvature_line
         self.variable_curvature = variable_curvature
 
-    def fk(self, q):
+    def fk(self, q:tuple[float, float, float]) -> npt.NDArray:
         """
         Compute forward kinematics for the robot using action q.
 
@@ -69,7 +70,7 @@ class SteerableNeedle:
             q (tuple[float, float, float]): [l (arc), k (curvature), theta (angle)] the action to apply to move the current needle
 
         Returns:
-            g_new (3x3 ndarray): a transformation matrix g_new from the resulting needle pose to world frame
+            g_new (4x4 ndarray): a transformation matrix g_new from the resulting needle pose to world frame
         """
         l = q[0]
         k = q[1]
@@ -87,7 +88,7 @@ class SteerableNeedle:
         g_new = np.matmul(self.gw, gm)
         return g_new
 
-    def ik(self, p, print_=False):
+    def ik(self, p:npt.NDArray, print_:bool=False) -> tuple[tuple[float, float, float] | None, float]:
         """
         Compute inverse kinematics for the robot with position p.
 
@@ -95,7 +96,7 @@ class SteerableNeedle:
             p (array): [x, y, z] desired location of the needle in world frame
 
         Returns:
-            q (tuple[float, float, float] | None): [l (arc), k (curvature), theta (angle)] the action used to move the current needle to the specified p
+            q,phi (tuple[tuple[float, float, float] | None, float]): [l (arc), k (curvature), theta (angle)], phi the action used to move the current needle to the specified p
                             None if the desired p is not reachable
         """
         dp = np.matmul(self.gw_inv, np.transpose(np.append(p,1)))
@@ -108,7 +109,7 @@ class SteerableNeedle:
         if not self.reachable(dp[0:3], print_=print_):
             if _DEBUG or print_: 
                 print(f"not reachable {print_str} k: {self.needle_lims[1,1]}")
-            return None, None
+            return None, 0.0
         if np.linalg.norm(dp[0:3]) < 5e-10:
             return (0, 0, 0), 0
 
@@ -136,28 +137,31 @@ class SteerableNeedle:
         if self.l + l > self.needle_lims[0,1]:
             if _DEBUG or print_:
                 print(f"violates insertion length! {self.l + l} {print_str}")
-            return None, None
+            return None, 0.0
 
         # 90 degree constraint
         if self.phi_constraint and self.phi + phi > _MAXPHI:
             if _DEBUG or print_:
                 print(f"phi rejected! {self.phi + phi} {print_str}" )
-            return None, None
+            return None, 0.0
         if _DEBUG or print_:
             print(f"{print_str} l: {round(l,4)} \tk: {round(k,10)} \ttheta: {round(theta,10)} \tr: {round(r,4)} \tphi: {round(phi,4)}")   
         q = (l, k, theta)
         return q, phi
   
-    def get_distance(self, p, print_=False):
-        '''
-        Get the distance to point p based on the needles pose
-        '''
+    def get_distance(self, p:npt.NDArray):
+        """
+        Get the distance to point p based on the needles pose.
+
+        Parameters:
+            p (NDArray): point in world frame to get distance from needle to
+
+        Returns:
+            distance (float): arc length from needle's location to p
+        """
         dp = np.matmul(self.gw_inv, np.transpose(np.append(p,1)))
-        px = dp[0]
-        py = dp[1]
-        pz = dp[2]
+
         if np.linalg.norm(dp[0:3]) < 5e-10:
-            # print(f"close enough sample: {np.round(p.reshape(3,),4)} parent: {np.round(self.p.reshape(3,),4)} dp: {np.round(dp[0:3],10)} d: {np.linalg.norm(dp[0:3])}")
             return 0.0
         
         q, phi = self.ik(p)
@@ -165,26 +169,11 @@ class SteerableNeedle:
             distance = 10000
         else:
             distance = q[0]
-            # if abs(q[1]) < 1e-2:
-            #     # print(f"radius: {q[1]}")
-            #     distance = q[0]
-            # elif abs(1/q[1] - 14) < 1e-2:
-            #     # print(f"radius: {q[1]} {1/q[1]}")
-            #     distance = q[0]
-            # else:
-            #     # print(f"incorrect radius: {q[1]} {1/q[1]}")
-            # # print(f"p: {p.reshape(-1,)} l: {q[0]} k: {q[1]} r: {1/q[1]}")
-            #     distance = 10000
-        # can_reach = self.reachable(dp[0:3], print_=print_)  
 
-        # if can_reach:
-        #     distance = np.linalg.norm(self.p - p)
-        # else:
-        #     distance = 10000
         return distance     
 
    
-    def reachable(self, p, print_=False, check_y=False, oldcheck=False):
+    def reachable(self, p:npt.NDArray, print_=False, check_y=False, oldcheck=False) -> bool:
         """
         Tests if a point p is reachable by the current pose of the needle given the curvature limits.
 
@@ -276,7 +265,7 @@ class SteerableNeedle:
             return self.needle_lims
         
 
-    def get_new_lims(self, p, print_=False):
+    def get_new_lims(self, p:npt.NDArray, print_=False):
         """
         Updates the curvature limits for the needle given the new target point.
 
@@ -346,8 +335,6 @@ class SteerableNeedle:
         if q is not None:
             gw = self.fk(q)
             new_lims = self.get_lims(gw, print_=print_)
-            # if _DEBUG:
-            #     print(f"p: {gw[0:3,3]} q: {q} new lims: {new_lims.reshape(-1,)}")
             new_needle = SteerableNeedle(new_lims, gw=gw, q=q, phi=self.phi+phi, l=self.l+q[0], phi_constraint=self.phi_constraint, skull_tree=self.skull_tree, r_curvature_line=self.r_curvature_line, variable_curvature=self.variable_curvature)
             return new_needle
         else:
