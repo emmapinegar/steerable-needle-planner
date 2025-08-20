@@ -185,7 +185,7 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
         const RealNum x = d * std::sin(std::acos(std::fmin(1, y / d)));                 // TODO: fix this for angles greater than 180
         Vec2 center(rad * std::cos(ang_tolerance), -rad * std::sin(ang_tolerance));
         const RealNum dist_to_center = (Vec2(x, y) - center).norm();
-
+        // std::cout << "p: " << sp.transpose()  << " d: " << d << " dist to center: " << dist_to_center << " lim: " << rad << " center: " << center.transpose() << " diff: " << rad-dist_to_center << std::endl; 
         return rad - dist_to_center;
     }
     else if (y < 0)
@@ -193,7 +193,7 @@ RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp
         const RealNum x = d *std::sin(std::acos(std::fmax(-1, y / d)) + M_PI);
         Vec2 center(rad * std::cos(ang_tolerance), -rad * std::sin(ang_tolerance));
         const RealNum dist_to_center = (Vec2(x, y) - center).norm();
-
+        // std::cout << "p: " << sp.transpose()  << " d: " << d << " dist to center: " << dist_to_center << " lim: " << rad << " center: " << center.transpose() << " diff: " << rad-dist_to_center << std::endl; 
         return rad - dist_to_center;
     }
 

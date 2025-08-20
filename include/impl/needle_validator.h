@@ -415,9 +415,9 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
 
-        std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
-        std::cout  << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
-        std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " normal: " << normal_vec.transpose() << " q: " << sq.normalized() << std::endl;  
+        // std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
+        // std::cout  << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
+        // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " normal: " << normal_vec.transpose() << " q: " << sq.normalized() << std::endl;  
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
@@ -466,9 +466,9 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
         Vec3 tau = cfg->needle_mag* needle_mag.cross(b);
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
-        std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
-        std::cout  << " state: " << p.transpose() << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
-        std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " q: " << sq.normalized() << std::endl;            
+        // std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
+        // std::cout  << " state: " << p.transpose() << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
+        // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " q: " << sq.normalized() << std::endl;            
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
@@ -544,7 +544,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         return true;
     }
 
-    bool print_ = true;
+    bool print_ = false;
 
     const Quat sq_normalized = from.rotation().normalized();
     const Quat gq_normalized = to.rotation().normalized();
@@ -603,9 +603,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     }
 
     if (cfg->variable_curvature){
-        result_rad = GetCurvature(gp, gq_normalized, -normal_vec, cfg, rad_curv);
+        result_rad = GetCurvature(gp, gq_normalized, -1 * normal_vec, cfg, rad_curv);
 
-        PrintStep(-1, 0, result_rad, gp, gq_normalized, normal_vec, cfg, print_);
+        PrintStep(-1, 0, result_rad, gp, gq_normalized, -1 * normal_vec, cfg, print_);
 
         if (DistanceToTrumpetBoundary(sp, st, gp, result_rad) > EPS) {
             if (print_) {
@@ -645,12 +645,12 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
         if (cfg->variable_curvature) {
             result_q = (proceed_quat*sq_normalized).normalized();
-            result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, rad_curv);
+            result_rad = GetCurvature(result_p, result_q, -1 * normal_vec, cfg, rad_curv);
 
-            PrintStep(i, ang, result_rad, result_p, result_q, normal_vec, cfg, print_);
+            PrintStep(i, ang, result_rad, result_p, result_q, -1 * normal_vec, cfg, print_);
 
             // if the "distance to the trumpet boundary" is "nonzero" return false
-            if (DistanceToTrumpetBoundary(sp, st, result_p, result_rad) > EPS) {
+            if (DistanceToTrumpetBoundary(sp, st, gp, result_rad) > EPS) {
                 if (print_) {
                     std::cout << "radius limit!! " << result_p.transpose() << " r: " << r << std::endl;
                 }

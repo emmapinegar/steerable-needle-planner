@@ -63,12 +63,12 @@ def verify_var_curve(env, points_file, variable_curvature=True):
 
 if __name__=='__main__':
     dir = "./../data/output/"
-    verify_var_curve("./envs/ReMIND_info_001.txt", dir + "20250819-13-10-28_rrt_remind_001_ptcloud.txt")
+    # verify_var_curve("./envs/ReMIND_info_001.txt", dir + "20250820-11-49-11_rrt_remind_001_ptcloud.txt")
 
 
-    # files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("001")]
-    # print(files)
-    # for file in files:
-    #     print(f"\nprocessing {file}...")
-    #     verify_var_curve("./envs/ReMIND_info_001.txt", dir + file)
+    files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("008")]
+    print(files)
+    for file in files:
+        print(f"\nprocessing {file}...")
+        verify_var_curve("./envs/ReMIND_info_008.txt", dir + file)
 

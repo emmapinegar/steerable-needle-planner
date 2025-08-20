@@ -73,7 +73,6 @@ class ReMINDEnvironment:
         Parameters:
             lines (list): list of strings with the environment details
             variable_curvature (bool): true if enforcing variable curvature constraints, false otherwise
-
         """
         for l in lines:
             line_info = l.strip().split()
@@ -84,7 +83,7 @@ class ReMINDEnvironment:
             try:
                 self.line_parser[line_info[0]](line_info[1:])
             except:
-                print(f"a line could not be processed! {line_info[0]}")
+                print(f"a line could not be processed! {l}")
 
         self.transforminv = np.linalg.inv(self.transform)
         if variable_curvature:
@@ -95,7 +94,7 @@ class ReMINDEnvironment:
 
     def parse_bounds(self, line_data:list):
         """
-        Parse environment bounds from the line of format: Bounds: x_min x_max y_min y_max z_min z_max.
+        Parses and sets the environment bounds from the line of format: "Bounds: x_min x_max y_min y_max z_min z_max".
 
         Parameters:
             line_data (list): list of strings containing the bounds of the environment in voxel
@@ -109,9 +108,13 @@ class ReMINDEnvironment:
         self.lims = np.array([[self.x_min, self.x_max], [self.y_min, self.y_max], [self.z_min, self.z_max]])
 
 
-    def parse_skull(self, line_data):
+    def parse_skull(self, line_data:list):
         """
-        Parse filename for the file containing the skull data with format 
+        Parses filename for the file containing the skull data and loads the data into a KDTree from line with format "Skull: ./envs/<filename>.txt"
+        File should contain the transformation matrix from voxel to world in the first four lines, the dimensions of the voxels in the next line, then the voxel coordinates of the skull 
+
+        Parameters:
+            line_data (list): list of strings containing the skull filename
         """
         skullpoints = np.loadtxt(line_data[0], skiprows=5)
         skullpoints = np.transpose(skullpoints)
@@ -121,18 +124,21 @@ class ReMINDEnvironment:
         self.skulltree = KDTree(skullpoints)
 
 
-    def parse_obstacles(self, line_data):
+    def parse_obstacles(self, line_data:list):
         """
-        Parse file containing obstacle data with format Obstacles: obstacle_file_name.npy
+        Parse file containing obstacle data with format "Obstacles: obstacle_file_name.npy". Loads the obstacles into the environment for collision checking. 
+
+        Parameters:
+            line_data (list): list of strings containing the filename for the numpy file containing the occupancy grid
         """
         obstacle_file = str(line_data[0])
         obstacles_np = np.load(obstacle_file)
         self.voxel_grid = obstacles_np
 
 
-    def parse_goal(self, line_data):
+    def parse_goal(self, line_data:list):
         """
-        Parse goal location with format Goal: x_goal y_goal z_goal.
+        Parse goal location with format "Goal: x_goal y_goal z_goal". Goal voxel coordinates are read in and converted to world frame. 
 
         Parameters:
             line_data (list): list of strings containing the voxel coordinates for the goal
@@ -141,9 +147,9 @@ class ReMINDEnvironment:
             self.change_goal([float(l) for l in line_data])
             
     
-    def parse_start(self, line_data):
+    def parse_start(self, line_data:list):
         """
-        Parse start location and orientation with format Start: T_xx T_yx T_zx T_dx T_xy T_yy T_zy T_dy T_xz T_yz T_zz T_dz 0 0 0 1.
+        Parse start location and orientation with format "Start: T_xx T_yx T_zx T_dx T_xy T_yy T_zy T_dy T_xz T_yz T_zz T_dz 0 0 0 1".
 
         Parameters:
             line_data (list): list of strings containing the transformation matrix of the needle in voxels 
@@ -159,29 +165,29 @@ class ReMINDEnvironment:
                 self.robot.change_gw(self.gw)
 
 
-    def parse_needle(self, line_data):
+    def parse_needle(self, line_data:list):
         """
-        Parse parameters for steerable needle robot with format NeedleRobot: el_min el_max k_min k_max phi_min phi_max.
+        Parse parameters for steerable needle robot with format "NeedleRobot: el_min el_max k_min k_max phi_min phi_max".
 
         Parameters:
-            line_data (list): 
+            line_data (list): list of strings containing the insertion, curvature, and angular limits of the needle
         """
         self.needle_lims = np.array([float(l) for l in line_data]).reshape(-1,2)
 
 
-    def parse_transform(self, line_data):
+    def parse_transform(self, line_data:list):
         """
-        Parse transformation matrix that converts from pixel indices to world coordinates with format Transform: T_xx T_yx T_zx T_dx T_xy T_yy T_zy T_dy T_xz T_yz T_zz T_dz 0 0 0 1.
+        Parse transformation matrix that converts from pixel indices to world coordinates with format "Transform: T_xx T_yx T_zx T_dx T_xy T_yy T_zy T_dy T_xz T_yz T_zz T_dz 0 0 0 1".
 
         Parameters:
-            line_data (list):
+            line_data (list): list of strings containing the transformation matrix from voxel to world coordinates
         """
         self.transform = np.array([float(l) for l in line_data]).reshape(-1,4)
 
 
-    def parse_torque(self, line_data):
+    def parse_torque(self, line_data:list):
         """
-        Parses the line of best fit data and file containing the line of best fit with format 
+        Parses the line of best fit data and file containing the line of best fit with format "Torque: m_coefficient b_coeffcient <filename>.npy".
 
         Parameters:
             line_data (list): list of strings with line of best fit coefficients and filename
@@ -190,9 +196,9 @@ class ReMINDEnvironment:
         self.torque_file = line_data[2]
 
 
-    def parse_pairs(self, line_data):
+    def parse_pairs(self, line_data:list):
         """
-        Parses the filename of the file containing different start/goal pairs.
+        Parses the filename of the file containing different start/goal pairs with format "Pairs: <filename>.txt".
 
         Parameters:
             line_data (list): list of strings containing the filename string
@@ -200,9 +206,9 @@ class ReMINDEnvironment:
         self.pairs = np.loadtxt(line_data[0])
 
 
-    def parse_mink(self, line_data):
+    def parse_mink(self, line_data:list):
         """
-        Parses the minimum curvature limit for the environment. 
+        Parses the minimum curvature limit for the environment with format "MinK: mink". 
 
         Parameters:
             line_data (list): list of strings containing the curvature limit
@@ -210,7 +216,7 @@ class ReMINDEnvironment:
         self.mink = float(line_data[0])
 
 
-    def change_pair(self, i=0):
+    def change_pair(self, i:int=0):
         """
         Changes the start goal pair to a new non trivial combination.
 

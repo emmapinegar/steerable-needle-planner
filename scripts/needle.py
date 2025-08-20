@@ -211,10 +211,12 @@ class SteerableNeedle:
             if check_y and y < 0:
                 return False
             x = d*np.sin(np.arccos(np.fmin(1,y/d)))
-            dist_to_center = np.linalg.norm(np.array([x-1/self.needle_lims[1,1], y]))
-            reach = dist_to_center >= 1/self.needle_lims[1,1] - 5e-2
+            centerx = 1/self.needle_lims[1,1] * np.cos(0.005)
+            centery = -1/self.needle_lims[1,1] * np.sin(0.005)
+            dist_to_center = np.linalg.norm(np.array([x-centerx, y - centery]))
+            reach = dist_to_center >= 1/self.needle_lims[1,1] - 1e-5
             if (_DEBUG or print_)and not reach:
-                print(f"dp: {np.round(p,4)} \treach: {reach} \td: {round(d, 4)} \tdist to center: {round(dist_to_center,4)} \tlim: {round(1/self.needle_lims[1,1],4)}")
+                print(f"dp: {np.round(p,4)} \treach: {reach} \td: {round(d, 4)} \tdist to center: {dist_to_center} \tlim: {1/self.needle_lims[1,1]} \tcenter: {centerx}, {centery}")
 
             return reach
 
