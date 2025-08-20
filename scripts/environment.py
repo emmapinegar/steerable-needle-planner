@@ -1,16 +1,11 @@
 import numpy as np
+import numpy.typing as npt
 import matplotlib.pyplot as plt
 import json
 
 from sklearn.neighbors import KDTree
 from needle import SteerableNeedle
 
-# try:
-#     import open3d as o3d
-#     import open3d.visualization.gui as gui
-# except Exception as e:
-#     print("no open3D installed, you can't use the MD envs without it!")
-#     # raise Warning("You must install the Open3D package and an OpenCV visualization software to use the MD Environment!")
 
 _DEBUG = False
 _BOUNDS = 'Bounds:'
@@ -24,9 +19,6 @@ _TORQUE = "Torque:"
 _PAIRS = "Pairs:"
 _MINK = "MinK:"
 _OCCUPIED = 1
-
-
-
 
 
 
@@ -60,20 +52,13 @@ class ReMINDEnvironment:
                             }
 
     
-    def read_env(self, env_file_path, variable_curvature):
+    def read_env(self, env_file_path:str, variable_curvature:bool):
         """
-        Reads in the information about the environment when the file conforms to the following format:
-        <typename>: values
-        Bounds: x_min x_max y_min y_max z_min z_max
-        SphereBounds: x_center y_center z_center radius
-        Start: T_xx T_yx T_zx T_dx T_xy T_yy T_zy T_dy T_xz T_yz T_zz T_dz 0 0 0 1
-        Goal: x_goal y_goal z_goal
-        Obstacles: obstacle_file_name.npy
-        Segmentations: segmentation_file_name.npy
-        NeedleRobot: el_min el_max k_min k_max phi_min phi_max
-        Transform: T_xx T_yx T_zx T_dx T_xy T_yy T_zy T_dy T_xz T_yz T_zz T_dz 0 0 0 1
-        CenterSlice: x_slice y_slice z_slice
+        Reads in the information about the environment when the file conforms to the <typename>: values format.
 
+        Parameters:
+            env_file_path (str): file path and name for the environment text file 
+            variable_curvature (bool): true if enforcing variable curvature limits, false otherwise
         """
         env_file = open(env_file_path, 'r')
         file_infos = env_file.readlines()
@@ -81,9 +66,13 @@ class ReMINDEnvironment:
         # self.change_pair()
         
 
-
-    def read_lines(self, lines, variable_curvature):
+    def read_lines(self, lines:list, variable_curvature:bool):
         """
+        Reads the details of the environment and passes them off to be processed.
+
+        Parameters:
+            lines (list): list of strings with the environment details
+            variable_curvature (bool): true if enforcing variable curvature constraints, false otherwise
 
         """
         for l in lines:
@@ -104,9 +93,12 @@ class ReMINDEnvironment:
             self.robot = SteerableNeedle(needle_lims=self.needle_lims, p=self.start, gw=self.gw)
 
 
-    def parse_bounds(self, line_data):
+    def parse_bounds(self, line_data:list):
         """
-        Parse environment bounds.
+        Parse environment bounds from the line of format: Bounds: x_min x_max y_min y_max z_min z_max.
+
+        Parameters:
+            line_data (list): list of strings containing the bounds of the environment in voxel
         """
         self.x_min = float(line_data[0])
         self.x_max = float(line_data[1])
@@ -119,7 +111,7 @@ class ReMINDEnvironment:
 
     def parse_skull(self, line_data):
         """
-        Parse sphere bounds of environment.
+        Parse filename for the file containing the skull data with format 
         """
         skullpoints = np.loadtxt(line_data[0], skiprows=5)
         skullpoints = np.transpose(skullpoints)
@@ -129,10 +121,9 @@ class ReMINDEnvironment:
         self.skulltree = KDTree(skullpoints)
 
 
-
     def parse_obstacles(self, line_data):
         """
-        Parse file containing obstacle data.
+        Parse file containing obstacle data with format Obstacles: obstacle_file_name.npy
         """
         obstacle_file = str(line_data[0])
         obstacles_np = np.load(obstacle_file)
@@ -141,16 +132,21 @@ class ReMINDEnvironment:
 
     def parse_goal(self, line_data):
         """
-        Parse goal location.
+        Parse goal location with format Goal: x_goal y_goal z_goal.
+
+        Parameters:
+            line_data (list): list of strings containing the voxel coordinates for the goal
         """
         if self.goal is not None:
             self.change_goal([float(l) for l in line_data])
             
     
-
     def parse_start(self, line_data):
         """
-        Parse start location.
+        Parse start location and orientation with format Start: T_xx T_yx T_zx T_dx T_xy T_yy T_zy T_dy T_xz T_yz T_zz T_dz 0 0 0 1.
+
+        Parameters:
+            line_data (list): list of strings containing the transformation matrix of the needle in voxels 
         """
         if self.start is not None:
             self.gw = np.array([float(l) for l in line_data]).reshape(-1,4)
@@ -165,21 +161,30 @@ class ReMINDEnvironment:
 
     def parse_needle(self, line_data):
         """
-        Parse parameters for steerable needle robot.
+        Parse parameters for steerable needle robot with format NeedleRobot: el_min el_max k_min k_max phi_min phi_max.
+
+        Parameters:
+            line_data (list): 
         """
         self.needle_lims = np.array([float(l) for l in line_data]).reshape(-1,2)
 
 
     def parse_transform(self, line_data):
         """
-        Parse transformation matrix that converts from pixel indices to world coordinates.
+        Parse transformation matrix that converts from pixel indices to world coordinates with format Transform: T_xx T_yx T_zx T_dx T_xy T_yy T_zy T_dy T_xz T_yz T_zz T_dz 0 0 0 1.
+
+        Parameters:
+            line_data (list):
         """
         self.transform = np.array([float(l) for l in line_data]).reshape(-1,4)
 
 
     def parse_torque(self, line_data):
         """
-        Parse the indices of the center slice of the environment.
+        Parses the line of best fit data and file containing the line of best fit with format 
+
+        Parameters:
+            line_data (list): list of strings with line of best fit coefficients and filename
         """
         self.torque = np.array([float(line_data[0]), float(line_data[1])])
         self.torque_file = line_data[2]
@@ -187,15 +192,20 @@ class ReMINDEnvironment:
 
     def parse_pairs(self, line_data):
         """
-        
+        Parses the filename of the file containing different start/goal pairs.
+
+        Parameters:
+            line_data (list): list of strings containing the filename string
         """
         self.pairs = np.loadtxt(line_data[0])
 
 
-
     def parse_mink(self, line_data):
         """
-        
+        Parses the minimum curvature limit for the environment. 
+
+        Parameters:
+            line_data (list): list of strings containing the curvature limit
         """
         self.mink = float(line_data[0])
 
@@ -203,6 +213,9 @@ class ReMINDEnvironment:
     def change_pair(self, i=0):
         """
         Changes the start goal pair to a new non trivial combination.
+
+        Parameters:
+            i (int): index of the new start/goal pair, selects a random pair if the index is beyond the limit, default is 0
         """
         if self.pairs is not None:
             
@@ -213,13 +226,14 @@ class ReMINDEnvironment:
             self.change_goal(pair[3:6])
             print(f"start: {self.start} goal: {self.goal}")
 
-    def change_start(self, start, convert_world=True):
+
+    def change_start(self, start:npt.NDArray, convert_world=True):
         """
         Changes starting point for the needle.
 
         Parameters:
-        start (3x1): new starting point for needle
-
+            start (NDArray): new starting point for needle could be in voxel or world frame depending on if flag is set
+            convert_world (bool): converts the start point from voxel to world if true (default), no transformation if false
         """
         if convert_world:
             start = self.convert_to_world(start).reshape(3,)
@@ -227,35 +241,36 @@ class ReMINDEnvironment:
             start = start.reshape(3,)
         self.robot.change_p(start)
         self.start = self.robot.p
-        print(f"start changed: {self.start}")
-        print(f"gw: {self.robot.gw}")
 
 
-    def change_gw(self, gw):
+    def change_gw(self, gw:npt.NDArray):
         """
-        Changes starting transformation matrix for the needle.
+        Changes starting transformation matrix for the needle, updating the start in the process.
 
         Parameters:
-        gw (4x4): new transformation matrix for needle
-
+            gw (4x4): new transformation matrix for needle
         """
         self.robot.change_gw(gw)
         self.start = self.robot.p
 
 
-    def change_goal(self, goal):
+    def change_goal(self, goal) -> npt.NDArray:
         """
-        Changes the goal to the provided goal.
+        Changes the goal to the provided goal, converting it to world coordinates in the process.
+
+        Parameters:
+            goal (NDArray): goal point in voxel coordinates
         """
         self.goal = self.convert_to_world(goal).reshape(3,)
-        print(f"goal: {goal} converted: {self.goal}")
+        # print(f"goal: {goal} converted: {self.goal}")
 
-    def sample(self):
+
+    def sample(self) -> npt.NDArray:
         """
         Sample a coordinate within the limits of the rectangular or spherical bounds of the environment.
 
         Returns:
-        samp (3x1): sample generated
+            samp (NDArray): sample generated
         """
         if self.sphere_center is not None:
             samp = np.random.rand(3,)
@@ -270,26 +285,35 @@ class ReMINDEnvironment:
             samp[0] = samp[0]*(self.x_max-self.x_min) + self.x_min
             samp[1] = samp[1]*(self.y_max-self.y_min) + self.y_min
             samp[2] = samp[2]*(self.z_max-self.z_min) + self.z_min
-        self.sample_unit_sphere()
-        # samp = np.random.rand(3,)
-        # samp[0] = samp[0]*(self.x_max-self.x_min) + self.x_min
-        # samp[1] = samp[1]*(self.y_max-self.y_min) + self.y_min
-        # samp[2] = samp[2]*(self.z_max-self.z_min) + self.z_min
-        transformedsamp = np.matmul(self.transform, np.array([samp[0], samp[1], samp[2], 1]).reshape(4,1))
-        transformedsamp = np.array([transformedsamp[0], transformedsamp[1], transformedsamp[2]]).reshape((3,))
+
+
+        transformedsamp = self.convert_to_world(samp).reshape((3,))
         return transformedsamp
     
-    def sample_unit_sphere(self):
+
+    def sample_unit_sphere(self) -> npt.NDArray:
         """
+        Samples within the unit sphere. 
+
+        Returns:
+            samp (NDArray): sample in a unit sphere
         """
         samp = np.random.normal(size=(3,))
         r = np.random.uniform()
         samp = samp * (r/np.linalg.norm(samp))
         return samp 
 
-    def sample_sphere_intersects_trumpet(self, start:SteerableNeedle):
+
+    def sample_sphere_intersects_trumpet(self, start:SteerableNeedle) -> npt.NDArray:
         """
-        """           
+        Samples within the sphere centered about the start with a radius of the insertion limit and within the trupmet formed by the radius of curvature limits. 
+
+        Parameters:
+            start (SteerableNeedle): starting needle configuration
+
+        Returns:
+            samp (NDArray): sample in world frame that is within the general radius of curvature and insertion length limits of the needle
+        """
         valid = False
         while (not valid):
             unit_samp = self.sample_unit_sphere()
@@ -301,16 +325,16 @@ class ReMINDEnvironment:
                 valid = True
                 return samp
 
-    def test_collisions_world(self, p) -> bool:
+
+    def test_collisions_world(self, p:npt.NDArray) -> bool:
         """
         Test collision for the robot position p.
 
         Parameters:
-        p (3x1): world coordinate point to test
+            p (3x1): world coordinate point to test
 
         Returns:
-        collisions (bool): True if in collision, False if not
-
+            collisions (bool): True if in collision, False if not
         """
         pvox = np.matmul(self.transforminv, np.array([p[0], p[1], p[2], 1]).reshape(4,1))
         inds = np.floor(pvox).astype(int)
@@ -322,21 +346,20 @@ class ReMINDEnvironment:
         # if _DEBUG:
         #     print(f"p: {p} pvox: {pvox[0:3].reshape(-1,)} val: {self.voxel_grid[inds[0], inds[1], inds[2]]}")
         collisions = self.voxel_grid[inds[0], inds[1], inds[2]] == _OCCUPIED
-        if collisions:
-            print(f"collision at {p.reshape(-1,)}  inds: {inds.reshape(-1,)}")
+        # if collisions:
+        #     print(f"collision at {p.reshape(-1,)}  inds: {inds.reshape(-1,)}")
         return collisions
     
 
-    def convert_to_voxel(self, p):
+    def convert_to_voxel(self, p:npt.NDArray) -> npt.NDArray:
         """
         Convert world points to voxel coordinates.
 
         Parameters:
-        p (3xn): n sets of points in world space
+            p (3xn): n sets of points in world space
 
         Returns:
-        pvox (nx3): n sets of voxel coordinates 
-
+            pvox (nx3): n sets of voxel coordinates 
         """
         points = np.array(p)
         points = points.reshape(3,-1)
@@ -348,16 +371,15 @@ class ReMINDEnvironment:
         return pvox
 
 
-    def convert_to_world(self, pvox):
+    def convert_to_world(self, pvox:npt.NDArray) -> npt.NDArray:
         """
         Convert voxel coordinates to world points.
 
         Parameters:
-        p (3xn): n sets of points in voxel coordinates
+            pvox (nx3): n sets of points in voxel coordinates
 
         Returns:
-        pvox (nx3): n sets of world space
-
+            p (3xn): n sets of world space
         """
         points = np.array(pvox)
         points = points.reshape(3,-1)
@@ -374,14 +396,16 @@ class ReMINDEnvironment:
         Draw the environment with an overlaid plan.
 
         Parameters:
-        plan (): sequence of configurations to be drawn as plan (not drawn if pass in None)
-        planner (): a planner which has a function of the form
-                  vertices, edges = planner.T.get_states_and_edges()
-                  if None the search graph is not drawn
-        
+            plan (): sequence of configurations to be drawn as plan (not drawn if pass in None)
+            planner (): a planner which has a function of the form
+                    vertices, edges = planner.T.get_states_and_edges()
+                    if None the search graph is not drawn
+            dynamic_tree (bool): plots the tree dynamically if true, default is false
+            dynamic_plan (bool): plots the path dynamically if true, default is true
+            show (bool): shows the plot if true, default is true
+            filename (str): name of the file to save the plot to, default is None
+            title (str): title to give the plot, default is no title
         """
-        
-        
         ax = plt.figure().add_subplot(projection='3d')
         ax.set_xlabel('x')
         ax.set_ylabel('y')
@@ -398,8 +422,6 @@ class ReMINDEnvironment:
             ax.set_xlim(np.min(world_corners[0,:]), np.max(world_corners[0,:]))
             ax.set_ylim(np.min(world_corners[1,:]), np.max(world_corners[1,:]))
             ax.set_zlim(np.min(world_corners[2,:]), np.max(world_corners[2,:])) 
-
-
         else:
             corners = np.array([[self.x_min, self.x_min, self.x_min, self.x_max, self.x_min, self.x_max, self.x_max, self.x_max], [self.y_min, self.y_min, self.y_max, self.y_min, self.y_max, self.y_min, self.y_max, self.y_max], [self.z_min, self.z_max, self.z_min, self.z_min, self.z_max, self.z_max, self.z_min, self.z_max]]).reshape((3,-1))
             world_corners = self.convert_to_world(corners)
@@ -452,9 +474,17 @@ class ReMINDEnvironment:
             plt.close()
 
 
-    def export_rrt(self, states, path, filename, color, selectColor, activeColor):
+    def export_rrt(self, states, path, filename:str, color, selectColor, activeColor):
         """
         Exports planning data to json file for visualization later. 
+
+        Parameters:
+            states (list): the states in the tree 
+            path (list): the states in the path from the start ot the goal if it was reached
+            filename (str): the file to write the json formatted data to
+            color (str): the color of the points if not selected or active
+            selectedColor (str): the color of the points if they are selected (they're in the path to the goal)
+            activeColor (str): the color of the points if they are active (not currently used but useful to be set for visualization)
         """
         # path = path.tolist()
         # states = states.tolist()

@@ -333,13 +333,13 @@ class RRT(object):
             (status,node) (tuple[str,TreeNode]): the status of the extension and the TreeNode resulting if the extension was successful (status=_REACHED)
         """
         (nearest_node, magnitude) = T.find_nearest(parent)
-        # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
+        print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
         if magnitude > 1e-5:
-            print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} printing parent")
+            # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} printing parent")
             nearest_node.parent.needle_model.move_needle(nearest_node.needle_model.p, print_=True)
             return (_TRAPPED, nearest_node)
-        nearest_node.needle_model.get_new_lims(sample, print_=False)
-        q, phi = nearest_node.needle_model.ik(sample, print_=False)
+        nearest_node.needle_model.get_new_lims(sample, print_=True)
+        q, phi = nearest_node.needle_model.ik(sample, print_=True)
         if q is not None:
             
             magnitude = q[0]
@@ -356,14 +356,14 @@ class RRT(object):
                     if q[0] > self.epsilon:
                         q = (self.epsilon, q[1], q[2])
                     p = new_needle.fk(q)
-                    new_needle = new_needle.move_needle(p[0:3,3], print_=False)
+                    new_needle = new_needle.move_needle(p[0:3,3], print_=True)
                     
                     if new_needle is not None:
                         q, phi = new_needle.ik(sample,print_=False)
                         magnitude = new_needle.get_distance(sample)
                         new_needle_node = TreeNode(new_needle)
                     else:
-                        print(f"p: {p[0:3,3]} q: {q} needle none")
+                        # print(f"p: {p[0:3,3]} q: {q} needle none")
                         return (_TRAPPED, nearest_node)
                     if not self.in_collision(new_needle_node.state):
                         needles.append(new_needle_node)
@@ -372,9 +372,9 @@ class RRT(object):
                         print("path not added due to collision")
                         return (_TRAPPED, nearest_node)
                 else:
-                    new_needle.ik(sample, print_=False)
-                    nearest_node.needle_model.ik(sample, print_=False)
-                    print("q is None")
+                    new_needle.ik(sample, print_=True)
+                    nearest_node.needle_model.ik(sample, print_=True)
+                    # print("q is None")
                     return (_TRAPPED, nearest_node)
 
             new_needle = nearest_node.needle_model.move_needle(sample)
@@ -388,16 +388,16 @@ class RRT(object):
                 return (_TRAPPED, new_node)
 
         
-        # print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
+        print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
         next_node = nearest_node
         while next_node.parent is not None:
             print()
-            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=False)
+            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=True)
             next_node = next_node.parent
 
-        # print("printing sample ik!")
-        q, phi = nearest_node.needle_model.ik(sample, print_=False)
-        nearest_node.needle_model.get_new_lims(sample, print_=False)
+        print("printing sample ik!")
+        q, phi = nearest_node.needle_model.ik(sample, print_=True)
+        nearest_node.needle_model.get_new_lims(sample, print_=True)
         return (_TRAPPED, None)
 
 

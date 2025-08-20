@@ -415,9 +415,9 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
 
-        // std::cout  << " curvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm() << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2];
-        // std::cout  << " state: " << p[0] << " " << p[1] << " " << p[2] << " skull point: " << skull_point[0] << " " << skull_point[1] << " " << skull_point[2] << " r: " << r[0] << " " << r[1] << " " << r[2] << " mag point: " << mag_point[0] << " " << mag_point[1] << " " << mag_point[2] << std::endl;
-        // std::cout << "manip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " y: " << y.transpose() << " q: " << sq.normalized() << std::endl;  
+        std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
+        std::cout  << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
+        std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " normal: " << normal_vec.transpose() << " q: " << sq.normalized() << std::endl;  
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
@@ -466,9 +466,9 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
         Vec3 tau = cfg->needle_mag* needle_mag.cross(b);
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
-        // std::cout  << " curvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
-        // std::cout  << " state: " << p[0] << " " << p[1] << " " << p[2] << " skull point: " << skull_point[0] << " " << skull_point[1] << " " << skull_point[2] << " r: " << r[0] << " " << r[1] << " " << r[2] << " mag point: " << mag_point[0] << " " << mag_point[1] << " " << mag_point[2] << std::endl;
-        // std::cout << "manip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " y: " << y.transpose() << " q: " << sq.normalized() << std::endl;            
+        std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
+        std::cout  << " state: " << p.transpose() << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
+        std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " q: " << sq.normalized() << std::endl;            
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
@@ -513,8 +513,8 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, const Vec3& normal_vec, Con
  */
 void PrintStep(int i, RealNum ang, RealNum result_rad, Vec3 result_p, Quat result_q, Vec3 normal_vec, ConfigPtr cfg, bool print_) {
     if (print_) {
-        std::cout << "new ind: " << i << " angle: " << ang << " rad: " << result_rad << " lim: " << cfg->rad_curv << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2];
-        std::cout << " z: " << (result_q*Vec3::UnitZ()).normalized()[0] << " " << (result_q*Vec3::UnitZ()).normalized()[1] << " " << (result_q*Vec3::UnitZ()).normalized()[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2];
+        std::cout << "new ind: " << i << " angle: " << ang << " rad: " << result_rad << " lim: " << cfg->rad_curv << " p: " << result_p.transpose() << " normal: " << normal_vec.transpose();
+        std::cout << " z: " << (result_q*Vec3::UnitZ()).normalized().transpose() << " y: " << (result_q*Vec3::UnitY()).normalized().transpose() << " x: " << (result_q*Vec3::UnitX()).normalized().transpose();
         std::cout << std::endl;
     }
 }
@@ -544,7 +544,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         return true;
     }
 
-    bool print_ = false;
+    bool print_ = true;
 
     const Quat sq_normalized = from.rotation().normalized();
     const Quat gq_normalized = to.rotation().normalized();
@@ -556,7 +556,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     RealNum result_rad;
 
     if (print_) {
-        std::cout << "\n\tverifying p: " << gp[0] << " " << gp[1] << " " << gp[2] << std::endl;
+        std::cout << "\n\tverifying p: " << gp.transpose() << std::endl;
     }
     
 
@@ -627,7 +627,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     int i = 0;
 
     if (print_) {
-        std::cout << "angle: " << max_angle << " center: " << center[0] << " " << center[1] << " " << center[2] << " r: " << r << " diff: " << center_diff[0] << " " << center_diff[1] << " " << center_diff[2];
+        std::cout << "angle: " << max_angle << " center: " << center.transpose() << " r: " << r << " diff: " << center_diff.transpose();
         std::cout << " |r|: " << center_diff.norm()  << " |center|: " << center.norm() <<std::endl;
     }
 
@@ -638,7 +638,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         
         if (!env->CollisionFree(result_p)) {
             if (print_) {
-                std::cout << "collision!! " << result_p[0] << " " << result_p[1] << " " << result_p[2] << std::endl;
+                std::cout << "collision!! " << result_p.transpose() << std::endl;
             }
             return false;
         }
@@ -652,7 +652,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
             // if the "distance to the trumpet boundary" is "nonzero" return false
             if (DistanceToTrumpetBoundary(sp, st, result_p, result_rad) > EPS) {
                 if (print_) {
-                    std::cout << "radius limit!! " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " r: " << r << std::endl;
+                    std::cout << "radius limit!! " << result_p.transpose() << " r: " << r << std::endl;
                 }
                 
                 return false;
@@ -750,7 +750,7 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
                 return false;
             }
             if (print_) {
-                std::cout << "new index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2];
+                std::cout << "\nnew index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2];
                 std::cout << " q: " << motion[i].rotation().normalized() << " translation: " << motion[i].translation()[0] << " " << motion[i].translation()[1] << " " << motion[i].translation()[2];
                 std::cout << std::endl;
             }

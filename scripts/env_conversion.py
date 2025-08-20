@@ -547,7 +547,6 @@ def process_all_ReMIND(scanfolder, pythonenvfolder, cppenvfolder):
         # if not os.path.exists(obstaclefilename+".npy") or not os.path.exists(segmentationfilename) or not os.path.exists(skullsegmentationfilename) or not os.path.exists(textfilename) or not os.path.exists(startfilename):
         print(f"\nprocessing scan {scannum}")
         process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum)
-        exit()
 
 
 def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, goal=None):
@@ -795,22 +794,35 @@ def verify_ReMIND_env(lines, starts, goals):
     print(len(goals))
     np.random.shuffle(starts)
     np.random.shuffle(goals)
-    for start in starts[0:200]:
-        print(start)
-        env.parse_start(['1.0', '0.0', '0.0', str(start[0]), '0.0', '1.0', '0.0', str(start[1]), '0.0', '0.0', '1.0', str(start[2]), '0.0', '0.0', '0.0', '1.0'])
-        for goal in goals[0:200]:
-            env.change_goal(goal)
-            q, phi = env.robot.ik(env.goal)
-            # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
-            if q is not None:
-                env.goal 
-                rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
-                rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
+    
+    open_goals = []
+    for goal in goals:
+        env.change_goal(goal)
+        if not env.test_collisions_world(env.goal):
+            open_goals += [goal]
 
-                (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start)
-                if not status == _REACHED:
-                    sg_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
-                # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
+    print(f"goals: {np.shape(goals)} good: {len(open_goals)}")
+
+    for start in starts:
+        # print(start)
+        env.parse_start(['1.0', '0.0', '0.0', str(start[0]), '0.0', '1.0', '0.0', str(start[1]), '0.0', '0.0', '1.0', str(start[2]), '0.0', '0.0', '0.0', '1.0'])
+        if not env.test_collisions_world(env.start):
+            for goal in open_goals:
+                env.change_goal(goal)
+                if not env.test_collisions_world(env.goal):
+                    q, phi = env.robot.ik(env.goal)
+                    # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
+                    if q is not None:
+                        env.goal 
+                        rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
+                        rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
+
+                        (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start)
+                        if not status == _REACHED:
+                            sg_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
+                            if len(sg_pairs) > 10000:
+                                break
+                        # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
 
     return sg_pairs
 
@@ -961,7 +973,7 @@ def create_test_env(r=150,spacing=150):
 if __name__ == "__main__":
     # visualize_start_goal_positions()
 
-    process_all_ReMIND("./../../data/ReMIND/", "./envs/test/", "./../data/input/test/")
+    process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
     
     # process_Pi_data("./data/PiGroup/curvature_pi_group_data.mat", "./ReMIND_envs/")
 
