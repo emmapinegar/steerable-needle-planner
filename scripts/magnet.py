@@ -29,6 +29,7 @@ class Magnet():
         self.mag = m_mag
         self.skew_m = vector_to_skew(self.m)
         
+
     def get_Bb(self, other_magnet:'Magnet') -> tuple[npt.NDArray, npt.NDArray]:
         """
         Gets the field derivative and magnetic field at the location of this magnet.
@@ -52,6 +53,7 @@ class Magnet():
         b = np.matmul(b, other_magnet.m)
         return B, b
 
+
     def get_r(self, other_magnet:'Magnet') -> tuple[npt.NDArray, float, npt.NDArray]:
         """
         Gets several vectors that look at the position difference between the two magnets.
@@ -67,6 +69,7 @@ class Magnet():
         r_hat = np.divide(r,r_mag)
         r_mag = r_mag #+ 0.02
         return r, r_mag, r_hat
+
 
     def get_force_torque(self, other_magnet:'Magnet') -> tuple[npt.NDArray, npt.NDArray]:
         """        
@@ -84,7 +87,6 @@ class Magnet():
         tau = np.matmul(self.skew_m, b)
         return f, tau
    
-
 
 def vector_to_skew(vector:npt.NDArray) -> npt.NDArray:
     """

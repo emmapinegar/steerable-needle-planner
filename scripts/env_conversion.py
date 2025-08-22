@@ -532,7 +532,7 @@ def process_all_ReMIND(scanfolder, pythonenvfolder, cppenvfolder):
     print(segmentations)
     digits = [f.strip("ReMIND-sgmntaiond./") for f in filenames]
     print(digits)
-
+    np.random.seed(43829472)
     numfiles = len(filenames)
 
     if not os.path.exists(pythonenvfolder):

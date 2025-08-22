@@ -42,7 +42,7 @@ class TreeNode:
         if self.parent is not None:
             self.cost += self.parent.cost
 
-    def add_child(self, child):
+    def add_child(self, child:'TreeNode'):
         """
         Add a child TreeNode associated with this TreeNode.
 
@@ -57,7 +57,7 @@ class RRTSearchTree:
     Searh tree used for building an RRT.
     """
 
-    def __init__(self, root_needle:SteerableNeedle, skull_tree, r_curvature_line, phi_constraint=False, variable_curvature=False):
+    def __init__(self, root_needle:SteerableNeedle, skull_tree:KDTree, r_curvature_line:npt.NDArray, phi_constraint:bool=False, variable_curvature:bool=False):
         """
         Creates an instance of RRTSearch Tree.
 
@@ -75,7 +75,7 @@ class RRTSearchTree:
         self.nodes = [self.root]
         self.edges = []
 
-    def find_nearest(self, s_query) -> tuple[TreeNode, float]:
+    def find_nearest(self, s_query:npt.NDArray) -> tuple[TreeNode, float]:
         """
         Find TreeNode in RRTSearchTree closest to s_query. Returns early if the TreeNode is within 1e-12 of the query point. 
 
@@ -116,7 +116,7 @@ class RRTSearchTree:
         node.parent = parent
         parent.add_child(node)
 
-    def get_states_and_edges(self):
+    def get_states_and_edges(self) -> tuple[npt.NDArray, npt.NDArray]:
         """
         Return a list of states and edgs in the tree.
 
@@ -126,7 +126,7 @@ class RRTSearchTree:
         states = np.array([n.state for n in self.nodes])
         return (states, self.edges)
 
-    def get_back_path(self, n:TreeNode):
+    def get_back_path(self, n:TreeNode) -> list:
         """
         Get the path from the root to a specific node in the tree.
 
@@ -144,7 +144,7 @@ class RRTSearchTree:
         path.reverse()
         return path
 
-    def get_back_plan(self, n:TreeNode):
+    def get_back_plan(self, n:TreeNode) -> list:
         """
         Get the path from the root to a specific node in the tree.
 
@@ -180,7 +180,7 @@ def get_distance(state, node:TreeNode) -> float:
         distance = get_state_distance(state, node.state)
     return distance
 
-def get_state_distance(state_a, state_b) -> float:
+def get_state_distance(state_a:npt.NDArray, state_b:npt.NDArray) -> float:
     """
     Gets the Euclidean distance between the two states.
 
@@ -200,8 +200,8 @@ class RRT(object):
     Rapidly-Exploring Random Tree Planner
     """
 
-    def __init__(self, num_samples, num_dimensions=3, step_length = 1, lims = None,
-                 skull_tree=None, r_curvature_line=None, connect_prob = 0.05, collision_func=None, custom_sample_func=None, time_limit=60, variable_curvature=False):
+    def __init__(self, num_samples:int, num_dimensions:int=3, step_length:int=1, lims:npt.NDArray= None,
+                 skull_tree:KDTree=None, r_curvature_line:npt.NDArray=None, connect_prob:float= 0.05, collision_func=None, custom_sample_func=None, time_limit:float=60, variable_curvature:bool=False):
         """
         Creates an instance of RRT.
 
@@ -243,7 +243,7 @@ class RRT(object):
         self.found_path = False
         self.time_limit = time_limit
 
-    def rrt_setup(self, robot_init:SteerableNeedle, goal, phi_constraint):
+    def rrt_setup(self, robot_init:SteerableNeedle, goal:npt.NDArray, phi_constraint:bool):
         """
         Sets up RRT to be ready to search, resets it has been used previously.
 
@@ -259,7 +259,7 @@ class RRT(object):
         self.T = RRTSearchTree(robot_init, self.skull_tree, self.r_curvature_line, phi_constraint=phi_constraint, variable_curvature=self.variable_curvature)
 
 
-    def rebuild_tree(self, robot_init:SteerableNeedle, goal, phi_constraint=True):
+    def rebuild_tree(self, robot_init:SteerableNeedle, goal:npt.NDArray, phi_constraint:bool=True):
         """
         Rebuilds/retraces the searching process and verifies if the samples are reachable from their chosen parents similar to RRT Connect.
 
@@ -307,7 +307,7 @@ class RRT(object):
         return None, None, _UNREACHABLE, _UNREACHABLE   
 
 
-    def sample(self, i=0):
+    def sample(self, i:int=0):
         """
         Gets a new sample using the custom sample function.
 
@@ -321,7 +321,7 @@ class RRT(object):
         return new_configuration
 
 
-    def extend(self, T:RRTSearchTree, sample, parent:npt.NDArray):
+    def extend(self, T:RRTSearchTree, sample:npt.NDArray, parent:npt.NDArray):
         """
         Tries to extend to the new sample from the defined parent.
 
@@ -339,8 +339,8 @@ class RRT(object):
             # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} printing parent")
             nearest_node.parent.needle_model.move_needle(nearest_node.needle_model.p, print_=False)
             return (_TRAPPED, nearest_node)
-        nearest_node.needle_model.get_new_lims(sample, print_=False)
-        q, phi = nearest_node.needle_model.ik(sample, print_=False)
+        nearest_node.needle_model.get_new_lims(sample, print_=True)
+        q, phi = nearest_node.needle_model.ik(sample, print_=True)
         if q is not None:
             
             magnitude = q[0]
@@ -357,7 +357,7 @@ class RRT(object):
                     if q[0] > self.epsilon:
                         q = (self.epsilon, q[1], q[2])
                     p = new_needle.fk(q)
-                    new_needle = new_needle.move_needle(p[0:3,3], print_=False)
+                    new_needle = new_needle.move_needle(p[0:3,3], print_=True)
                     
                     if new_needle is not None:
                         q, phi = new_needle.ik(sample,print_=False)
@@ -369,12 +369,12 @@ class RRT(object):
                     if not self.in_collision(new_needle_node.state):
                         needles.append(new_needle_node)
                     else: 
-                        # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
-                        # print("path not added due to collision")
+                        print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
+                        print("path not added due to collision")
                         return (_TRAPPED, nearest_node)
                 else:
-                    new_needle.ik(sample, print_=False)
-                    nearest_node.needle_model.ik(sample, print_=False)
+                    new_needle.ik(sample, print_=True)
+                    nearest_node.needle_model.ik(sample, print_=True)
                     # print("q is None")
                     return (_TRAPPED, nearest_node)
 
@@ -389,16 +389,16 @@ class RRT(object):
                 return (_TRAPPED, new_node)
 
         
-        # print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
+        print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
         next_node = nearest_node
         while next_node.parent is not None:
             print()
-            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=False)
+            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=True)
             next_node = next_node.parent
 
         print("printing sample ik!")
-        q, phi = nearest_node.needle_model.ik(sample, print_=False)
-        nearest_node.needle_model.get_new_lims(sample, print_=False)
+        q, phi = nearest_node.needle_model.ik(sample, print_=True)
+        nearest_node.needle_model.get_new_lims(sample, print_=True)
         return (_TRAPPED, None)
 
 

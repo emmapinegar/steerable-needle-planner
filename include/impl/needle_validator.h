@@ -415,9 +415,9 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
 
-        // std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
-        // std::cout  << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
-        // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " normal: " << normal_vec.transpose() << " q: " << sq.normalized() << std::endl;  
+        std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
+        std::cout  << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
+        std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " normal: " << normal_vec.transpose() << " q: " << sq.normalized() << std::endl;  
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
@@ -466,9 +466,9 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
         Vec3 tau = cfg->needle_mag* needle_mag.cross(b);
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
-        // std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
-        // std::cout  << " state: " << p.transpose() << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
-        // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " q: " << sq.normalized() << std::endl;            
+        std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
+        std::cout  << " state: " << p.transpose() << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
+        std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " q: " << sq.normalized() << std::endl;            
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
@@ -681,7 +681,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
  */
 template <typename State>
 bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr env, const ConfigPtr cfg, const RealNum motion_rad, const unsigned& offset=0) {
-    bool print_ = false;
+    bool print_ = true;
     if (!env) {
         throw std::runtime_error("No image environment! Cannot check path validity!");
     }
@@ -719,7 +719,7 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
             normal_vec = (base_q*motion[0].rotation())*Vec3::UnitY();
         }
         if (print_) {
-            std::cout << "offset " << offset << " len: " << motion.size() << " p: " << base_p[0] << " " << base_p[1] << " " << base_p[2] << " base: " << base_t[0] << " " << base_t[1] << " " << base_t[2] << " q: " << base_q;
+            std::cout << "\noffset " << offset << " len: " << motion.size() << " p: " << base_p[0] << " " << base_p[1] << " " << base_p[2] << " base: " << base_t[0] << " " << base_t[1] << " " << base_t[2] << " q: " << base_q;
             std::cout  << " final: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << std::endl;
         }
 
@@ -750,7 +750,7 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
                 return false;
             }
             if (print_) {
-                std::cout << "\nnew index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2];
+                std::cout << "new index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p[0] << " " << result_p[1] << " " << result_p[2] << " normal: " << normal_vec[0] << " " << normal_vec[1] << " " << normal_vec[2] << " z: " << result_t[0] << " " << result_t[1] << " " << result_t[2] << " y: " << (result_q*Vec3::UnitY()).normalized()[0] << " " << (result_q*Vec3::UnitY()).normalized()[1] << " " << (result_q*Vec3::UnitY()).normalized()[2] << " x: " << (result_q*Vec3::UnitX()).normalized()[0] << " " << (result_q*Vec3::UnitX())[1] << " " << (result_q*Vec3::UnitX())[2];
                 std::cout << " q: " << motion[i].rotation().normalized() << " translation: " << motion[i].translation()[0] << " " << motion[i].translation()[1] << " " << motion[i].translation()[2];
                 std::cout << std::endl;
             }
@@ -758,7 +758,7 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
     } 
 
     if (print_) {
-        std::cout << "motion valid!!!" << std::endl;
+        std::cout << "motion valid!!!\n\n" << std::endl;
     }
     
 

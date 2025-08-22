@@ -16,8 +16,6 @@ _MAXPHI = np.pi/2
 _MAXK = 0.072
 
 
-# import warnings
-# warnings.filterwarnings("error", category=RuntimeWarning) # google AI Overview when searching try except runtime warning
 
 class SteerableNeedle:
     def __init__(self, needle_lims:npt.NDArray=None, p:npt.NDArray=None, gw:npt.NDArray=None, q:tuple[float,float,float]=None, phi:float=0.0, l:float=0.0, phi_constraint:bool=False, skull_tree:KDTree=None, r_curvature_line:npt.NDArray=np.array([0,0]), variable_curvature:bool=False):
@@ -149,7 +147,7 @@ class SteerableNeedle:
         q = (l, k, theta)
         return q, phi
   
-    def get_distance(self, p:npt.NDArray):
+    def get_distance(self, p:npt.NDArray) -> float:
         """
         Get the distance to point p based on the needles pose.
 
@@ -173,7 +171,7 @@ class SteerableNeedle:
         return distance     
 
    
-    def reachable(self, p:npt.NDArray, print_=False, check_y=False, oldcheck=False) -> bool:
+    def reachable(self, p:npt.NDArray, print_=False, check_y=False) -> bool:
         """
         Tests if a point p is reachable by the current pose of the needle given the curvature limits.
 
@@ -186,42 +184,25 @@ class SteerableNeedle:
         Returns:
             reach (bool): True if the point is reachable, False otherwise
         """
-        if oldcheck:
-            xy_sq = p[0]**2 + p[1]**2
-            
-            if xy_sq > 0:
-                r = (2/self.needle_lims[1,1]) * np.sqrt(xy_sq) - (xy_sq)
-                if r < 0:
-                    if _DEBUG or print_:
-                        print(f"dp: {p} r: {r} ")
-                    return False
-                circle = np.sqrt(r)
-                in_circle = p[2] >= circle
-                if _DEBUG or print_:
-                    print(f"dp: {p} r: {r} circle: {circle} incircle: {in_circle}")
-                return in_circle
+        d = np.linalg.norm(p)
 
+        if d < 1e-5:
             return True
-        else:
-            d = np.linalg.norm(p)
+        y = np.dot(p,np.array([0,0,1]))
+        if check_y and y < 0:
+            return False
+        x = d*np.sin(np.arccos(np.fmin(1,y/d)))
+        centerx = 1/self.needle_lims[1,1] * np.cos(0.005)
+        centery = -1/self.needle_lims[1,1] * np.sin(0.005)
+        dist_to_center = np.linalg.norm(np.array([x-centerx, y - centery]))
+        reach = dist_to_center >= 1/self.needle_lims[1,1] - 1e-5
+        if (_DEBUG or print_)and not reach:
+            print(f"dp: {np.round(p,4)} \treach: {reach} \td: {round(d, 4)} \tdist to center: {dist_to_center} \tlim: {1/self.needle_lims[1,1]} \tcenter: {centerx}, {centery}")
 
-            if d < 1e-5:
-                return True
-            y = np.dot(p,np.array([0,0,1]))
-            if check_y and y < 0:
-                return False
-            x = d*np.sin(np.arccos(np.fmin(1,y/d)))
-            centerx = 1/self.needle_lims[1,1] * np.cos(0.005)
-            centery = -1/self.needle_lims[1,1] * np.sin(0.005)
-            dist_to_center = np.linalg.norm(np.array([x-centerx, y - centery]))
-            reach = dist_to_center >= 1/self.needle_lims[1,1] - 1e-5
-            if (_DEBUG or print_)and not reach:
-                print(f"dp: {np.round(p,4)} \treach: {reach} \td: {round(d, 4)} \tdist to center: {dist_to_center} \tlim: {1/self.needle_lims[1,1]} \tcenter: {centerx}, {centery}")
-
-            return reach
+        return reach
 
 
-    def get_lims(self, gw, print_=False):
+    def get_lims(self, gw:npt.NDArray, print_:bool=False) -> npt.NDArray:
         """
         Calulates limits for needle_lims based on position and orientation in gw.
 
@@ -267,7 +248,7 @@ class SteerableNeedle:
             return self.needle_lims
         
 
-    def get_new_lims(self, p:npt.NDArray, print_=False):
+    def get_new_lims(self, p:npt.NDArray, print_:bool=False):
         """
         Updates the curvature limits for the needle given the new target point.
 
@@ -291,11 +272,6 @@ class SteerableNeedle:
             if np.linalg.norm(manipmagdipole) < 1e-5:
                 manipmagdipole = np.array([[self.gw[0,0]],[self.gw[1,0]],[self.gw[2,0]]])
 
-            # test =  self.gw[0:3,3].reshape(3,) - 10*manipmagdipole.reshape(3,)
-            # test = test.reshape(3,1)
-            # print(test)
-            # get the closest point on the skull from the screw, and its distance
-            # skullpoint = np.asarray(closestPoint(self.skull_tree, test))
 
             # has to be transposed because KD-tree expects 1x3 while Magnet Class expects 3x1
             skulltranspose = skullpoint.reshape(3,1)
@@ -318,8 +294,8 @@ class SteerableNeedle:
 
 
 
-    def move_needle(self, p, q=None, phi=0.0, print_=False):
-        '''
+    def move_needle(self, p:npt.NDArray, q:tuple[float,float,float]=None, phi:float=0.0, print_:bool=False) -> 'SteerableNeedle':
+        """
         "Moves" the current needle to the new desired position p if reachable.
 
         Parameters:
@@ -331,7 +307,7 @@ class SteerableNeedle:
         Returns:
             new_needle (SteerableNeedle | None): a new instance with the qualities resulting from moving the needle to p
                         None if the point p is not reachable with needle constraints
-        '''
+        """
         if q is None:
             q, phi = self.ik(p, print_=print_)
         if q is not None:
@@ -342,13 +318,14 @@ class SteerableNeedle:
         else:
             return None
 
-    def draw_fk(self, q, color='b', show=False):
+
+    def draw_fk(self, q:tuple[float,float,float], color:str='b', show:bool=False):
         """
         Draw the needle with the provided configuration advancing using control action q.
 
         Parameters:
             q (tuple[float, float, float]): the control action to advance the needle
-            color (char): the color to draw the robot point, default is 'b' (blue)
+            color (str): the color to draw the robot point, default is 'b' (blue)
             show (bool): shows the plot with blocking if true, default is false
         """
         g = self.fk(q)
@@ -358,13 +335,14 @@ class SteerableNeedle:
         if show:
             plt.show(block=True)
 
-    def draw(self, p, color='b', show=False):
+
+    def draw(self, p:npt.NDArray, color:str='b', show:bool=False):
         """
         Draw the robot with the provided configuration/location p.
 
         Parameters:
             p (3x1 ndarray): the point to draw the robot at
-            color (char): the color to draw the robot point, default is 'b' (blue)
+            color (str): the color to draw the robot point, default is 'b' (blue)
             show (bool): shows the plot with blocking if true, default is false
         """
 
@@ -372,24 +350,24 @@ class SteerableNeedle:
         if show:
             plt.show(block=True)
 
-    def change_p(self, p):
+
+    def change_p(self, p:npt.NDArray):
         """
         Changes the needle's p, updating the transformation matrices in the process.
 
         Parameters:
-            p (3x1 ndarray): the new location for the needle
-
+            p (3x1 ndarray): the new location for the needle in world coordinates
         """
         self.gw[0:3,3] = p
         self.change_gw(self.gw)
+
 
     def change_gw(self, gw:npt.NDArray):
         """
         Changes the needle's gw, updating the p and transformation matrices in the process.
 
         Parameters:
-            gw (3x3 ndarray): the new tranformation matrix for the needle, containing the new location
-
+            gw (4x4 ndarray): the new tranformation matrix for the needle, containing the new location
         """
         self.gw = gw
         self.gw_inv = np.linalg.inv(self.gw)
@@ -398,7 +376,7 @@ class SteerableNeedle:
 
 
 # LIKELY NEEDS TO BE CHANGED
-def closestPoint(skulltree:KDTree, position) -> npt.NDArray:
+def closestPoint(skulltree:KDTree, position:npt.NDArray) -> npt.NDArray:
     """
     Given a skull segmentation and a point in 3D, returns the closest point on the skull to that point and its distance.
 
@@ -408,7 +386,6 @@ def closestPoint(skulltree:KDTree, position) -> npt.NDArray:
     
     Returns:
         skullpoint (1x3 ndarray): point of skull closest to position, with an extra amount of padding added for safety
-
     """
     padding = 20 # CHANGE this value to reflect real world, also might not be needed here
     # may need to convert the frame of points IMPORTANT
