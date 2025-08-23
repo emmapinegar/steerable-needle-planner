@@ -146,7 +146,8 @@ class SteerableNeedle:
             print(f"{print_str} l: {round(l,4)} \tk: {round(k,10)} \ttheta: {round(theta,10)} \tr: {round(r,4)} \tphi: {round(phi,4)}")   
         q = (l, k, theta)
         return q, phi
-  
+
+
     def get_distance(self, p:npt.NDArray) -> float:
         """
         Get the distance to point p based on the needles pose.
@@ -268,7 +269,66 @@ class SteerableNeedle:
                 
             # other_vector = np.array([[self.gw[0,0]], [self.gw[1,0]], [self.gw[2,0]]])
             # norm_m = screwmagdipole/np.linalg.norm(screwmagdipole)
-            manipmagdipole = np.cross(sg_hat, screwmagdipole, axis=0)
+           
+            # manipmagdipole = np.cross(sg_hat, screwmagdipole, axis=0)
+            
+            # if print_:
+            #     print(f"normal: {manipmagdipole.reshape(3,)} unit normal: {manipmagdipole.reshape(3,)/np.linalg.norm(manipmagdipole)} sghat: {sg_hat} ")
+
+            temp_lim = self.needle_lims[1,1]
+            self.needle_lims[1,1] = _MAXK
+            q,phi = self.ik(p,print_=print_)
+
+            theta = q[2]
+            # xm = np.array([sin(theta), cos(theta), 0, 0])
+            # ym = np.array([-cos(theta), sin(theta), 0, 0])
+            # zm = np.array([0, 0, 1, 0])
+            # dm = np.array([0, 0, 0, 1])
+
+            # gm_old = np.transpose(np.vstack((xm, ym, zm, dm)))
+            # if print_:
+            #     print(gm)
+            #     print(np.matmul(self.gw, gm))
+
+            xm = np.array([-sin(theta), cos(theta), 0, 0])
+            ym = np.array([-cos(theta)*cos(phi), -sin(theta)*cos(phi), sin(phi), 0])
+            zm = np.array([cos(theta)*sin(phi), sin(theta)*sin(phi), cos(phi), 0])
+            dm = np.array([0, 0, 0, 1])
+
+            gm = np.transpose(np.vstack((xm, ym, zm, dm)))
+            gw_new = np.matmul(self.gw, gm)
+            if print_:
+                print(gw_new) 
+            manipmagdipole = np.cross(self.gw[0:3,2], gw_new[0:3,2], axis=0)
+
+
+            # if np.linalg.norm(manipmagdipole) < 1e-1:
+            #     temp_lim = self.needle_lims[1,1]
+            #     self.needle_lims[1,1] = _MAXK
+            #     q,phi = self.ik(p,print_=print_)
+
+            #     theta = q[2]
+            #     # xm = np.array([sin(theta), cos(theta), 0, 0])
+            #     # ym = np.array([-cos(theta), sin(theta), 0, 0])
+            #     # zm = np.array([0, 0, 1, 0])
+            #     # dm = np.array([0, 0, 0, 1])
+
+            #     # gm_old = np.transpose(np.vstack((xm, ym, zm, dm)))
+            #     # if print_:
+            #     #     print(gm)
+            #     #     print(np.matmul(self.gw, gm))
+
+            #     xm = np.array([-sin(theta), cos(theta), 0, 0])
+            #     ym = np.array([-cos(theta)*cos(phi), -sin(theta)*cos(phi), sin(phi), 0])
+            #     zm = np.array([cos(theta)*sin(phi), sin(theta)*sin(phi), cos(phi), 0])
+            #     dm = np.array([0, 0, 0, 1])
+
+            #     gm = np.transpose(np.vstack((xm, ym, zm, dm)))
+            #     gw_new = np.matmul(self.gw, gm)
+            #     if print_:
+            #         print(gm)
+            #         print(gw_new) 
+            #     manipmagdipole = np.cross(self.gw[0:3,2], gw_new[0:3,2], axis=0)
             if np.linalg.norm(manipmagdipole) < 1e-5:
                 manipmagdipole = np.array([[self.gw[0,0]],[self.gw[1,0]],[self.gw[2,0]]])
 

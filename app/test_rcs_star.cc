@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
         Planner<Scenario, Algorithm> planner(scenario);
         planner.addStart(start);
 
-        utils::Run<1>(planner, cfg);
+        utils::Run<0>(planner, cfg);
 
         auto const& result = planner.resultWithTime();
         for (auto const& res : result) {
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
         planner.addStart(start);
         MPT_LOG(INFO) << "using seed " << cfg->seed;
 
-        utils::Run<1>(planner, cfg);
+        utils::Run<0>(planner, cfg);
 
         auto const& result = planner.resultWithTime();
         for (auto const& res : result) {

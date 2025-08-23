@@ -295,7 +295,7 @@ class RRT(object):
                 break          
             keep_extending = True
             while keep_extending:
-                (status, new_node) = self.extend(self.T, random_state, parent)
+                (status, new_node) = self.extend(self.T, random_state, parent, k)
                 keep_extending = status == _ADVANCED
 
                 if status == _TRAPPED:
@@ -321,7 +321,7 @@ class RRT(object):
         return new_configuration
 
 
-    def extend(self, T:RRTSearchTree, sample:npt.NDArray, parent:npt.NDArray):
+    def extend(self, T:RRTSearchTree, sample:npt.NDArray, parent:npt.NDArray, k:int):
         """
         Tries to extend to the new sample from the defined parent.
 
@@ -334,13 +334,15 @@ class RRT(object):
             (status,node) (tuple[str,TreeNode]): the status of the extension and the TreeNode resulting if the extension was successful (status=_REACHED)
         """
         (nearest_node, magnitude) = T.find_nearest(parent)
-        # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
+        print_ =  False
+        if print_:
+            print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
         if magnitude > 1e-5:
             # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} printing parent")
             nearest_node.parent.needle_model.move_needle(nearest_node.needle_model.p, print_=False)
             return (_TRAPPED, nearest_node)
-        nearest_node.needle_model.get_new_lims(sample, print_=True)
-        q, phi = nearest_node.needle_model.ik(sample, print_=True)
+        nearest_node.needle_model.get_new_lims(sample, print_=print_)
+        q, phi = nearest_node.needle_model.ik(sample, print_=print_)
         if q is not None:
             
             magnitude = q[0]
@@ -357,7 +359,7 @@ class RRT(object):
                     if q[0] > self.epsilon:
                         q = (self.epsilon, q[1], q[2])
                     p = new_needle.fk(q)
-                    new_needle = new_needle.move_needle(p[0:3,3], print_=True)
+                    new_needle = new_needle.move_needle(p[0:3,3], print_=print_)
                     
                     if new_needle is not None:
                         q, phi = new_needle.ik(sample,print_=False)

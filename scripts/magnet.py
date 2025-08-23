@@ -22,6 +22,7 @@ class Magnet():
             m_mag (float): the strength/magnitude of the magnet's dipole
         """
         self.position = np.array(position/1000) #conversion to mm
+        m = m.reshape((3,1))
         self.m = np.array(m)
         norm = np.linalg.norm(self.m)
         self.m = np.divide(self.m, norm)
