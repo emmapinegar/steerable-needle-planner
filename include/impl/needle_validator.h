@@ -944,6 +944,20 @@ inline bool ValidLength(const RealNum& l, const RealNum& max_l) {
     return (l < max_l);
 }
 
+
+/**
+ * Checks if the insertion angle violates the constraints of the needle.
+ * 
+ * @param ang_total: the insertion angle
+ * @param max_angle: the maximum insertion angle limit for the needle
+ * 
+ * @returns bool true if the insertion angle is within the limits of the needle, false otherwise
+ */
+inline bool ValidAngle(const RealNum& ang_total, const RealNum& max_angle) {
+    return (ang_total < max_angle);
+}
+
+
 /**
  * Calculates the maximum arc length to reach the goal connecting the start and goal with a single arc ignoring orientation. 
  * 
@@ -1095,6 +1109,24 @@ class ValidatorBase {
         return utils::ValidLength(l, ins_length_);
     }
 
+    bool ValidAngle(const RealNum& ang_total) const {
+        return utils::ValidAngle(ang_total, ang_constraint_rad_);
+    }
+
+    bool Valid (const State& s, const RealNum& length, const RealNum& ang_total) const {
+        if (InCollision(s)) {
+            return false;
+        } 
+        
+        if (!ValidLength(length)) {
+            return false;
+        }
+
+        if (!ValidAngle(ang_total)) {
+            return false;
+        }
+    }
+
     /**
      * Gets the radius of curvature limit at the provided state.
      * 
@@ -1191,6 +1223,10 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
         }
 
         if (ang_total > ang_constraint_rad_) {
+            return false;
+        }
+
+        if (!base::ValidLength(length)) {
             return false;
         }
 
@@ -1303,6 +1339,10 @@ class SpreadingValidator : public ValidatorBase<State> {
         if (ang_total > ang_constraint_rad_) {
             return false;
         }
+
+        if (!base::ValidLength(length)) {
+            return false;
+        }        
 
         if (base::InCollision(s)) {
             return false;
@@ -1677,6 +1717,10 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
         if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_) || ang_total > ang_constraint_rad_) {
             return false;
         }
+
+        if (!base::ValidLength(length)) {
+            return false;
+        }        
 
         if (base::InCollision(s)) {
             return false;

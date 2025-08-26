@@ -723,6 +723,7 @@ unbiasedSamplingLoop:
         }
 
         if (auto traj = validMotion(nearNode->state(), newState)) {
+            // std::cout << "p: " << newState.translation().transpose() << " ell: " << newLength << " old: " << nearNode->length() << std::endl;
             auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, newState);
             auto const& goalState = goalStates[0];
 

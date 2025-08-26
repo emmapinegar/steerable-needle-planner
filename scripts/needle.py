@@ -278,6 +278,8 @@ class SteerableNeedle:
             temp_lim = self.needle_lims[1,1]
             self.needle_lims[1,1] = _MAXK
             q,phi = self.ik(p,print_=print_)
+            if q is None:
+                return
 
             theta = q[2]
             # xm = np.array([sin(theta), cos(theta), 0, 0])

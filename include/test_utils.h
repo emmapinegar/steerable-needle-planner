@@ -98,10 +98,10 @@ ReadNeedleParameters(Str const& filename, const bool print_info=false) {
     fin.close();
 
     if (print_info) {
-        std::cout << "Needle parameters:\n"
-                  << "\tradius of curvature " << rad_curv << "\n"
-                  << "\tdiameter " << diameter << "\n"
-                  << "\tinsertion length " << length  << "\n"
+        std::cout << "Needle parameters:"
+                  << "\tradius of curvature " << rad_curv
+                  << "\tdiameter " << diameter
+                  << "\tinsertion length " << length
                   << "\tangle constraint (degree) " << ang_constraint
                   << std::endl;
     }
@@ -151,6 +151,46 @@ ReadStartAndGoal(Str const& filename) {
 
     return {start_p, start_q.normalized(), goal_p, goal_q.normalized()};
 }
+
+
+/**
+ * Reads in the start and goal states for the planning problem. 
+ * The format for each line should be start_x start_y start_z goal_x goal_y goal_z. Start should be given before goal.
+ * 
+ * @param filename: name of the text file containing the states
+ * 
+ * @returns Vec3 starting position, Vec3 goal position
+ * 
+ * @throws runtime_error if the file can't be opened 
+ */
+std::tuple<Vec3, Vec3>
+ReadSGPair(Str const& filename, int sg_index) {
+    std::ifstream fin;
+    fin.open(filename);
+
+    if (!fin.is_open()) {
+        throw std::runtime_error("Failed to open " + filename);
+    }
+
+    Vec3 start_p, goal_p;
+    // Quat start_q, goal_q;
+
+    Str line;
+    int i = 0;
+    for (i = 0; i <= sg_index; i++) {
+        if (std::getline(fin, line)) {
+            std::istringstream s(line);
+
+            s >> start_p[0] >> start_p[1] >> start_p[2]
+            >> goal_p[0] >> goal_p[1] >> goal_p[2];
+        }
+    }
+
+    fin.close();
+
+    return {start_p, goal_p};
+}
+
 
 /**
  * Reads in the start state for the planning problem (assuming start state is the first line of the file). 

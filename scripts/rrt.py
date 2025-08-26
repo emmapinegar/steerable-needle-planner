@@ -80,7 +80,7 @@ class RRTSearchTree:
         Find TreeNode in RRTSearchTree closest to s_query. Returns early if the TreeNode is within 1e-12 of the query point. 
 
         Parameters:
-            s_query (ndarray): the poit to find the nearest point to
+            s_query (ndarray): the point to find the nearest point to
 
         Returns:
             nn,min_d (tuple[TreeNode,float]): the TreeNode nearest to the point, the distance between the query point and the TreeNode
@@ -92,7 +92,7 @@ class RRTSearchTree:
             # l2 = get_state_distance(s_query,n_i.needle_model.p)
             # if l2 < 1e-3 and d > 1e-2:
             #     print(f"min d: {min_d} d: {d} l2: {l2} p: {n_i.needle_model.p} query: {s_query}")
-            #     n_i.needle_model.get_distance(s_query, print_=True)
+            #     n_i.needle_model.get_distance(s_query)
             if d < min_d and d >= 0.0:
                 # print(f"min d: {min_d} d: {d} p: {n_i.needle_model.p} query: {s_query}")
                 nn = n_i
@@ -334,12 +334,12 @@ class RRT(object):
             (status,node) (tuple[str,TreeNode]): the status of the extension and the TreeNode resulting if the extension was successful (status=_REACHED)
         """
         (nearest_node, magnitude) = T.find_nearest(parent)
-        print_ =  False
+        print_ = False
         if print_:
             print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
         if magnitude > 1e-5:
-            # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} printing parent")
-            nearest_node.parent.needle_model.move_needle(nearest_node.needle_model.p, print_=False)
+            print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} printing parent")
+            nearest_node.parent.needle_model.move_needle(nearest_node.needle_model.p, print_=True)
             return (_TRAPPED, nearest_node)
         nearest_node.needle_model.get_new_lims(sample, print_=print_)
         q, phi = nearest_node.needle_model.ik(sample, print_=print_)
@@ -372,7 +372,7 @@ class RRT(object):
                         needles.append(new_needle_node)
                     else: 
                         print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
-                        print("path not added due to collision")
+                        print(f"path not added due to collision at: {new_needle_node.state}")
                         return (_TRAPPED, nearest_node)
                 else:
                     new_needle.ik(sample, print_=True)

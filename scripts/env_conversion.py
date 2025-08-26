@@ -603,7 +603,7 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
             goal = np.array([goals[0][goal_index], goals[1][goal_index], goals[2][goal_index]])
         else:
             goal = np.average(np.where(scan_data == _TUMOR), axis=1)
-    center = np.average(np.where(scan_data == _BRAIN), axis=1)
+    # center = np.average(np.where(scan_data == _BRAIN), axis=1)
 
 
     xgoal = np.floor(goal[0]).astype(int)
@@ -614,9 +614,7 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
     y = ystart
     z = zstart
 
-    print(f"goal: {goal} \t center: {center} \t start: {start} \t x: {x}   y: {y}   z: {z}")
-
-    invtrans = np.linalg.inv(transform)
+    # print(f"goal: {goal} \t center: {center} \t start: {start} \t x: {x}   y: {y}   z: {z}")
 
     # plot_slices(scan_data, x, y, z, mask=False)
 
@@ -639,6 +637,7 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
     if os.path.exists(pypairfilename):
         sg_pairs = np.loadtxt(pypairfilename)
         if len(sg_pairs) > 0:
+
             xstart = sg_pairs[0,0]
             ystart = sg_pairs[0,1]
             zstart = sg_pairs[0,2]
@@ -651,14 +650,14 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
                 goal = transform_xyz(transform, xgoal, ygoal, zgoal)
 
                 r = R.from_quat([0,0, 1, 0], scalar_first=False)
-                print(r.as_matrix())
+                # print(r.as_matrix())
                 # start_t = np.zeros((3,3))
                 # start_t[1,0] = 1
                 # start_t[0,1] = 1
                 # start_t[2,2] = -1
                 # r = R.from_matrix(start_t)
                 q = r.as_quat()
-                print(q)
+                # print(q)
                 lines = [f"{start[0,3]} {start[1,3]} {start[2,3]} {q[0]} {q[1]} {q[2]} {q[3]}\n", 
                          f"{goal[0,3]} {goal[1,3]} {goal[2,3]} {q[0]} {q[1]} {q[2]} {q[3]}\n"]
                 textfile.writelines(lines)
@@ -687,12 +686,27 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
                 inds = np.where(np.logical_and(sg_pairs[:,0] == xstart,np.logical_and(sg_pairs[:,1] == ystart, sg_pairs[:,2] == zstart)))[0]
                 for i in range(np.shape(inds)[0]):
                     goal = transform_xyz(transform, sg_pairs[i,3], sg_pairs[i,4], sg_pairs[i,5])
-                    lines += [f"{goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]                    
+                    lines += [f"{goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]
+
+                textfile.writelines(lines)                    
 
 
 def write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cppobstaclefilename, transform, scandims):
     if os.path.exists(pyobstaclefilename):
         obstacles = np.load(pyobstaclefilename)
+        if not os.path.exists(cppobstaclefilename):
+            obstacles_ = np.where(obstacles)
+            obstaclepoints = np.empty(np.shape(obstacles_))
+            if np.shape(obstacles_)[0] > 0:
+                for i in range(np.shape(obstacles_)[1]):
+                    obstaclepoints[:,i] = np.array([obstacles_[0][i], obstacles_[1][i], obstacles_[2][i]])
+                obstaclepoints = np.transpose(obstaclepoints)
+                np.random.shuffle(obstaclepoints)
+
+            f = open(cppobstaclefilename, 'a')
+            np.savetxt(f, transform, fmt='%1.20f', newline="\n")
+            np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
+            np.savetxt(f, obstaclepoints, fmt='%d', delimiter=" ")
     else:
         obstacles = np.logical_or(np.logical_not(scan_data == _BRAIN), scan_data == _VENTRICLES)
         obstacles = np.logical_and(np.logical_not(scan_data == _START), obstacles)
@@ -710,7 +724,7 @@ def write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cp
             np.random.shuffle(obstaclepoints)
 
         f = open(cppobstaclefilename, 'a')
-        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
+        np.savetxt(f, transform, fmt='%1.20f', newline="\n")
         np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
         np.savetxt(f, obstaclepoints, fmt='%d', delimiter=" ")
 
@@ -718,6 +732,11 @@ def write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cp
 def write_segmentation_files(pyskullsegmentationfilename, scan_data, transform, cppskullsegmentationfilename, scandims):
     if os.path.exists(pyskullsegmentationfilename):
         skullpoints = np.loadtxt(pyskullsegmentationfilename, skiprows=5) # TODO: skip first 4 lines
+        if not os.path.exists(cppskullsegmentationfilename):
+            f = open(cppskullsegmentationfilename, 'a')
+            np.savetxt(f, transform, fmt='%1.20f', newline="\n")
+            np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
+            np.savetxt(f, skullpoints, fmt='%d', delimiter=" ")           
     else:
         skull = np.where(scan_data == _SKULL)
         skullpoints = np.empty(np.shape(skull))
@@ -728,12 +747,12 @@ def write_segmentation_files(pyskullsegmentationfilename, scan_data, transform, 
             np.random.shuffle(skullpoints)
 
         f = open(pyskullsegmentationfilename, 'a')
-        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
+        np.savetxt(f, transform, fmt='%1.20f', newline="\n")
         np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
         np.savetxt(f, skullpoints, fmt='%d', delimiter=" ")
 
         f = open(cppskullsegmentationfilename, 'a')
-        np.savetxt(f, transform, fmt='%1.16f', newline="\n")
+        np.savetxt(f, transform, fmt='%1.20f', newline="\n")
         np.savetxt(f, np.array([scandims[0], scandims[1], scandims[2]]).reshape(1, -1), fmt='%d', delimiter=" ")
         np.savetxt(f, skullpoints, fmt='%d', delimiter=" ")
 
@@ -764,7 +783,7 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
                 f"Skull: {pyskullsegmentationfilename}\n",
                 f"Torque: {torque[0]} {torque[1]} {pytorquefilename}\n",
                 f"Pairs: {pypairfilename}\n",
-                f"NeedleRobot: 0 500 0 {_KAPPA} -3.14 3.14\n"]
+                f"NeedleRobot: 0 100 0 {_KAPPA} -3.14 3.14\n"]
         
         # min_k = get_min_curvature(lines, obstacles)
         # lines += [f"MinK: {min_k}\n"]
@@ -779,6 +798,7 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
                 lines[3] = f"Goal: {sg_pairs[0,3]} {sg_pairs[0,4]} {sg_pairs[0,5]}\n"
         else:
             sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals))
+            np.random.shuffle(sg_pairs)
             np.savetxt(pypairfilename, sg_pairs, fmt='%d')
             if len(sg_pairs) == 0:
                 print("no start/goal pairs found with non trivial solutions")
@@ -854,32 +874,32 @@ def get_min_curvature(lines, obstacles):
     return min_k
         
 
-def process_Pi_data(datafile, envfolder):
+def process_Pi_data(datafile, torquefilename):
     """
     Processes data from Pi dataset, saving linear regression data to a .npy file
     
     Parameters:
         datafile (string): file path to pi data file
     """
-    torquecurvaturefilename = os.path.join(envfolder, "torque_curvature.npy")
-    mat = scipy.io.loadmat(datafile)
-    readtorques = mat["torques"]
-    radius = mat["kappa"]
-    
-    radius_by_stiffness = np.empty((3, radius.shape[1], radius.shape[2] - 1))
-    
-    radius_by_stiffness[0, :, :] = radius[4, :, 1:]  
-    radius_by_stiffness[1, :, :] = radius[1, :, 1:]
-    radius_by_stiffness[2, :, :] = radius[5, :, 1:]
-    
-    radius_by_stiffness_mean = np.squeeze(np.mean(radius_by_stiffness, 1));
-    
-    torques = np.array((readtorques[0,3], readtorques[0,2], readtorques[0,1]))
-    radius_of_curvatures = np.array((radius_by_stiffness_mean[0,2], radius_by_stiffness_mean[0,1], radius_by_stiffness_mean[0,0]))
+    if not os.path.exists(torquefilename):
+        mat = scipy.io.loadmat(datafile)
+        readtorques = mat["torques"]
+        radius = mat["kappa"]
+        
+        radius_by_stiffness = np.empty((3, radius.shape[1], radius.shape[2] - 1))
+        
+        radius_by_stiffness[0, :, :] = radius[4, :, 1:]  
+        radius_by_stiffness[1, :, :] = radius[1, :, 1:]
+        radius_by_stiffness[2, :, :] = radius[5, :, 1:]
+        
+        radius_by_stiffness_mean = np.squeeze(np.mean(radius_by_stiffness, 1));
+        
+        torques = np.array((readtorques[0,3], readtorques[0,2], readtorques[0,1]))
+        radius_of_curvatures = np.array((radius_by_stiffness_mean[0,2], radius_by_stiffness_mean[0,1], radius_by_stiffness_mean[0,0]))
 
-    bestFit = np.array(stats.linregress(torques, radius_of_curvatures))
-    
-    np.save(torquecurvaturefilename, bestFit) 
+        bestFit = np.array(stats.linregress(torques, radius_of_curvatures))
+        
+        np.save(torquefilename, bestFit) 
 
 
 def plot_slices(scan_data, x, y, z, cmap="plasma", figname=None, mask=False):
@@ -971,11 +991,9 @@ def create_test_env(r=150,spacing=150):
 
 
 if __name__ == "__main__":
-    # visualize_start_goal_positions()
+
+    process_Pi_data("./../../data/PiGroup/curvature_pi_group_data.mat", "./envs/torque_curvature.npy")
 
     process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
-    
-    # process_Pi_data("./data/PiGroup/curvature_pi_group_data.mat", "./ReMIND_envs/")
 
-    # create_test_env()
 

@@ -63,7 +63,9 @@ int main(int argc, char** argv) {
 
     
     // start_and_goal_file is defined in global_common.h 
-    auto [start_p, start_q, goal_p, goal_q] = utils::ReadStartAndGoal(start_and_goal_file);
+    auto [start_p_, start_q, goal_p_, goal_q] = utils::ReadStartAndGoal(start_and_goal_file);
+
+    auto [start_p, goal_p] = utils::ReadSGPair(sg_pairs_file, global_sg_index);
 
     cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->direct_connect_ratio = 1.0;

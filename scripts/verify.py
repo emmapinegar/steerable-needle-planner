@@ -6,12 +6,17 @@ from scipy.spatial.transform import Rotation as R
 import os
 I = 0
 
-def verify_var_curve(env, points_file, variable_curvature=True):
+def verify_var_curve(env_file:str, points_file:str, variable_curvature:bool=True):
     """
-    
+    Verifies the points recorded as part of the search tree are reachable.
+
+    Parameters:
+        env_file (str): file name and path for the needle environment text file
+        points_file (str): file name and path for the text file containing the points in order of addition to the tree/path
+        variable_curvature (bool): checks dynamic curvature constraints if true (default), checks fixed curvature constraint if false
     """
     pe = ReMINDEnvironment()
-    pe.read_env(env, variable_curvature)
+    pe.read_env(env_file, variable_curvature)
     
 
     points = np.loadtxt(points_file)
@@ -63,12 +68,53 @@ def verify_var_curve(env, points_file, variable_curvature=True):
 
 if __name__=='__main__':
     dir = "./../data/output/"
-    # verify_var_curve("./envs/ReMIND_info_001.txt", dir + "20250822-16-10-57_rcs_star_remind_001_ptcloud.txt")
+    # verify_var_curve("./envs/ReMIND_info_001.txt", dir + "20250825-11-16-58_rrt_remind_001_ptcloud.txt")
 
 
-    files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("001")]
+    files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("rcs_remind_001")]
     print(files)
     for file in files:
         print(f"\nprocessing {file}...")
         verify_var_curve("./envs/ReMIND_info_001.txt", dir + file)
 
+    # files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("003")]
+    # print(files)
+    # for file in files:
+    #     print(f"\nprocessing {file}...")
+    #     verify_var_curve("./envs/ReMIND_info_003.txt", dir + file)
+
+    # files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("006")]
+    # print(files)
+    # for file in files:
+    #     print(f"\nprocessing {file}...")
+    #     verify_var_curve("./envs/ReMIND_info_006.txt", dir + file)  
+
+    # files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("008")]
+    # print(files)
+    # for file in files:
+    #     print(f"\nprocessing {file}...")
+    #     verify_var_curve("./envs/ReMIND_info_008.txt", dir + file)      
+
+    # files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("009")]
+    # print(files)
+    # for file in files:
+    #     print(f"\nprocessing {file}...")
+    #     verify_var_curve("./envs/ReMIND_info_009.txt", dir + file)
+
+    # files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("010")]
+    # print(files)
+    # for file in files:
+    #     print(f"\nprocessing {file}...")
+    #     verify_var_curve("./envs/ReMIND_info_010.txt", dir + file)
+
+    # files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("013")]
+    # print(files)
+    # for file in files:
+    #     print(f"\nprocessing {file}...")
+    #     verify_var_curve("./envs/ReMIND_info_013.txt", dir + file)  
+
+    # files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("015")]
+    # print(files)
+    # for file in files:
+    #     print(f"\nprocessing {file}...")
+    #     verify_var_curve("./envs/ReMIND_info_015.txt", dir + file)     

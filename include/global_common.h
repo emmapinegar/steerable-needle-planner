@@ -97,14 +97,19 @@ Idx global_seed = 1;
 bool global_show_logs = true;
 bool global_variable_curvature = false;
 int scan_number = 9;
+int global_sg_index = 0;
+
+Str padded_scan_num = std::string(3 - std::to_string(scan_number).length(), '0') + std::to_string(scan_number);
+
 Str global_output_file_root = "../data/output/test";
-Str global_obstacle_file = "../data/input/remind_00" + std::to_string(scan_number) + "_obstacles.txt";
-Str global_skull_file = "../data/input/remind_00" + std::to_string(scan_number) + "_skull_outline_shuffled.txt";
+Str global_obstacle_file = "../data/input/remind_" + padded_scan_num + "_obstacles.txt";
+Str global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outline_shuffled.txt";
 Str global_cost_file = "../data/input/costs.txt";
 Str global_healpix_file = "../data/input/HEALPix.txt";
 Str needle_parameter_file = "../data/input/needle_parameters.txt";
-Str start_and_goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_start_and_goal_poses.txt";
-Str goal_file = "../data/input/remind_00" + std::to_string(scan_number) + "_goal_regions.txt";
+Str start_and_goal_file = "../data/input/remind_" + padded_scan_num + "_start_and_goal_poses.txt";
+Str sg_pairs_file = "../data/input/remind_" + padded_scan_num + "_sg_pairs.txt";
+Str goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";
 Str stats_file = "../data/output/planner_stats.txt";
 
 
@@ -230,7 +235,10 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
         }
         else if (std::strcmp(argv[i], "-var_curve") == 0) {
             global_variable_curvature = true;
-        }                                      
+        }    
+        else if (std::strcmp(argv[i], "-sg_index") == 0) {
+            global_sg_index = std::atoi(argv[++i]);
+        }                                    
         else {
             std::cerr << "Specified arg not supported " << argv[i] << std::endl;
         }
@@ -238,10 +246,11 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
         i++;
     }
 
-    Str padded_scan_num = std::to_string(scan_number);
+    padded_scan_num = std::to_string(scan_number);
     padded_scan_num = std::string(3 - padded_scan_num.length(), '0') + padded_scan_num;
 
     start_and_goal_file = "../data/input/remind_" + padded_scan_num + "_start_and_goal_poses.txt";
+    sg_pairs_file = "../data/input/remind_" + padded_scan_num + "_sg_pairs.txt";
     global_obstacle_file = "../data/input/remind_" + padded_scan_num + "_obstacles.txt";
     global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outline_shuffled.txt";
     goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";
