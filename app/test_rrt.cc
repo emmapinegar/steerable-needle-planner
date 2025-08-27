@@ -83,8 +83,8 @@ int main(int argc, char** argv) {
     std::cout << "Planning parameters: r " << cfg->rad_curv << " l " << cfg->ins_length << " phi " << cfg->ang_constraint_degree 
                 << "\ncost " << cfg->env->CostTypeString() << " constrain goal " << constrain_goal_orientation << " dubins " << global_dubins << std::endl;
 
-    cfg->env->AddToWhiteList(start_p, 3);
-    cfg->env->SetWhiteList(true);
+    // cfg->env->AddToWhiteList(start_p, 3);
+    // cfg->env->SetWhiteList(true);
 
     using Scenario = Point2PointScenario<RealNum>::Type;
     using State = typename Scenario::State;

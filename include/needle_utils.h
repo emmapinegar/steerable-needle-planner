@@ -158,12 +158,12 @@ struct Visitor {
 
     void vertex(const State& s) {
         const auto& p = s.translation();
-        out_ << std::setprecision(15) << p[0] << " " << p[1] << " " << p[2]; // << std::endl;
+        out_ << std::setprecision(20) << p[0] << " " << p[1] << " " << p[2]; // << std::endl;
     }
 
     void edge(const State& to) {
         const auto& p = to.translation();
-        out_ << std::setprecision(15) << " " << p[0] << " " << p[1] << " " << p[2] << std::endl;
+        out_ << std::setprecision(20) << " " << p[0] << " " << p[1] << " " << p[2] << std::endl;
     }
 };
 

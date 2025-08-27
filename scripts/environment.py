@@ -353,9 +353,42 @@ class ReMINDEnvironment:
         #     print(f"p: {p} pvox: {pvox[0:3].reshape(-1,)} val: {self.voxel_grid[inds[0], inds[1], inds[2]]}")
         collisions = self.voxel_grid[inds[0], inds[1], inds[2]] == _OCCUPIED
         # if collisions:
-        #     print(f"collision at {p.reshape(-1,)}  inds: {inds.reshape(-1,)}")
+        #     print(f"collision at {p.reshape(-1,)}  inds: {inds.reshape(-1,)} pvox: {np.matmul(self.transforminv, np.array([p[0], p[1], p[2], 1]).reshape(-1,))} pvox: {np.floor(np.matmul(self.transforminv, np.array([p[0], p[1], p[2], 1])).reshape(-1,))}")
         return collisions
     
+
+    def test_collisions_buffered(self, p:npt.NDArray) -> bool:
+        """
+        Test collision for the robot position p.
+
+        Parameters:
+            p (3x1): world coordinate point to test
+
+        Returns:
+            collisions (bool): True if in collision, False if not
+        """
+        pvox = np.matmul(self.transforminv, np.array([p[0], p[1], p[2], 1]).reshape(4,1))
+        inds = np.floor(pvox).astype(int)
+
+
+        if pvox[0] <= self.x_min or pvox[0] >= self.x_max or pvox[1] <= self.y_min or pvox[1] >= self.y_max or pvox[2] <= self.z_min or pvox[2] >= self.z_max:
+        #    print("THIS HAPPENED")
+           return True # test for out of bounds, mightnot be necessary if handled elsewhere. SIMON CODE
+        # if _DEBUG:
+        #     print(f"p: {p} pvox: {pvox[0:3].reshape(-1,)} val: {self.voxel_grid[inds[0], inds[1], inds[2]]}")
+        collisions = False
+        for i in [0, -1, 1]:
+            for j in [0, -1, 1]:
+                for k in [0, -1, 1]:
+                           
+                    if self.voxel_grid[inds[0]+i, inds[1]+j, inds[2]+k] == _OCCUPIED:
+                        # print(f"collision at {p.reshape(-1,)}  inds: {inds.reshape(-1,)} ijk: {i} {j} {k} pvox: {np.matmul(self.transforminv, np.array([p[0], p[1], p[2], 1]).reshape(-1,))} pvox: {np.floor(np.matmul(self.transforminv, np.array([p[0], p[1], p[2], 1])).reshape(-1,))}")
+                        collisions = True
+                        return True
+        # if collisions:
+        #     
+        return collisions
+
 
     def convert_to_voxel(self, p:npt.NDArray) -> npt.NDArray:
         """

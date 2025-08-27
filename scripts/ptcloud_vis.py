@@ -62,49 +62,51 @@ def draw_ptc(ptc):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         # fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240925-12-25-03_ptcloud.txt", "../data/output/20240925-12-25-03_interp.txt", "../data/output/20240925-12-24-44_ptcloud.txt", "../data/output/20240925-12-24-44_interp.txt", "../data/output/20240925-12-28-14_interp.txt", "../data/output/20240925-12-33-06_interp.txt"]
-        fileNames = ["../data/input/remind_skull_003_outline_shuffled.txt"] #, "../data/output/20250508-15-10-26_rrt_remind_003_interp.txt"]
+        fileNames = ["../data/input/remind_001_skull_outline_shuffled.txt", "../data/output/20250826-15-35-46_rrt_remind_001_ptcloud.txt", "../data/output/20250826-15-35-46_rrt_remind_001_org.txt"] #, "../data/output/20250508-15-10-26_rrt_remind_003_interp.txt"]
     else:
         fileNames = sys.argv[1:]
 
-    # obstacles_transform = np.array([[0.2257, 0.1947, 0.0344, -83.7135],[0.1957, -0.2274, 0.0033, 106.4279],[0.0282, 0.0199, -0.2978, 43.7868],[0, 0, 0, 1]]).astype(np.float64)
-    obstacles_transform = np.array([[1, 0.0, 0.0, 0],[0.0, 1, 0.0, 0],[0.0, 0.0, 1, 0],[0, 0, 0, 1]]).astype(np.float64)
-    obstacles_transform = np.array([[0.46836715936660767, 0.006239724811166525, 0.04085038602352142, -125.20700073242188],
-                                     [0.0061263637617230415, -0.4687510132789612, 0.00618081446737051, 150.60899353027344],
-                                       [0.01918722875416279, -0.002644625958055258, -0.9991461634635925, 105.76399993896484],
-                                         [0.0, 0.0, 0.0, 1.0]]).astype(np.float64)
-    start_p = np.array([[-56], [13], [63]])
+    start_p = np.array([[0], [0], [0]])
     start_q = np.array([[0], [0], [1], [0]]) # np.array([[-0.0007], [0.0008], [0.0077], [0.9999]]) # w, x, y, z
 
-    goal_p = np.array([[-64], [2], [15]])
+    goal_p = np.array([[0], [0], [0]])
     goal_q = np.array([[0], [0], [1], [0]])
 
 
     start = o3d.geometry.TriangleMesh.create_coordinate_frame()
     world = copy.deepcopy(start)
-    rot_s = start.get_rotation_matrix_from_quaternion(start_q)
-    
-    start.translate(start_p)
-    start.rotate(rot_s)
-    world.translate(start_p)
-    
-
-
-    goal = o3d.geometry.TriangleMesh.create_coordinate_frame()
-    rot = goal.get_rotation_matrix_from_quaternion(goal_q)
-    
-    goal.translate(goal_p)
-    goal.rotate(rot)
 
 
 
-    ptcs = [world, start, goal]
+
+    ptcs = [world]
     for i in range(len(fileNames)):
         ptcFile = fileNames[i]
         ptc = o3d.io.read_point_cloud(ptcFile, format='xyz')
+
+        print(np.asarray(ptc.points)[:5,:])
+        if ptcFile.__contains__("obstacle"):
+            transform = np.loadtxt(ptcFile, max_rows=4)
+            print(transform)
+            ptc.transform(transform)
+            ptc = ptc.random_down_sample(0.01)
+        elif ptcFile.__contains__("skull"):
+            transform = np.loadtxt(ptcFile, max_rows=4)
+            print(transform)
+            ptc.transform(transform)
+            ptc = ptc.random_down_sample(0.1) 
+        elif ptcFile.__contains__("org") or ptcFile.__contains__("interp"):
+            path_points = np.loadtxt(ptcFile)
+            start_p = path_points[0,0:3]
+            start_q = path_points[0,3:7]
+            goal_p = path_points[-1,0:3]
+            goal_q = path_points[-1,3:7]
+        elif ptcFile.__contains__("ptcloud"):
+            path_points = np.loadtxt(ptcFile, max_rows=2)
+            start_p = path_points[0,0:3]                     
+
         numpoints = np.shape(ptc.points)
         print(numpoints)
-        if ptcFile.__contains__("obstacle") or ptcFile.__contains__("skull"):
-            ptc.transform(obstacles_transform)
 
         if numpoints[0] > 10000000:
             ptc = ptc.random_down_sample(0.001)
@@ -114,5 +116,22 @@ if __name__ == "__main__":
         print("Point cloud {}: ".format(i))
         print(ptc)
         ptcs.append(ptc)
+
+
+    rot_s = start.get_rotation_matrix_from_quaternion(start_q)
+    
+    start.translate(start_p)
+    start.rotate(rot_s)
+    world.translate(start_p)
+    
+    ptcs.append(start)
+
+    goal = o3d.geometry.TriangleMesh.create_coordinate_frame()
+    rot = goal.get_rotation_matrix_from_quaternion(goal_q)
+    
+    goal.translate(goal_p)
+    goal.rotate(rot)
+    
+    ptcs.append(goal)
 
     draw_ptc(ptcs)

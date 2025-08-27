@@ -527,9 +527,9 @@ def process_all_ReMIND(scanfolder, pythonenvfolder, cppenvfolder):
                 filenames += [file]
                 segmentations += [os.path.join(dirpath, file)]
     files = [f for f in os.listdir(scanfolder) if f.endswith('.nii') and f.__contains__("ReMIND")]
-    files.sort()
-    print(files)
-    print(segmentations)
+    filenames.sort()
+    segmentations.sort()
+    print(filenames)
     digits = [f.strip("ReMIND-sgmntaiond./") for f in filenames]
     print(digits)
     np.random.seed(43829472)
@@ -540,9 +540,7 @@ def process_all_ReMIND(scanfolder, pythonenvfolder, cppenvfolder):
 
     for i in range(numfiles):
         scanfilename = segmentations[i]
-
         scannum = digits[i]
-
 
         # if not os.path.exists(obstaclefilename+".npy") or not os.path.exists(segmentationfilename) or not os.path.exists(skullsegmentationfilename) or not os.path.exists(textfilename) or not os.path.exists(startfilename):
         print(f"\nprocessing scan {scannum}")
@@ -818,7 +816,7 @@ def verify_ReMIND_env(lines, starts, goals):
     open_goals = []
     for goal in goals:
         env.change_goal(goal)
-        if not env.test_collisions_world(env.goal):
+        if not env.test_collisions_buffered(env.goal):
             open_goals += [goal]
 
     print(f"goals: {np.shape(goals)} good: {len(open_goals)}")
@@ -826,18 +824,17 @@ def verify_ReMIND_env(lines, starts, goals):
     for start in starts:
         # print(start)
         env.parse_start(['1.0', '0.0', '0.0', str(start[0]), '0.0', '1.0', '0.0', str(start[1]), '0.0', '0.0', '1.0', str(start[2]), '0.0', '0.0', '0.0', '1.0'])
-        if not env.test_collisions_world(env.start):
+        if not env.test_collisions_buffered(env.start):
             for goal in open_goals:
                 env.change_goal(goal)
                 if not env.test_collisions_world(env.goal):
                     q, phi = env.robot.ik(env.goal)
                     # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
                     if q is not None:
-                        env.goal 
                         rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
                         rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
 
-                        (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start)
+                        (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
                         if not status == _REACHED:
                             sg_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
                             if len(sg_pairs) > 10000:

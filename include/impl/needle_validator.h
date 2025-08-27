@@ -1053,7 +1053,7 @@ RealNum QueryLS(const RealNum& min_length_step) {
 template<typename State>
 class ValidatorBase {
   public:
-    ValidatorBase(const ConfigPtr cfg) : ins_length_(cfg->ins_length), variable_curvature_(cfg->variable_curvature)
+    ValidatorBase(const ConfigPtr cfg) : ins_length_(cfg->ins_length), variable_curvature_(cfg->variable_curvature), ang_constraint_rad_(cfg->ang_constraint_degree*DEGREE_TO_RAD)
     {
         if (cfg->env == nullptr) {
             throw std::runtime_error("Construction of validator failed! Config class doesn't have a valid environment!");
@@ -1109,22 +1109,40 @@ class ValidatorBase {
         return utils::ValidLength(l, ins_length_);
     }
 
+    /**
+     * Checks if the insertion angle violates the constraints of the needle.
+     * 
+     * @param ang_total: the insertion angle
+     * 
+     * @returns bool true if the insertion angle is within the limits of the needle, false otherwise
+     */
     bool ValidAngle(const RealNum& ang_total) const {
         return utils::ValidAngle(ang_total, ang_constraint_rad_);
     }
 
+    /**
+     * Checks if the state is in collision and the needle insertion length and angle limits have not been violated.
+     * 
+     * @param s: new state to check
+     * @param length: total insertion length for reaching this state
+     * @param ang_total: total insertion angle for reaching this state
+     * 
+     * @returns bool true if the state and its required insertion parameters are valid, false otherwise
+     */
     bool Valid (const State& s, const RealNum& length, const RealNum& ang_total) const {
         if (InCollision(s)) {
             return false;
         } 
         
-        if (!ValidLength(length)) {
+        if (!utils::ValidLength(length, ins_length_)) {
             return false;
         }
 
-        if (!ValidAngle(ang_total)) {
+        if (!utils::ValidAngle(ang_total, ang_constraint_rad_)) {
             return false;
         }
+
+        return true;
     }
 
     /**
@@ -1154,6 +1172,7 @@ class ValidatorBase {
     }
 
     const RealNum ins_length_;
+    const RealNum ang_constraint_rad_;
     EnvPtr env_;
     EnvPtr skull_;
     bool variable_curvature_;
@@ -1332,9 +1351,9 @@ class SpreadingValidator : public ValidatorBase<State> {
      * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
      */
     bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
-        // if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_) || ang_total > ang_constraint_rad_) {
-        //     return false;
-        // }
+        if (utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
+            return false;
+        }
 
         if (ang_total > ang_constraint_rad_) {
             return false;
@@ -1479,8 +1498,7 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
             return false;
         }
 
-        if (!base::ValidLength(length))
-        {
+        if (!base::ValidLength(length)) {
             return false;
         }
 

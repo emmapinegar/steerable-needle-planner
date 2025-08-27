@@ -31,6 +31,7 @@ def verify_var_curve(env_file:str, points_file:str, variable_curvature:bool=True
     # print(r_.as_matrix())
 
     # print(np.matmul(r.as_matrix(),r_.as_matrix()))
+    print(np.shape(points))
     samples = points[:,0:3]
     parents = points[:,3:6]
     gw = np.eye(4)
@@ -68,10 +69,10 @@ def verify_var_curve(env_file:str, points_file:str, variable_curvature:bool=True
 
 if __name__=='__main__':
     dir = "./../data/output/"
-    # verify_var_curve("./envs/ReMIND_info_001.txt", dir + "20250825-11-16-58_rrt_remind_001_ptcloud.txt")
+    # verify_var_curve("./envs/ReMIND_info_001.txt", dir + "20250826-11-33-17_rcs_star_remind_001_ptcloud.txt")
 
 
-    files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("rcs_remind_001")]
+    files = [file for file in os.listdir(path=dir) if file.__contains__("ptcloud.txt") and file.__contains__("001")]
     print(files)
     for file in files:
         print(f"\nprocessing {file}...")

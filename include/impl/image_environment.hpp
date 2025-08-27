@@ -1058,7 +1058,6 @@ bool ImageEnvironment::CollisionFree(const Vec3& p) const {
     for (auto const& [name, nn] : all_nns_) {
         if (nn.first) {
             auto p_nearest = nn.second->nearest(p);
-            // std::cout << "nearest obstacle to: " << p.transpose() << " is: " << p_nearest->first.point.transpose() << " dist: " << p_nearest->second << " min dist: " << min_dist_to_obs_ << std::endl;
             if (p_nearest && p_nearest->second < min_dist_to_obs_) {
                 if (!this->InWhiteListArea(p_nearest->first.point)) {
                     return false;

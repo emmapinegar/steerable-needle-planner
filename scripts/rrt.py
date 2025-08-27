@@ -275,7 +275,7 @@ class RRT(object):
         self.rrt_setup(robot_init, goal, phi_constraint)
 
         if self.in_collision(self.init):
-            print("start in collision")
+            print(f"start in collision: {self.init}")
             return None, None, _UNREACHABLE, _UNREACHABLE
         elif self.in_collision(self.goal):
             print("goal in collision")
@@ -371,8 +371,8 @@ class RRT(object):
                     if not self.in_collision(new_needle_node.state):
                         needles.append(new_needle_node)
                     else: 
-                        print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
-                        print(f"path not added due to collision at: {new_needle_node.state}")
+                        # print(f"\nsample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude}")
+                        # print(f"path not added due to collision at: {new_needle_node.state}")
                         return (_TRAPPED, nearest_node)
                 else:
                     new_needle.ik(sample, print_=True)
@@ -391,16 +391,16 @@ class RRT(object):
                 return (_TRAPPED, new_node)
 
         
-        print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
-        next_node = nearest_node
-        while next_node.parent is not None:
-            print()
-            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=True)
-            next_node = next_node.parent
+        # print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
+        # next_node = nearest_node
+        # while next_node.parent is not None:
+        #     print()
+        #     next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=True)
+        #     next_node = next_node.parent
 
-        print("printing sample ik!")
-        q, phi = nearest_node.needle_model.ik(sample, print_=True)
-        nearest_node.needle_model.get_new_lims(sample, print_=True)
+        # print("printing sample ik!")
+        # q, phi = nearest_node.needle_model.ik(sample, print_=True)
+        # nearest_node.needle_model.get_new_lims(sample, print_=True)
         return (_TRAPPED, None)
 
 
