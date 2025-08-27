@@ -6,6 +6,7 @@ debug*/
 external/*
 external/mpt/*
 external/nigh/*
+scripts/envs/*.txt
 
 # Compiled source #
 ###################
@@ -30,6 +31,7 @@ external/nigh/*
 *.tar
 *.zip
 *.npy
+
 
 
 # Mac stuff

@@ -41,6 +41,7 @@ namespace unc::robotics::snp::global {
 
 double needle_min_curve_rad = 50.0;
 double angle_constraint_degree = 90.0;
+double needle_max_insertion = 100.0;
 double aorrt_cost_w = 1.0;
 
 } // namespace unc::robotics::snp::global

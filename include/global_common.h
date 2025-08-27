@@ -98,6 +98,7 @@ bool global_show_logs = true;
 bool global_variable_curvature = false;
 int scan_number = 9;
 int global_sg_index = 0;
+RealNum global_sg_mag = 0.0;
 
 Str padded_scan_num = std::string(3 - std::to_string(scan_number).length(), '0') + std::to_string(scan_number);
 
@@ -259,6 +260,7 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
 #ifdef HAVE_GLOBAL_VARIABLES
     global::needle_min_curve_rad = min_curve_rad;
     global::angle_constraint_degree = angle_constraint_degree;
+    global::needle_max_insertion = insertion_length;
 #endif
 
     return {constrain_goal_orientation, suffix, min_curve_rad, insertion_length, angle_constraint_degree};

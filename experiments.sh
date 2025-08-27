@@ -18,16 +18,16 @@ do
         echo ""
         echo "scan $j"
         echo ""
-        # ./app/rcs -seed 4545 -scan $j -r 14 -l 100 -phi 360 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k
-        # ./app/rcs_star -seed 4545 -scan $j -r 14 -l 100 -phi 360 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k
+        # ./app/rcs -seed 8965 -scan $j -r 14 -l 100 -phi 360 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
+        ./app/rcs_star -seed 8965 -scan $j -r 14 -l 100 -phi 360 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
 
         for i in ${seed_array[@]}
         do
             echo ""
-            echo "seed $i scan $j"
+            echo "seed $i scan $j start $k"
             echo ""
-            ./app/rrt -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k
-            # ./app/aorrt -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k
+            # ./app/rrt -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
+            # ./app/aorrt -seed $i -scan $j -r 14 -l 100 -phi 360 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
 
             # ./app/rrt -seed $i -scan $j -r 20 -l 200 -phi 360 -timeout 240000 -bias 0.05 -multi -stats_file "../data/output/planner_multi_stats.txt"
             # ./app/aorrt -seed $i -scan $j -r 20 -l 200 -phi 360 -timeout 240000 -bias 0.05 -multi -stats_file "../data/output/planner_multi_stats.txt"

@@ -1037,10 +1037,10 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
     }
 
 
-    fout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type << "," << scan_number << "," << global::angle_constraint_degree << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
+    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
     fout.close();
 
-    std::cout << curvature << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << planner_type <<  std::endl;
+    std::cout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << std::endl;
     if (show_log) {
         std::cout << "Result with " << path_length << " mm long path and " << ang_total << " radians with to " << file_name << std::endl;
     }

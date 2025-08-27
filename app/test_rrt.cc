@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
     State start(start_q, start_p);
     State goal(goal_q, goal_p);
     Scenario scenario(cfg, start, goal);
-
+    global_sg_mag = (goal_p - start_p).norm();
     MPT_LOG(INFO) << "start: " << start;
     MPT_LOG(INFO) << "goal: " << goal;
 

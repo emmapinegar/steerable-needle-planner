@@ -124,7 +124,7 @@ class ConfigCostState {
     friend decltype(auto)
     operator << (std::basic_ostream<Char, Traits>& out, const ConfigCostState& q) {
         return out << "{t=[" << q.translation().transpose()
-                   << "], r=[" << q.rotation().coeffs().transpose()
+                   << "], r=[" << q.rotation().w() << " " << q.rotation().x() << " " << q.rotation().y() << " " << q.rotation().z()
                    << "], c=[" << q.cost()
                    << "]}";
     }

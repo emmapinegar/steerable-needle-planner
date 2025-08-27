@@ -552,13 +552,10 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
     Processes the segmentation of a single scan from the ReMIND dataset.
 
     Parameters:
-    scanfilename (string): name of the segmentation file to process
-    skullfilename (string): name of the skull segmentation to process
-    obstaclefilename (string): name of the file to save the obstacle numpy array to
-    segmentationfilename (string): name of the file to save the segmentation numpy array to
-    skullsegmentationfilename (string): name of the file to save the transformed skull segmentation to
-    textfilename (string): name of the text file to write all the details for the motion planner to
-    start (3x1): x, y, z coordinates for the starting point of the needle
+        scanfilename (str): name of the .nii segmentation file to process
+        pythonenvfolder (str): file path to save the python environment files to
+        cppenvfolder (str): file path to save the cpp environment files to
+        scannum (str): the index of the scan with leading zeros to have 3 digits
     """
     pyobstaclefilename = os.path.join(pythonenvfolder, f"ReMIND_obstacles_{scannum}.npy")
     cppobstaclefilename = os.path.join(cppenvfolder, f"remind_{scannum}_obstacles.txt")

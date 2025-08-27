@@ -1,50 +1,71 @@
 import numpy as np
 import os, fnmatch
 import matplotlib.pyplot as plotter
+from dataclasses import dataclass
 
-_RGRRT_NOPHI = '#332288'
-_RGCON_NOPHI = '#117733'
-_AORRT_NOPHI = '#44AA99'
-_AOCON_NOPHI = '#40B3EC'
+_PURPLE = '#332288'
+_GREEN = '#117733'
+_TEAL = '#44AA99'
+_BLUE = '#40B3EC'
 
-_RGRRT_PHI = '#F3B228'
-_RGCON_PHI = '#D46D7E'
-_AORRT_PHI = '#C33AAC'
-_AOCON_PHI = '#BF0F67'
+_ORANGE = '#F3B228'
+_BLUSH = '#D46D7E'
+_PINK = '#C33AAC'
+_RED = '#BF0F67'
 
-_COLORS = [_RGRRT_NOPHI, _RGCON_NOPHI, _AORRT_NOPHI, _AOCON_NOPHI, _RGRRT_PHI, _RGCON_PHI, _AORRT_PHI]
-_LABELS = [r'RGRRT', r'AORRT', r'RCS', r'RCS*', r'RGRRT$_s$', r'AORRT$_s$', r'RCS$_s$']
+# _COLORS = [_RGRRT, _AORRT, _RCS, _RCSSTAR]
+_LABELS = [r'RGRRT', r'AORRT', r'RCS', r'RCS*']
 
-_KAPPA = 0
-_L = 1
-_TOTALPHI = 2
-_RUNTIME = 3
+# _KAPPA = 0
+# _L = 1
+# _TOTALPHI = 2
+# _RUNTIME = 3
 
-_SUCCESS = 4
-_APPROX_SUCCESS = 5
-_SPREADING = 6
-_PLANNER = 7
-_ENV = 8
-_MAXPHI = 9
+# _SUCCESS = 4
+# _APPROX_SUCCESS = 5
+# _SPREADING = 6
+# _PLANNER = 7
+# _ENV = 8
+# _MAXPHI = 9
 
-_TIMES = 10
-_COSTS = 11
-_LENGTHS = 12
-_PHIS = 13
+# _TIMES = 10
+# _COSTS = 11
+# _LENGTHS = 12
+# _PHIS = 13
 
-_ALPHA = 0.25
-_ROTATION = 10
-_WIDTH = 0.2
-_TEXTSIZE = 10
+# _ALPHA = 0.25
+# _ROTATION = 10
+# _WIDTH = 0.2
+# _TEXTSIZE = 10
 
-_RRT = 1
-_AORRT = 2
-_RCS = 3
-_RCS_STAR = 4
+stats_indices = {'env': 0, 'sg_index': 1, 'sg_mag': 2, 'planner': 3, 'ell': 4, 'phi': 5, 'time': 6, 'success': 7, 'approx_success': 8, 'spreading': 9, 'maxphi': 10, 'maxell': 11, 'minrad': 12, 'times': 13, 'costs': 14, 'lengths': 15, 'phis': 16}
+viz_params = {'alpha': 0.25, 'rotation': 10, 'width': 0.2, 'textsize': 10}
+# _RRT = 1
+# _AORRT = 2
+# _RCS = 3
+# _RCS_STAR = 4
 
-_RRT_SPREADING = 5
-_AORRT_SPREADING = 6
-_RCS_SPREADING = 7
+# _RRT_SPREADING = 5
+# _AORRT_SPREADING = 6
+# _RCS_SPREADING = 7
+
+@dataclass
+class Planner:
+    index: int
+    color: str
+    label: str
+
+rrt_info = Planner(1, _PINK, r'RGRRT')
+aorrt_info = Planner(2, _ORANGE, r'AORRT')
+rcs_info = Planner(3, _BLUE, r'RCS')
+rcsstar_info = Planner(4, _PURPLE, r'RCS*')
+
+rrt_spreading_info = Planner(5, _RED, r'RGRRT_s')
+aorrt_spreading_info = Planner(6, _RED, r'AORRT_s')
+rcs_spreading_info = Planner(7, _RED, r'RCS_s')
+
+planners = [rrt_info, aorrt_info, rcs_info, rcsstar_info, rrt_spreading_info, aorrt_spreading_info, rcs_spreading_info]
+
 
 def color_boxplot(bp, color, marker='o'):
     '''
@@ -61,13 +82,13 @@ def color_boxplot(bp, color, marker='o'):
     for median in bp['medians']: 
         median.set(color=color, linewidth=1)
         (xl, y), (xr, _) = median.get_xydata()
-        plotter.text(xl-0.05, y, '%.2f' % y, verticalalignment='center', horizontalalignment='right', fontsize=_TEXTSIZE)
+        plotter.text(xl-0.05, y, '%.2f' % y, verticalalignment='center', horizontalalignment='right', fontsize=viz_params['textsize'])
 
     for mean in bp['means']: 
-        mean.set(markerfacecolor=color, markeredgecolor='#000000', alpha=_ALPHA, markersize=5)
+        mean.set(markerfacecolor=color, markeredgecolor='#000000', alpha=viz_params['alpha'], markersize=5)
 
     for flier in bp['fliers']: 
-        flier.set(marker=marker, markeredgecolor=color, alpha=_ALPHA)
+        flier.set(marker=marker, markeredgecolor=color, alpha=viz_params['alpha'])
 
     for box in bp['boxes']: box.set(color=color, linewidth=1)
 
@@ -79,7 +100,7 @@ def color_violinplot(vp, color, hatching='/'):
     color (string): color to use for the violin plot
     hatching (string): hatch pattern that will be added to the background of the violinplot, may not show if saved as PDF
     '''
-    for body in vp['bodies']: body.set(color=color, hatch=hatching, alpha=_ALPHA)
+    for body in vp['bodies']: body.set(color=color, hatch=hatching, alpha=viz_params['alpha'])
 
     # vp['cmeans'].set(color=color, linestyle='dotted')
 
@@ -104,70 +125,82 @@ def color_violinplot(vp, color, hatching='/'):
 #     plotter.show()
 
 def get_indices(data):
-    '''
+    """
     Gets the indices for the 8 different planner variations from the provided data.
+
     Parameters:
-    data (n,11): numpy array of the data saved in the experiments
+        data (n,11): numpy array of the data saved in the experiments
 
     Returns:
     8 arrays containing the row indices for data gathered for the 8 planner variations
-    rgrrt_nophi, rgcon_nophi, aorrt_nophi, aocon_nophi, rgrrt_phi, rgcon_phi, aorrt_phi, aocon_phi
-    '''
-    rrt = np.where(data[:,_PLANNER] == _RRT)[0]
-    rcs = np.where(data[:,_PLANNER] == _RCS)[0]
-    aorrt = np.where(data[:,_PLANNER] == _AORRT)[0]
-    rcs_star = np.where(data[:,_PLANNER] == _RCS_STAR)[0]
+    rgrrt, aorrt, rcs, rcsstar, rrt_spreading, aorrt_spreading, rcs_spreading
+    """
+    rrt = np.where(data[:,stats_indices['planner']] == rrt_info.index)[0]
+    rcs = np.where(data[:,stats_indices['planner']] == rcs_info.index)[0]
+    aorrt = np.where(data[:,stats_indices['planner']] == aorrt_info.index)[0]
+    rcs_star = np.where(data[:,stats_indices['planner']] == rcsstar_info.index)[0]
 
-    rrt_spread = np.where(data[:,_PLANNER] == _RRT_SPREADING)[0]
-    rcs_spread = np.where(data[:,_PLANNER] == _RCS_SPREADING)[0]
-    aorrt_spread = np.where(data[:,_PLANNER] == _AORRT_SPREADING)[0]
+    rrt_spread = np.where(data[:,stats_indices['planner']] == rrt_spreading_info.index)[0]
+    rcs_spread = np.where(data[:,stats_indices['planner']] == rcs_spreading_info.index)[0]
+    aorrt_spread = np.where(data[:,stats_indices['planner']] == aorrt_spreading_info.index)[0]
 
     return rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread
 
+def get_planner_indices(data, planner:Planner):
+    """
+    
+    """
+    indices = np.where(data[:,stats_indices['planner']] == planner.index)[0]
+    return indices
 
 def make_misc_figure(data, index, title, ylabel, ylog=True):
     '''
-    Makes an augmented boxplot figure using the provided data
+    Makes an augmented boxplot figure using the provided data.
+
     Parameters:
-    data (n,11): data from the experiments to analyze
-    index (int): index for the column of the data to be analyzed
-    title (string): title for the resulting plot
-    ylabel (string): label for the y axis of the plot
-    y_log (bool): if true makes the y axis scaled log, can throw off y axis limits
+        data (n,11): data from the experiments to analyze
+        index (int): index for the column of the data to be analyzed
+        title (string): title for the resulting plot
+        ylabel (string): label for the y axis of the plot
+        y_log (bool): if true makes the y axis scaled log, can throw off y axis limits
     '''
-    rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
-    indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
-    if index == _L:
-        ldata = get_distances(data)
+    # rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
+    # indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
+    colors = []
+    labels = []
+    # if index == stats_indices['ell']:
+    #     ldata = get_distances(data)
     plotter.title(title)
-    for i in range(len(indices)):
+    for i in range(len(planners)):
+        planner_indices = get_planner_indices(data, planners[i])
         # if we're analyzing the path length, use the scaling to have a more informative plot
-        if index == _L:
-            data_ind = ldata[indices[i]]
+        if index == stats_indices['ell']:
+            data_ind = data[planner_indices, index]/data[planner_indices, stats_indices['sg_mag']]
         else:
-            data_ind = data[indices[i], index]
+            data_ind = data[planner_indices, index]
         if np.shape(data_ind)[0] == 0:
             continue
 
-        color = _COLORS[i]
+        colors += [planners[i].color]
+        labels += [planners[i].label]
         median = np.median(data_ind)
         mean = np.mean(data_ind)
         std = np.std(data_ind)
 
-        _bp = plotter.boxplot(data_ind, positions=[i], widths=_WIDTH, whis=[0, 100], notch=True, bootstrap=5000)
-        color_boxplot(_bp, color)
-        plotter.hlines(mean, i-_WIDTH/2, i+_WIDTH/2, color=color, linestyles='dotted')
+        _bp = plotter.boxplot(data_ind, positions=[i], widths=viz_params['width'], whis=[0, 100], notch=True, bootstrap=5000)
+        color_boxplot(_bp, planners[i].color)
+        plotter.hlines(mean, i-viz_params['width']/2, i+viz_params['width']/2, color=planners[i].color, linestyles='dotted')
 
         if mean < std:
-            plotter.bar(i, std, bottom=mean, color=color, alpha=_ALPHA, width=_WIDTH)
-            plotter.bar(i, mean, bottom=0.0001, color=color, alpha=_ALPHA, width=_WIDTH)
+            plotter.bar(i, std, bottom=mean, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'])
+            plotter.bar(i, mean, bottom=0.0001, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'])
         else:
-            plotter.bar(i, std, bottom=mean, color=color, alpha=_ALPHA, width=_WIDTH)
-            plotter.bar(i, std, bottom=mean-std, color=color, alpha=_ALPHA, width=_WIDTH)
+            plotter.bar(i, std, bottom=mean, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'])
+            plotter.bar(i, std, bottom=mean-std, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'])
         
     plotter.ylabel(ylabel)
-    plotter.xticks(np.arange(len(_COLORS)),_LABELS, rotation=_ROTATION)
-    plotter.xlim([-1, len(_COLORS)-0.5])
+    plotter.xticks(np.arange(len(colors)), labels, rotation=viz_params['rotation'])
+    plotter.xlim([-1, len(colors)-0.5])
 
     if ylog:
         plotter.yscale('log')
@@ -187,30 +220,36 @@ def make_violin_figure(data, index, title, ylabel, hatching, y_min=0, y_max=10, 
     y_max (float): maximum y axis value, default=100
     y_log (bool): if true makes the y axis scaled log, can throw off y axis limits
     '''
-    rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
-    indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
-    if index == _L:
-        ldata = get_distances(data)
+    # rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
+    # indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
+    # if index == stats_indices['ell']:
+    #     ldata = get_distances(data)
+    colors = []
+    labels = []
     plotter.title(title)
-    for i in range(len(indices)):
-        if index == _L:
-            data_ind = ldata[indices[i]]
+    for i in range(len(planners)):
+        planner_indices = get_planner_indices(data, planners[i])
+        if index == stats_indices['ell']:
+            data_ind = data[planner_indices, index]/data[planner_indices, stats_indices['sg_mag']]
         else:
-            data_ind = data[indices[i], index]
+            data_ind = data[planner_indices, index]
         if np.shape(data_ind)[0] == 0:
             continue
-        color = _COLORS[i]
+
+        colors += [planners[i].color]
+        labels += [planners[i].label]
+
         median = np.median(data_ind)
 
-        _bp = plotter.violinplot(data_ind, positions=[i], widths=_WIDTH, showmedians=True)
-        color_violinplot(_bp, color, hatching=hatching)
-        # plotter.hlines(median, i-_WIDTH, i+_WIDTH, color=color, linestyles='dashed')
+        _bp = plotter.violinplot(data_ind, positions=[i], widths=viz_params['width'], showmedians=True)
+        color_violinplot(_bp, planners[i].color, hatching=hatching)
+        # plotter.hlines(median, i-viz_params['width'], i+viz_params['width'], color=planners[i].color, linestyles='dashed')
 
-        plotter.text(i-_WIDTH/2, median,'%.3f' % median, horizontalalignment='right', verticalalignment='center', fontsize=_TEXTSIZE)
+        plotter.text(i-viz_params['width']/2, median,'%.3f' % median, horizontalalignment='right', verticalalignment='center', fontsize=viz_params['textsize'])
 
     plotter.ylabel(ylabel)
-    plotter.xticks(np.arange(0,len(_COLORS)),_LABELS, rotation=_ROTATION)
-    plotter.xlim([-1, len(_COLORS)-0.5])
+    plotter.xticks(np.arange(0,len(colors)), labels, rotation=viz_params['rotation'])
+    plotter.xlim([-1, len(colors)-0.5])
 
     if ylog:
         plotter.yscale('log')
@@ -237,22 +276,26 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
     y_log (bool): if true makes the y axis scaled log, can throw off y axis limits
     '''
     # print(data)
-    rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
-    indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
-    if index == _LENGTHS:
-        ldata = get_distances_time(data, time_data)
-        # print(ldata)
+    # rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
+    # indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
+    # if index == stats_indices['lengths']:
+    #     ldata = get_distances_time(data, time_data)
+    #     # print(ldata)
+
+    colors = []
+    labels = []
     plotter.title(title)
     
-    for i in range(len(indices)):
-
-        if index == _LENGTHS:
-            data_ind = ldata[indices[i], index - _TIMES] # ldata[indices[i]]
+    for i in range(len(planners)):
+        planner_indices = get_planner_indices(data, planners[i])
+        if index == stats_indices['lengths']:
+            data_ind = time_data[planner_indices,stats_indices['lengths']-stats_indices['times']]/data[planner_indices,stats_indices['sg_mag']]
         else:
-            data_ind = time_data[indices[i], index - _TIMES]
+            data_ind = time_data[planner_indices, index - stats_indices['times']]
         if np.shape(data_ind)[0] == 0:
             continue
-        color = _COLORS[i%len(_COLORS)]
+        colors += [planners[i].color]
+        labels += [planners[i].label]
         # print(data_ind)
         # print(np.shape(data_ind))
         flat = []
@@ -261,7 +304,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
                 flat.append(xi)
         # print(flat)
         time = []
-        for x in time_data[indices[i], _TIMES - _TIMES]:
+        for x in time_data[planner_indices, stats_indices['times'] - stats_indices['times']]:
             for xi in x:
                 time.append(xi)
         time = np.array(time)
@@ -297,7 +340,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
         # p = np.poly1d(z)
         # interptime = np.linspace(0,time[-1],100)
         # plotter.plot(interptime, p(interptime), color=color)
-        plotter.plot(averagetime, average, color=color)
+        plotter.plot(averagetime, average, color=planners[i].color)
         # plotter.scatter(time, flat, color=color, s=5)
         # for j in indices[i]:
         #     if index == _L:
@@ -313,9 +356,9 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
         #     _bp = plotter.plot(time_data[j, _TIMES - _TIMES], data_ind, color=color)
 
     plotter.ylabel(ylabel)
-    # plotter.xticks(np.arange(0,len(_COLORS)),_LABELS, rotation=_ROTATION)
-    plotter.xlim([0, 50])
-    plotter.ylim([1,1.2])
+    # plotter.xticks(np.arange(0,len(_COLORS)),_LABELS, rotation=viz_params['rotation'])
+    plotter.xlim([0, 10])
+    plotter.ylim([1,2])
 
     if ylog:
         plotter.yscale('log')
@@ -333,26 +376,31 @@ def make_success_bar(data, hatch):
     data (n,11): data from the experiments to analyze
     hatching (string): the hatching pattern for the bars (Note that this may not show up when saving as a PDF)    
     '''
-    rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
-    indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
+    # rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread = get_indices(data)
+    # indices = [rrt, aorrt, rcs, rcs_star, rrt_spread, aorrt_spread, rcs_spread]
 
     plotter.title(r'Success Rates with 95% Confidence Interval')
 
     successes = []
-    for i in range(len(_COLORS)):
-        data_ind = data[indices[i]]
-        color = _COLORS[i]
+    colors = []
+    labels = []
+    for i in range(len(planners)):
+        planner_indices = get_planner_indices(data, planners[i])
+        data_ind = data[planner_indices]
+
         if np.shape(data_ind)[0] == 0:
             continue
+        colors += [planners[i].color]
+        labels += [planners[i].label]
         success, moe = get_success(data_ind)
         successes += [success]
-        plotter.hlines(success, i-_WIDTH/2, i+_WIDTH/2, color=color, linestyles='dotted')
-        plotter.bar(i, moe*2, bottom=success - moe, color=color, alpha=_ALPHA, width=_WIDTH, hatch=hatch, edgecolor=color)
-        plotter.text(i-_WIDTH/1.5, success, '%.2f' % success + '%', horizontalalignment='right', verticalalignment='center', fontsize=_TEXTSIZE)
+        plotter.hlines(success, i-viz_params['width']/2, i+viz_params['width']/2, color=planners[i].color, linestyles='dotted')
+        plotter.bar(i, moe*2, bottom=success - moe, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'], hatch=hatch, edgecolor=planners[i].color)
+        plotter.text(i-viz_params['width']/1.5, success, '%.2f' % success + '%', horizontalalignment='right', verticalalignment='center', fontsize=viz_params['textsize'])
 
     plotter.ylabel('Success Percentage')
-    plotter.xticks(np.arange(0,len(_COLORS)),_LABELS, rotation=_ROTATION)
-    plotter.xlim([-1,len(_COLORS)-0.5])
+    plotter.xticks(np.arange(0, len(colors)), labels, rotation=viz_params['rotation'])
+    plotter.xlim([-1,len(colors)-0.5])
     plotter.ylim(top=105, bottom=0) #max(10, min(60, min(successes))-10))
 
 
@@ -366,7 +414,7 @@ def get_success(data):
     success (float): the success rate of the planner (max 100)
     margin_of_error (float): the size of the confidence interval above and below success
     '''
-    plan_found = np.where(np.logical_or(data[:,_SUCCESS] == True, data[:,_APPROX_SUCCESS] == True))[0]
+    plan_found = np.where(np.logical_or(data[:,stats_indices['success']] == True, data[:,stats_indices['approx_success']] == True))[0]
     success = np.shape(plan_found)[0]/np.shape(data)[0]
     adjusted_proportion = (np.shape(plan_found)[0] + 2)/(np.shape(data)[0] + 4)
     se_1 = adjusted_proportion*(1-adjusted_proportion)
@@ -397,7 +445,7 @@ def make_figures(data, time_data, title, hatch):
     title (string): title for the whole figure
     hatch (string): hatching pattern that will be used in the plots, may not show up if saving as PDF
     '''
-    plan_data_ind = np.where(data[:,_SUCCESS] == 1)[0]
+    plan_data_ind = np.where(data[:,stats_indices['success']] == 1)[0]
     plan_data = data[plan_data_ind,:]
     num_plots = 4
     rows = 2
@@ -411,15 +459,15 @@ def make_figures(data, time_data, title, hatch):
     # make success bar subplot with 95% confidence interval
     plotter.subplot(rows,num_plots//rows,2)
     # make_success_bar(data, hatch)
-    make_time_figure(data, time_data, _LENGTHS, r'Distance vs time', r'$\ell')
+    make_time_figure(data, time_data, stats_indices['lengths'], r'Distance vs time', r'$\ell')
 
     # make violin subplot of total phis for planners with log scale
     plotter.subplot(rows,num_plots//rows,3)
-    make_violin_figure(plan_data, _TOTALPHI, r'Total $\phi$ for Planner Variations', r'$\phi$ (radians)', hatch, y_min=0.0, y_max=8)
+    make_violin_figure(plan_data, stats_indices['phi'], r'Total $\phi$ for Planner Variations', r'$\phi$ (radians)', hatch, y_min=0.0, y_max=8)
 
     # make a violin subplot of the path length ratios for planners, no log scale
     plotter.subplot(rows,num_plots//rows,4)
-    make_violin_figure(plan_data, _L, r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$', hatch, y_min=1, y_max=2.25, ylog=False)
+    make_violin_figure(plan_data, stats_indices['ell'], r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$', hatch, y_min=1, y_max=2.25, ylog=False)
 
     # title the whole figure and adjust the spacing of the plots and margins 
     plotter.suptitle(title, fontsize=18)
@@ -435,23 +483,16 @@ def get_distances(data):
     Returns:
     lproportion (n,): array of the path length ratios calculated from data
     '''
-    distance = 254
-    
+    # distance = 254
+    # lproportion = np.empty(np.shape(data[:,stats_indices['ell']]))
+    # files = np.array([1, 8, 9])
+    # for i in range(np.shape(files)[0]):
+    #     indices = np.where(data[:,stats_indices['env']] == files[i])[0]
+    #     if np.shape(indices)[0] == 0:
+    #         continue
+    #     lproportion[indices] = data[indices,stats_indices['ell']]/data[indices,stats_indices['sg_mag']]
 
-
-    lproportion = np.empty(np.shape(data[:,_L]))
-    files = np.array([1, 8, 9])
-    for i in range(np.shape(files)[0]):
-        if files[i] == 1:
-            distance = 65.37
-        elif files[i] == 8:
-            distance = 81.32
-        elif files[i] == 9:
-            distance = 254
-        indices = np.where(data[:,8] == files[i])[0]
-        if np.shape(indices)[0] == 0:
-            continue
-        lproportion[indices] = data[indices,_L]/distance
+    lproportion = data[:,stats_indices['ell']]/data[:,stats_indices['sg_mag']]    
 
     return lproportion
 
@@ -465,24 +506,21 @@ def get_distances_time(data, time_data):
     Returns:
     lproportion (n,): array of the path length ratios calculated from data
     '''
-    distance = 254
-    
+    # distance = 254
+    # lproportion = np.empty(np.shape(time_data[:,_LENGTHS-_TIMES]))
+    # files = np.array([1, 8, 9])
+    # for i in range(np.shape(files)[0]):
+    #     if files[i] == 1:
+    #         distance = 65.37
+    #     elif files[i] == 8:
+    #         distance = 41.06
+    #     elif files[i] == 9:
+    #         distance = 84.67
+    #     indices = np.where(data[:,stats_indices['env']] == files[i])[0]
+    #     if np.shape(indices)[0] == 0:
+    #         continue
 
-
-    lproportion = np.empty(np.shape(time_data[:,_LENGTHS-_TIMES]))
-    files = np.array([1, 8, 9])
-    for i in range(np.shape(files)[0]):
-        if files[i] == 1:
-            distance = 65.37
-        elif files[i] == 8:
-            distance = 41.06
-        elif files[i] == 9:
-            distance = 84.67
-        indices = np.where(data[:,_ENV] == files[i])[0]
-        if np.shape(indices)[0] == 0:
-            continue
-
-        time_data[indices,_LENGTHS-_TIMES] = time_data[indices,_LENGTHS-_TIMES]/distance
+    time_data[:,stats_indices['lengths']-stats_indices['times']] = time_data[:,stats_indices['lengths']-stats_indices['times']]/time_data[:,stats_indices['sg_mag']]
 
     return time_data
 
@@ -491,8 +529,8 @@ def get_distances_time(data, time_data):
 if __name__=='__main__':
 
 
-    files = fnmatch.filter(os.listdir('./../data/output/'), '*multi_stats.txt')
-    data = np.empty((0,10))
+    files = fnmatch.filter(os.listdir('./../data/output/'), '*_stats.txt')
+    data = np.empty((0,13))
     time_data = []
     # timedytpe = np.dtype(["string", "string", "string", "string"])
     def conv(x):
@@ -513,10 +551,10 @@ if __name__=='__main__':
             return np.array([])
     convs = {0: lambda x: conv(x), 1: lambda x: conv(x), 2: lambda x: conv(x), 3: lambda x: conv(x)}
     for file in files:
-        next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9))
+        next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12))
 
         data = np.vstack((data, next_data))
-        next_time_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(10,11,12,13), converters=conv, dtype=object, quotechar='"')
+        next_time_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(13,14,15,16), converters=conv, dtype=object, quotechar='"')
         # print(next_time_data)
 
         print(np.shape(next_time_data))
@@ -524,22 +562,22 @@ if __name__=='__main__':
 
     # print(time_data)
 
-    kappas = np.unique(data[:,_KAPPA])
+    kappas = np.unique(data[:,stats_indices['minrad']])
     hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
-    envs = np.unique(data[:, _ENV])
-    phis = np.unique(data[:,_MAXPHI])
+    envs = np.unique(data[:, stats_indices['env']])
+    phis = np.unique(data[:,stats_indices['maxphi']])
     # make figures for each of the kappa values used in experiments
     for i in range(np.shape(kappas)[0]):
         kappa = kappas[i]
-        kappa_inds = np.where(data[:,_KAPPA] == kappa)[0]
+        kappa_inds = np.where(data[:,stats_indices['minrad']] == kappa)[0]
         kappa_data = data[kappa_inds,:]
         for j in range(np.shape(envs)[0]):
             env = envs[j]
-            env_inds = np.where(kappa_data[:,_ENV] == env)[0]
+            env_inds = np.where(kappa_data[:,stats_indices['env']] == env)[0]
             env_data = kappa_data[env_inds,:]
             for k in range(np.shape(phis)[0]):
                 phi = phis[k]
-                phi_inds = np.where(env_data[:,_MAXPHI] == phi)[0]
+                phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
                 phi_data = env_data[phi_inds,:]
                 if np.shape(phi_data)[0] > 0:
                     print(np.shape(phi_data))
