@@ -1,5 +1,10 @@
 # Steerable Needle Planner
 
+#### Update 08/28/2025 by Emma Pinegar
+I replaced the line `<< q.rotation().coeffs().transpose()` with `<< q.rotation().w() << " " << q.rotation().x() << " " << q.rotation().y() << " " << q.rotation().z()` in `external/mpt/src/se3_space.hpp` at line 86.
+
+
+
 #### Planner Modes
 
 There are 8 planner modes with different terminating conditions as outlined below. As part of the template I can't make it a command line argument, but the mode can be changed manually then recompiled.

@@ -755,9 +755,9 @@ def write_segmentation_files(pyskullsegmentationfilename, scan_data, transform, 
 def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename, starts, goals):
     if os.path.exists(pypairfilename):
         sg_pairs = np.loadtxt(pypairfilename)
-        if len(sg_pairs) > 0:
-            np.random.shuffle(sg_pairs)
-            np.savetxt(pypairfilename, sg_pairs, fmt='%d')
+        # if len(sg_pairs) > 0:
+        #     np.random.shuffle(sg_pairs)
+        #     np.savetxt(pypairfilename, sg_pairs, fmt='%d')
 
 
     with open(pytextfilename, "w+") as textfile:
@@ -793,7 +793,7 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
                 lines[3] = f"Goal: {sg_pairs[0,3]} {sg_pairs[0,4]} {sg_pairs[0,5]}\n"
         else:
             sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals))
-            np.random.shuffle(sg_pairs)
+            # np.random.shuffle(sg_pairs)
             np.savetxt(pypairfilename, sg_pairs, fmt='%d')
             if len(sg_pairs) == 0:
                 print("no start/goal pairs found with non trivial solutions")
@@ -817,26 +817,30 @@ def verify_ReMIND_env(lines, starts, goals):
             open_goals += [goal]
 
     print(f"goals: {np.shape(goals)} good: {len(open_goals)}")
-
+    i = 0
     for start in starts:
         # print(start)
         env.parse_start(['1.0', '0.0', '0.0', str(start[0]), '0.0', '1.0', '0.0', str(start[1]), '0.0', '0.0', '1.0', str(start[2]), '0.0', '0.0', '0.0', '1.0'])
         if not env.test_collisions_buffered(env.start):
+            np.random.shuffle(open_goals)
             for goal in open_goals:
-                env.change_goal(goal)
-                if not env.test_collisions_world(env.goal):
-                    q, phi = env.robot.ik(env.goal)
-                    # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
-                    if q is not None:
-                        rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
-                        rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
+                if i < 10 and len(sg_pairs) < 1000:
+                    env.change_goal(goal)
+                    if not env.test_collisions_world(env.goal):
+                        q, phi = env.robot.ik(env.goal)
+                        # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
+                        if q is not None:
+                            rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
+                            rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
 
-                        (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
-                        if not status == _REACHED:
-                            sg_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
-                            if len(sg_pairs) > 10000:
-                                break
-                        # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
+                            (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
+                            if not status == _REACHED:
+                                sg_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
+                                i += 1
+                                if len(sg_pairs) >= 1000:
+                                    break
+                            # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
+        i = 0
 
     return sg_pairs
 

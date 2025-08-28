@@ -92,7 +92,7 @@ def color_boxplot(bp, color, marker='o'):
 
     for box in bp['boxes']: box.set(color=color, linewidth=1)
 
-def color_violinplot(vp, color, hatching='/'):
+def color_violinplot(vp, color):
     '''
     Styles the violin plot.
     Parameters:
@@ -100,7 +100,7 @@ def color_violinplot(vp, color, hatching='/'):
     color (string): color to use for the violin plot
     hatching (string): hatch pattern that will be added to the background of the violinplot, may not show if saved as PDF
     '''
-    for body in vp['bodies']: body.set(color=color, hatch=hatching, alpha=viz_params['alpha'])
+    for body in vp['bodies']: body.set(color=color, alpha=viz_params['alpha'])
 
     # vp['cmeans'].set(color=color, linestyle='dotted')
 
@@ -207,7 +207,7 @@ def make_misc_figure(data, index, title, ylabel, ylog=True):
 
 
 
-def make_violin_figure(data, index, title, ylabel, hatching, y_min=0, y_max=10, ylog=False):
+def make_violin_figure(data, index, title, ylabel, y_min=0, y_max=10, ylog=False):
     '''
     Makes violin plots for the planner variations.
     Parameters:
@@ -242,7 +242,7 @@ def make_violin_figure(data, index, title, ylabel, hatching, y_min=0, y_max=10, 
         median = np.median(data_ind)
 
         _bp = plotter.violinplot(data_ind, positions=[i], widths=viz_params['width'], showmedians=True)
-        color_violinplot(_bp, planners[i].color, hatching=hatching)
+        color_violinplot(_bp, planners[i].color)
         # plotter.hlines(median, i-viz_params['width'], i+viz_params['width'], color=planners[i].color, linestyles='dashed')
 
         plotter.text(i-viz_params['width']/2, median,'%.3f' % median, horizontalalignment='right', verticalalignment='center', fontsize=viz_params['textsize'])
@@ -285,7 +285,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
     colors = []
     labels = []
     plotter.title(title)
-    
+    lines = []
     for i in range(len(planners)):
         planner_indices = get_planner_indices(data, planners[i])
         if index == stats_indices['lengths']:
@@ -318,7 +318,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
         # print(time)
         # print(flat)
 
-        n = 5 #window
+        n = 7 #window
         average = np.cumsum(flat)
         average[n:] = average[n:] - average[:-n]
         average[n-1:] = average[n-1:]/n
@@ -340,7 +340,8 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
         # p = np.poly1d(z)
         # interptime = np.linspace(0,time[-1],100)
         # plotter.plot(interptime, p(interptime), color=color)
-        plotter.plot(averagetime, average, color=planners[i].color)
+        line = plotter.plot(averagetime, average, color=planners[i].color)
+        lines += [line]
         # plotter.scatter(time, flat, color=color, s=5)
         # for j in indices[i]:
         #     if index == _L:
@@ -354,6 +355,12 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
         #     print(time_data[j, _TIMES - _TIMES])
 
         #     _bp = plotter.plot(time_data[j, _TIMES - _TIMES], data_ind, color=color)
+
+    plotter.setp(lines[0], color=colors[0])
+    plotter.setp(lines[1], color=colors[1])
+    plotter.setp(lines[2], color=colors[2])
+    plotter.setp(lines[3], color=colors[3])
+
 
     plotter.ylabel(ylabel)
     # plotter.xticks(np.arange(0,len(_COLORS)),_LABELS, rotation=viz_params['rotation'])
@@ -369,7 +376,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=10, y
     # plotter.ylim([y_min, y_max])
     # fix_ylabels()
 
-def make_success_bar(data, hatch):
+def make_success_bar(data):
     '''
     Makes a success rate plot for the planner variations with a 95% binomial confidence interval.
     Parameters:
@@ -395,7 +402,7 @@ def make_success_bar(data, hatch):
         success, moe = get_success(data_ind)
         successes += [success]
         plotter.hlines(success, i-viz_params['width']/2, i+viz_params['width']/2, color=planners[i].color, linestyles='dotted')
-        plotter.bar(i, moe*2, bottom=success - moe, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'], hatch=hatch, edgecolor=planners[i].color)
+        plotter.bar(i, moe*2, bottom=success - moe, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'], edgecolor=planners[i].color)
         plotter.text(i-viz_params['width']/1.5, success, '%.2f' % success + '%', horizontalalignment='right', verticalalignment='center', fontsize=viz_params['textsize'])
 
     plotter.ylabel('Success Percentage')
@@ -437,7 +444,7 @@ def fix_ylabels():
     plotter.yticks(locs, new_labels)
 
 
-def make_figures(data, time_data, title, hatch):
+def make_figures(data, time_data, title):
     '''
     Makes a figure with 4 subplots anaylzing different aspects of the planner variations.
     Parameters:
@@ -453,21 +460,21 @@ def make_figures(data, time_data, title, hatch):
 
     # make violin subplot of runtimes with log scale
     plotter.subplot(rows,num_plots//rows,1)
-    make_success_bar(data, hatch)
-    # make_violin_figure(data, _RUNTIME, 'Run Time for Planner Variations', 'run time (seconds)', hatch, y_min=0, y_max=7.5)
+    make_success_bar(data)
+    # make_violin_figure(data, _RUNTIME, 'Run Time for Planner Variations', 'run time (seconds)', y_min=0, y_max=7.5)
 
     # make success bar subplot with 95% confidence interval
     plotter.subplot(rows,num_plots//rows,2)
     # make_success_bar(data, hatch)
-    make_time_figure(data, time_data, stats_indices['lengths'], r'Distance vs time', r'$\ell')
+    make_time_figure(data, time_data, stats_indices['lengths'], r'Distance vs time', r'$\ell$')
 
     # make violin subplot of total phis for planners with log scale
     plotter.subplot(rows,num_plots//rows,3)
-    make_violin_figure(plan_data, stats_indices['phi'], r'Total $\phi$ for Planner Variations', r'$\phi$ (radians)', hatch, y_min=0.0, y_max=8)
+    make_violin_figure(plan_data, stats_indices['phi'], r'Total $\phi$ for Planner Variations', r'$\phi$ (radians)', y_min=0.0, y_max=8)
 
     # make a violin subplot of the path length ratios for planners, no log scale
     plotter.subplot(rows,num_plots//rows,4)
-    make_violin_figure(plan_data, stats_indices['ell'], r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$', hatch, y_min=1, y_max=2.25, ylog=False)
+    make_violin_figure(plan_data, stats_indices['ell'], r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$', y_min=1, y_max=2.25, ylog=False)
 
     # title the whole figure and adjust the spacing of the plots and margins 
     plotter.suptitle(title, fontsize=18)
@@ -581,7 +588,7 @@ if __name__=='__main__':
                 phi_data = env_data[phi_inds,:]
                 if np.shape(phi_data)[0] > 0:
                     print(np.shape(phi_data))
-                    make_figures(phi_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env, hatches[i])
+                    make_figures(phi_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env)
         # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
         # analyze_pairs(data)
     plotter.show()
