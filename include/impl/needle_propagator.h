@@ -409,7 +409,7 @@ class MotionPrimitivePropagator {
     }
 
     /**
-     * Get the initial number of orientations of the start. TODO
+     * Get the initial number of orientations of the start. 
      * 
      * @returns Idx the number of initial orientations
      */

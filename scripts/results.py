@@ -280,7 +280,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
         time = time[sortedinds]
         flat = flat[sortedinds]
 
-        n = 2 #window
+        n = 7 #window
         average = np.cumsum(flat)
         average[n:] = average[n:] - average[:-n]
         average[n-1:] = average[n-1:]/n
@@ -298,11 +298,14 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
         line = plotter.plot(averagetime, average, color=planners[i].color)
         lines += [line]
 
-
-    plotter.setp(lines[0], color=colors[0])
-    plotter.setp(lines[1], color=colors[1])
-    plotter.setp(lines[2], color=colors[2])
-    plotter.setp(lines[3], color=colors[3])
+    if len(colors) > 0:
+        plotter.setp(lines[0], color=colors[0])
+    if len(colors) > 1:      
+        plotter.setp(lines[1], color=colors[1])
+    if len(colors) > 2:
+        plotter.setp(lines[2], color=colors[2])
+    if len(colors) > 3:
+        plotter.setp(lines[3], color=colors[3])
 
 
     plotter.ylabel(ylabel)
