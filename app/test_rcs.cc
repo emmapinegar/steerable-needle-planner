@@ -44,7 +44,7 @@
 using namespace unc::robotics::snp;
 
 int main(int argc, char** argv) {
-    Str const date_and_time = utils::DateAndTime();
+
 
     // needle parameter file is defined in global_common.h
     auto [min_curve_rad_, needle_diameter, insertion_length_, angle_constraint_degree_]
@@ -63,70 +63,76 @@ int main(int argc, char** argv) {
     // start_and_goal_file is defined in global_common.h 
     auto [start_p_, start_q, goal_p_, goal_q] = utils::ReadStartAndGoal(start_and_goal_file);
 
-    auto [start_p, goal_p] = utils::ReadSGPair(sg_pairs_file, global_sg_index);
-
-    cfg->output_file_root = "../data/output/" + date_and_time + suffix;
     cfg->direct_connect_ratio = 1.0;
     // cfg->goal_pos_tolerance = 1.0;
     cfg->DefaultSetup();
     cfg->env->SetCostType(ImageEnvironment::CostType::PATH_LENGTH);
-    std::cout << "Planning parameters: r " << cfg->rad_curv << " l " << cfg->ins_length << " phi " << cfg->ang_constraint_degree 
-                << "\ncost " << cfg->env->CostTypeString() << " constrain goal " << constrain_goal_orientation << " dubins " << global_dubins << std::endl;
 
-    cfg->env->AddToWhiteList(start_p, 3);
-    cfg->env->SetWhiteList(true);
+    int max_sg = global_sg_index + global_sg_num;
+    for (global_sg_index; global_sg_index < max_sg; global_sg_index++) {
+        Str date_and_time = utils::DateAndTime();
 
-    using Scenario = PRCSPoint2PointScenario<RealNum>::Type;
-    using State = typename Scenario::State;
-    using Space = typename Scenario::Space;
+        cfg->output_file_root = "../data/output/" + date_and_time + suffix;
+        auto [start_p, goal_p] = utils::ReadSGPair(sg_pairs_file, global_sg_index);
 
-    State start(start_q, start_p);
-    State goal(goal_q, goal_p);
-    Scenario scenario(cfg, start, goal);
-    global_sg_mag = (goal_p - start_p).norm();
-    MPT_LOG(INFO) << "start: " << start;
-    MPT_LOG(INFO) << "goal: " << goal;
 
-    if (!scenario.ValidProblem()) {
-        throw std::runtime_error("Planning problem is not valid!");
-    }
+        std::cout << "Planning parameters: r " << cfg->rad_curv << " l " << cfg->ins_length << " phi " << cfg->ang_constraint_degree 
+                    << "\ncost " << cfg->env->CostTypeString() << " constrain goal " << constrain_goal_orientation << " dubins " << global_dubins << std::endl;
 
-    using namespace unc::robotics::mpt;
-    using namespace unc::robotics::nigh;
-    using NN = nn_select<RealNum, Space>::type;
-    static constexpr bool reportStats = true;
+        // cfg->env->AddToWhiteList(start_p, 3);
+        // cfg->env->SetWhiteList(true);
 
-    if (cfg->multi_threading) {
-        MPT_LOG(INFO) << "multi-threading enabled";
-        using Threads = hardware_concurrency;
-        using Algorithm = NeedlePRCS<report_stats<reportStats>, NN, Threads>;
+        using Scenario = PRCSPoint2PointScenario<RealNum>::Type;
+        using State = typename Scenario::State;
+        using Space = typename Scenario::Space;
 
-        Planner<Scenario, Algorithm> planner(scenario);
-        planner.addStart(start);
+        State start(start_q, start_p);
+        State goal(goal_q, goal_p);
+        Scenario scenario(cfg, start, goal);
+        global_sg_mag = (goal_p - start_p).norm();
+        MPT_LOG(INFO) << "start: " << start;
+        MPT_LOG(INFO) << "goal: " << goal;
 
-        utils::Run<0>(planner, cfg);
-
-        auto const& result = planner.resultWithTime();
-        for (auto const& res : result) {
-            std::cout << std::get<0>(res) << ", " << std::get<1>(res) << ", " << std::get<2>(res) << ", " << std::get<3>(res) << std::endl;
+        if (!scenario.ValidProblem()) {
+            throw std::runtime_error("Planning problem is not valid!");
         }
-    }
-    else {
-        MPT_LOG(INFO) << "single-threading enabled";
-        using Threads = single_threaded;
-        using Algorithm = NeedlePRCS<report_stats<reportStats>, NN, Threads>;
 
-        Planner<Scenario, Algorithm> planner(scenario, cfg->seed);
-        planner.addStart(start);
-        MPT_LOG(INFO) << "using seed " << cfg->seed;
+        using namespace unc::robotics::mpt;
+        using namespace unc::robotics::nigh;
+        using NN = nn_select<RealNum, Space>::type;
+        static constexpr bool reportStats = true;
 
-        utils::Run<0>(planner, cfg);
+        if (cfg->multi_threading) {
+            MPT_LOG(INFO) << "multi-threading enabled";
+            using Threads = hardware_concurrency;
+            using Algorithm = NeedlePRCS<report_stats<reportStats>, NN, Threads>;
 
-        auto const& result = planner.resultWithTime();
-        for (auto const& res : result) {
-            std::cout << std::get<0>(res) << ", " << std::get<1>(res) << ", " << std::get<2>(res) << ", " << std::get<3>(res) << std::endl;
+            Planner<Scenario, Algorithm> planner(scenario);
+            planner.addStart(start);
+
+            utils::Run<0>(planner, cfg);
+
+            auto const& result = planner.resultWithTime();
+            for (auto const& res : result) {
+                std::cout << std::get<0>(res) << ", " << std::get<1>(res) << ", " << std::get<2>(res) << ", " << std::get<3>(res) << std::endl;
+            }
         }
-    }
+        else {
+            MPT_LOG(INFO) << "single-threading enabled";
+            using Threads = single_threaded;
+            using Algorithm = NeedlePRCS<report_stats<reportStats>, NN, Threads>;
 
+            Planner<Scenario, Algorithm> planner(scenario, cfg->seed);
+            planner.addStart(start);
+            MPT_LOG(INFO) << "using seed " << cfg->seed;
+
+            utils::Run<0>(planner, cfg);
+
+            auto const& result = planner.resultWithTime();
+            for (auto const& res : result) {
+                std::cout << std::get<0>(res) << ", " << std::get<1>(res) << ", " << std::get<2>(res) << ", " << std::get<3>(res) << std::endl;
+            }
+        }
+    }    
     return 0;
 }

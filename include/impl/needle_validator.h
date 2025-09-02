@@ -402,8 +402,37 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
 
         Vec3 r = Vec3(skull_point[0] - p[0], skull_point[1] - p[1], skull_point[2] - p[2]);
         Vec3 r_hat = r.normalized();
+        RealNum diff = normal_vec.dot(r_hat);
         r_mag = r.norm() + 0.020;                                                                               // adding buffer for physical magnet radius
+
         Vec3 mag_point = Vec3(p[0] + r_hat[0]*(r_mag), p[1] + r_hat[1]*(r_mag), p[2] + r_hat[2]*(r_mag));
+        auto [mag_skull_point, mag_r_mag] = cfg->skull->NearestObstacleCenter(1000 * mag_point);
+        // std::cout << "sp: " << sp.transpose() << " skull point: " << skull_point.transpose() << " p: " << p.transpose() << " r_mag: " << r_mag << " mag: " << mag_point.transpose() << " mag_r_mag: " << mag_r_mag << " mag skull: " << mag_skull_point.transpose() << std::endl;
+        while (mag_r_mag < 20) {
+            // std::cout << mag_r_mag << " " << r_mag << " mag: " << mag_point.transpose() << " skull: " << mag_skull_point.transpose() << " og: " << skull_point.transpose() << " \t";
+            r_mag += 0.001;
+            mag_point = Vec3(p[0] + r_hat[0]*(r_mag), p[1] + r_hat[1]*(r_mag), p[2] + r_hat[2]*(r_mag));
+            auto [mag_skull_point_, mag_r_mag_] = cfg->skull->NearestObstacleCenter(1000 * mag_point);
+            // std::cout << mag_r_mag_ << " " << r_mag << " mag: " << mag_point.transpose() << " skull: " << mag_skull_point_.transpose() << std::endl;
+            mag_r_mag = mag_r_mag_;
+        }
+
+        // std::cout << "p: " << p.transpose() << " normal: " << normal_vec.transpose() << " r_hat: " << r_hat.transpose() << " diff: " << diff << " r_mag: " << r_mag << std::endl;
+        // for (int i = 0; i <= 50; i += 5) {
+        //     Vec3 sp_ = sp - i*normal_vec;
+        //     auto [skull_point_, r_mag_] = cfg->skull->NearestObstacleCenter(sp_);
+        //     skull_point_ = skull_point_ / 1000;
+        //     Vec3 p_ = sp_/1000;
+        //     Vec3 r_ = Vec3(skull_point_[0] - p_[0], skull_point_[1] - p_[1], skull_point_[2] - p_[2]);
+        //     Vec3 r_hat_ = r_.normalized(); 
+        //     r_mag_ = r_.norm() + 0.020;                                                                               // adding buffer for physical magnet radius
+        //     Vec3 mag_point_ = Vec3(p_[0] + r_hat_[0]*(r_mag_), p_[1] + r_hat_[1]*(r_mag_), p_[2] + r_hat_[2]*(r_mag_)); 
+        //     auto [mag_skull_point_, collision_mag_] = cfg->skull->NearestObstacleCenter(1000*mag_point_);      
+        //     RealNum diff_ = normal_vec.dot(r_hat_);            
+        //     // std::cout << "p: " << p_.transpose() << " normal: " << normal_vec.transpose() << " r_hat: " << r_hat_.transpose() << " diff: " << diff_ << " r_mag: " << r_mag_ << " i: " << i << " collision: " << collision_mag_ << std::endl;
+        // }
+
+
         auto r_outer = r_hat * r_hat.transpose();                                                               // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
         Vec3 needle_mag = sq.normalized() * Vec3::UnitZ();
         Vec3 manip_mag = normal_vec;
@@ -417,7 +446,7 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
 
         // std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
         // std::cout  << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
-        // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " normal: " << normal_vec.transpose() << " q: " << sq.normalized() << std::endl;  
+        // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " normal: " << normal_vec.transpose() << " rhat: " << r_hat.transpose() << " b: " << b.transpose() << " tau: " << tau.transpose() << std::endl;  
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
@@ -448,13 +477,34 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
     Vec3 normal_vec = sq.normalized() * Vec3::UnitY();
     // return GetCurvatureNormal(sp, sq, normal_vec, cfg, rad_curv);
     if (cfg->variable_curvature) {
+
         auto [skull_point, r_mag] = cfg->skull->NearestObstacleCenter(sp);
         skull_point = skull_point / 1000;
         Vec3 p = sp/1000;
         Vec3 r = Vec3(skull_point[0] - p[0], skull_point[1] - p[1], skull_point[2] - p[2]);
-        Vec3 r_hat = r.normalized();
+        Vec3 r_hat = r.normalized();        
+        RealNum diff = normal_vec.dot(r_hat);
+        // std::cout << "p: " << p.transpose() << " normal: " << normal_vec.transpose() << " r_hat: " << r_hat.transpose() << " diff: " << diff << std::endl;
+        // for (int i = 0; i <= 50; i += 5) {
+        //     Vec3 sp_ = sp - i*normal_vec;
+        //     auto [skull_point_, r_mag_] = cfg->skull->NearestObstacleCenter(sp_);
+        //     skull_point_ = skull_point_ / 1000;
+        //     Vec3 p_ = sp_/1000;
+        //     Vec3 r_ = Vec3(skull_point_[0] - p_[0], skull_point_[1] - p_[1], skull_point_[2] - p_[2]);
+        //     Vec3 r_hat_ = r_.normalized();        
+        //     RealNum diff_ = normal_vec.dot(r_hat_);            
+        //     std::cout << "p: " << p_.transpose() << " normal: " << normal_vec.transpose() << " r_hat: " << r_hat_.transpose() << " diff: " << diff_ << std::endl;
+        // }
+
         r_mag = r.norm() + 0.020;                                                                               // adding buffer for physical magnet radius
         Vec3 mag_point = Vec3(p[0] + r_hat[0]*(r_mag), p[1] + r_hat[1]*(r_mag), p[2] + r_hat[2]*(r_mag));
+        auto [mag_skull_point, mag_r_mag] = cfg->skull->NearestObstacleCenter(1000 * mag_point);
+        while (mag_r_mag < 20) {
+            r_mag += 0.001;
+            mag_point = Vec3(p[0] + r_hat[0]*(r_mag), p[1] + r_hat[1]*(r_mag), p[2] + r_hat[2]*(r_mag));
+            auto [mag_skull_point_, mag_r_mag_] = cfg->skull->NearestObstacleCenter(1000 * mag_point);
+            mag_r_mag = mag_r_mag_;
+        }
         auto r_outer = r_hat * r_hat.transpose();                                                               // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
         Vec3 needle_mag = sq.normalized() * Vec3::UnitZ();
 
@@ -466,9 +516,9 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
         Vec3 tau = cfg->needle_mag* needle_mag.cross(b);
         RealNum curvature_lim = 1/((cfg->torque_m*tau.norm() + cfg->torque_b)/1000);
 
-        // std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
-        // std::cout  << " state: " << p.transpose() << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
-        // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " q: " << sq.normalized() << std::endl;            
+        std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
+        std::cout  << " state: " << p.transpose() << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
+        std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " q: " << sq.normalized() << " b: " << b.transpose() << " tau: " << tau.transpose() << std::endl;            
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;

@@ -98,7 +98,9 @@ bool global_show_logs = true;
 bool global_variable_curvature = false;
 int scan_number = 9;
 int global_sg_index = 0;
+int global_sg_num = 1;
 RealNum global_sg_mag = 0.0;
+
 
 Str padded_scan_num = std::string(3 - std::to_string(scan_number).length(), '0') + std::to_string(scan_number);
 
@@ -239,7 +241,10 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
         }    
         else if (std::strcmp(argv[i], "-sg_index") == 0) {
             global_sg_index = std::atoi(argv[++i]);
-        }                                    
+        } 
+        else if (std::strcmp(argv[i], "-num_sg") == 0) {
+            global_sg_num = std::atoi(argv[++i]);
+        }                                   
         else {
             std::cerr << "Specified arg not supported " << argv[i] << std::endl;
         }

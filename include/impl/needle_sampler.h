@@ -193,7 +193,7 @@ std::pair<RealNum, RealNum> SampleInUnitCircle(RNG& rng, Uniform& uniform) {
  * 
  * @param rad_curv: the radius of curvature minimum limit
  * @param ins_length: the maximum insertion length
- * @param max_r: TODO
+ * @param max_r: the maximum radius of the sphere of reachable area
  * @param rng: random number generator
  * @param uniform: uniform distribution
  * @param normal: normal distribution
