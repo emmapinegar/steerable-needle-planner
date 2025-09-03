@@ -280,7 +280,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
         time = time[sortedinds]
         flat = flat[sortedinds]
 
-        n = 7 #window
+        n = 10 #window
         average = np.cumsum(flat)
         average[n:] = average[n:] - average[:-n]
         average[n-1:] = average[n-1:]/n
