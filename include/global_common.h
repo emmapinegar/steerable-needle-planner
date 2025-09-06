@@ -110,6 +110,7 @@ Str global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outl
 Str global_cost_file = "../data/input/costs.txt";
 Str global_healpix_file = "../data/input/HEALPix.txt";
 Str needle_parameter_file = "../data/input/needle_parameters.txt";
+Str magnet_torque_file = "../data/input/torque_curvature.txt";
 Str start_and_goal_file = "../data/input/remind_" + padded_scan_num + "_start_and_goal_poses.txt";
 Str sg_pairs_file = "../data/input/remind_" + padded_scan_num + "_sg_pairs.txt";
 Str goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";

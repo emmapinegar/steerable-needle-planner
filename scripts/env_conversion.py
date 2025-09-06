@@ -5,7 +5,7 @@ April 2023
 """
 import os
 import shutil
-import cv2 as cv
+# import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
@@ -19,7 +19,7 @@ import scipy.io
 import nibabel as nib
 from scipy import stats
 
-_KAPPA = 0.072
+_KAPPA = 0.04
 _GOAL = 6
 _START = 5
 _TUMOR = 4
@@ -349,7 +349,7 @@ def verify_ReMIND_env(lines, starts, goals):
         if not env.test_collisions_buffered(env.start):
             np.random.shuffle(open_goals)
             for goal in open_goals:
-                if i < 10 and len(sg_pairs) < 1000:
+                if i < 10 and len(sg_pairs) < 2000:
                     env.change_goal(goal)
                     if not env.test_collisions_world(env.goal):
                         q, phi = env.robot.ik(env.goal)
@@ -513,107 +513,107 @@ def create_test_env(r=150,spacing=150):
     np.save("./ReMIND_envs/skull_segmentation_test.npy", skull_coords)
 
 
-def get_obstacles_outline(voxel_grid):
-    """
-    Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
-    """
-    mask = np.zeros_like(voxel_grid)
-    for i in range(0,int(np.shape(voxel_grid)[0])):
-        eroded_mask = np.logical_not(get_shell(voxel_grid[i,:,:]))
-        mask[i,:,:] = np.logical_and(voxel_grid[i,:,:], eroded_mask)
-        # if i == self.start[0,0]:
-        #     plt.imshow(self.voxel_grid[i,:,:])
-        #     plt.show()
-        #     plt.imshow(eroded_mask)
-        #     plt.show()
-        #     plt.imshow(mask[i,:,:])
-        #     plt.show()
-    obstacle_coords = np.where(mask == 1)
-    obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
-    return obstacle_arr
+# def get_obstacles_outline(voxel_grid):
+#     """
+#     Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
+#     """
+#     mask = np.zeros_like(voxel_grid)
+#     for i in range(0,int(np.shape(voxel_grid)[0])):
+#         eroded_mask = np.logical_not(get_shell(voxel_grid[i,:,:]))
+#         mask[i,:,:] = np.logical_and(voxel_grid[i,:,:], eroded_mask)
+#         # if i == self.start[0,0]:
+#         #     plt.imshow(self.voxel_grid[i,:,:])
+#         #     plt.show()
+#         #     plt.imshow(eroded_mask)
+#         #     plt.show()
+#         #     plt.imshow(mask[i,:,:])
+#         #     plt.show()
+#     obstacle_coords = np.where(mask == 1)
+#     obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
+#     return obstacle_arr
 
 
-def get_obstacles_outline_speckled(voxel_grid):
-    """
-    Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
-    """
-    mask = np.zeros_like(voxel_grid)
-    for i in range(0,int(np.shape(voxel_grid)[0])):
-        eroded_mask = np.logical_not(get_shell(voxel_grid[i,:,:]))
-        arr_shape = np.shape(eroded_mask)
-        obstacle_x = np.random.random_integers(0,arr_shape[0]-1,(arr_shape[0]*arr_shape[1])//32)
-        obstacle_y = np.random.random_integers(0,arr_shape[1]-1,(arr_shape[0]*arr_shape[1])//32)
-        # print(np.shape(eroded_mask))
-        eroded_mask[obstacle_x, obstacle_y] = 1.0
-        # plt.imshow(eroded_mask)
-        # plt.show() 
-        mask[i,:,:] = np.logical_and(voxel_grid[i,:,:], eroded_mask)
-        # plt.imshow(mask[i,:,:])
-        # plt.show()
+# def get_obstacles_outline_speckled(voxel_grid):
+#     """
+#     Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
+#     """
+#     mask = np.zeros_like(voxel_grid)
+#     for i in range(0,int(np.shape(voxel_grid)[0])):
+#         eroded_mask = np.logical_not(get_shell(voxel_grid[i,:,:]))
+#         arr_shape = np.shape(eroded_mask)
+#         obstacle_x = np.random.random_integers(0,arr_shape[0]-1,(arr_shape[0]*arr_shape[1])//32)
+#         obstacle_y = np.random.random_integers(0,arr_shape[1]-1,(arr_shape[0]*arr_shape[1])//32)
+#         # print(np.shape(eroded_mask))
+#         eroded_mask[obstacle_x, obstacle_y] = 1.0
+#         # plt.imshow(eroded_mask)
+#         # plt.show() 
+#         mask[i,:,:] = np.logical_and(voxel_grid[i,:,:], eroded_mask)
+#         # plt.imshow(mask[i,:,:])
+#         # plt.show()
     
-    obstacle_coords = np.where(mask == 1)
-    obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
-    return obstacle_arr
+#     obstacle_coords = np.where(mask == 1)
+#     obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
+#     return obstacle_arr
 
 
 
-# from the opencv demo https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html  
-def get_shell(image):
-    global src
-    uint_img = np.array(image*255).astype('uint8')
-    src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
-    if src is None:
-        print('Could not open or find the image: ', image)
-        exit(0)
+# # from the opencv demo https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html  
+# def get_shell(image):
+#     global src
+#     uint_img = np.array(image*255).astype('uint8')
+#     src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
+#     if src is None:
+#         print('Could not open or find the image: ', image)
+#         exit(0)
  
-    erosion_dst = erosion(0, erosion_size=1)
-    erosion_dst = np.asarray(erosion_dst)
-    # print(np.shape(erosion_dst))
-    erosion_dst = erosion_dst[:,:,0]//255
-    # print(np.shape(erosion_dst))
-    return erosion_dst
+#     erosion_dst = erosion(0, erosion_size=1)
+#     erosion_dst = np.asarray(erosion_dst)
+#     # print(np.shape(erosion_dst))
+#     erosion_dst = erosion_dst[:,:,0]//255
+#     # print(np.shape(erosion_dst))
+#     return erosion_dst
 
 
 
-def remove_shell(image):
-    global src
-    uint_img = np.array(image*255).astype('uint8')
-    src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
-    if src is None:
-        print('Could not open or find the image: ', image)
-        exit(0)
+# def remove_shell(image):
+#     global src
+#     uint_img = np.array(image*255).astype('uint8')
+#     src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
+#     if src is None:
+#         print('Could not open or find the image: ', image)
+#         exit(0)
  
-    src = erosion(0, erosion_size=5)
-    dilation_dst = dilatation(0, dilatation_size=7)
-    morph_dst = np.asarray(dilation_dst)
-    morph_dst = morph_dst[:,:,0]//255
-    return morph_dst
+#     src = erosion(0, erosion_size=5)
+#     dilation_dst = dilatation(0, dilatation_size=7)
+#     morph_dst = np.asarray(dilation_dst)
+#     morph_dst = morph_dst[:,:,0]//255
+#     return morph_dst
 
 
-# optional mapping of values with morphological shapes
-def morph_shape(val):
-    if val == 0:
-        return cv.MORPH_RECT
-    elif val == 1:
-        return cv.MORPH_CROSS
-    elif val == 2:
-        return cv.MORPH_ELLIPSE
+# # optional mapping of values with morphological shapes
+# def morph_shape(val):
+#     if val == 0:
+#         return cv.MORPH_RECT
+#     elif val == 1:
+#         return cv.MORPH_CROSS
+#     elif val == 2:
+#         return cv.MORPH_ELLIPSE
 
 
-def erosion(val, erosion_size = 2):
-    erosion_shape = morph_shape(val)
-    element = cv.getStructuringElement(erosion_shape, (2 * erosion_size + 1, 2 * erosion_size + 1),
-                                       (erosion_size, erosion_size))
-    erosion_dst = cv.erode(src, element)
-    return erosion_dst
+# def erosion(val, erosion_size = 2):
+#     erosion_shape = morph_shape(val)
+#     element = cv.getStructuringElement(erosion_shape, (2 * erosion_size + 1, 2 * erosion_size + 1),
+#                                        (erosion_size, erosion_size))
+#     erosion_dst = cv.erode(src, element)
+#     return erosion_dst
 
 
-def dilatation(val, dilatation_size=1):
-    dilation_shape = morph_shape(val)
-    element = cv.getStructuringElement(dilation_shape, (2 * dilatation_size + 1, 2 * dilatation_size + 1),
-                                       (dilatation_size, dilatation_size))
-    dilatation_dst = cv.dilate(src, element)
-    return dilatation_dst
+# def dilatation(val, dilatation_size=1):
+#     dilation_shape = morph_shape(val)
+#     element = cv.getStructuringElement(dilation_shape, (2 * dilatation_size + 1, 2 * dilatation_size + 1),
+#                                        (dilatation_size, dilatation_size))
+#     dilatation_dst = cv.dilate(src, element)
+#     return dilatation_dst
 
 
 

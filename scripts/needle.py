@@ -86,7 +86,7 @@ class SteerableNeedle:
         g_new = np.matmul(self.gw, gm)
         return g_new
 
-    def ik(self, p:npt.NDArray, print_:bool=False) -> tuple[tuple[float, float, float] | None, float]:
+    def ik(self, p:npt.NDArray, print_:bool=False):
         """
         Compute inverse kinematics for the robot with position p.
 
@@ -208,7 +208,7 @@ class SteerableNeedle:
         Calulates limits for needle_lims based on position and orientation in gw.
 
         Parameters:
-            gw (4x4 ndarray): transformation matrix for the new point in hte world frame
+            gw (4x4 ndarray): transformation matrix for the new point in the world frame
             print_ (bool): debugging print flag if True, default is False
             
         Returns:
@@ -216,27 +216,49 @@ class SteerableNeedle:
         """
         if self.variable_curvature:
             # get the closest point on the skull from the screw, and its distance
-            skullpoint = np.asarray(closestPoint(self.skull_tree, gw[0:3,3]))
+            screwmagdipole = np.array([[gw[0,2]],[gw[1,2]],[gw[2,2]]])
+            normal_vec = np.cross(self.gw[0:3,2], screwmagdipole, axis=0)
+            # print(f"normal: {normal_vec.reshape(-1,)} zold: {self.gw[0:3,2].reshape(-1,)} znew: {gw[0:3,2].reshape(-1,)}")
+            if np.linalg.norm(normal_vec) < 1e-5:
+                manipmagdipole = np.array([[self.gw[0,0]],[self.gw[1,0]],[self.gw[2,0]]])
+                normal_vec = manipmagdipole
+            normal_vec = normal_vec/np.linalg.norm(normal_vec)            
+            skullpoint1, skullpoint2 = np.asarray(closestPoint(self.skull_tree, gw[0:3,3], normal_vec))
 
             # for the control magnet, just get an orthogonal vector
-            screwmagdipole = np.array([[gw[0,2]],[gw[1,2]],[gw[2,2]]])
+            
                 
             other_vector = np.array([[gw[0,0]], [gw[1,0]], [gw[2,0]]])
             norm_m = screwmagdipole/np.linalg.norm(screwmagdipole)
-            manipmagdipole = other_vector #np.cross(norm_m, other_vector, axis=0)
+            manipmagdipole = np.cross(normal_vec, screwmagdipole, axis=0)
             
 
             # has to be transposed because KD-tree expects 1x3 while Magnet Class expects 3x1
-            skulltranspose = skullpoint.reshape(3,1)
+            skulltranspose = skullpoint1.reshape(3,1)
             screwtranspose = gw[0:3,3].reshape(3,1)
 
             
-            manipMag = Magnet(skulltranspose, manipmagdipole, _MANIPMAG_STRENGTH)
+            manipMag1 = Magnet(skulltranspose, manipmagdipole, _MANIPMAG_STRENGTH)
             screwMag = Magnet(screwtranspose, screwmagdipole, _SCREWMAG_STRENGTH)
 
-            f, tau = screwMag.get_force_torque(manipMag)
+            f1, tau1 = screwMag.get_force_torque(manipMag1)
 
-            maxCurvature = (self.r_curvature_line[0] * np.linalg.norm(tau) + self.r_curvature_line[1])/1000
+            maxCurvature1 = (self.r_curvature_line[0] * np.linalg.norm(tau1) + self.r_curvature_line[1])/1000
+            manipMag2 = Magnet(skullpoint2.reshape(3,1), manipmagdipole, _MANIPMAG_STRENGTH)
+            f2, tau2 = screwMag.get_force_torque(manipMag2)
+            maxCurvature2 = (self.r_curvature_line[0] * np.linalg.norm(tau2) + self.r_curvature_line[1])/1000
+            if maxCurvature1 > maxCurvature2:
+                maxCurvature = maxCurvature1
+                manipMag = manipMag1
+                tau = tau1
+                skullpoint = skullpoint1
+                # print(f"not chosen lims.. skull point: {np.round(skullpoint2,4)}  |r|: {round(np.linalg.norm(skullpoint2 - gw[0:3, 3]),4)} lim: {round(1/maxCurvature2,10)} |tau|: {round(np.linalg.norm(tau2),10)}")
+            else:
+                maxCurvature = maxCurvature2
+                manipMag = manipMag2
+                tau = tau2
+                skullpoint = skullpoint2
+                # print(f"not chosen lims.. skull point: {np.round(skullpoint1,4)}  |r|: {round(np.linalg.norm(skullpoint1 - gw[0:3, 3]),4)} lim: {round(1/maxCurvature1,10)} |tau|: {round(np.linalg.norm(tau1),10)}")
             if _DEBUG or print_:
                 print(f"skull point: {np.round(skullpoint,4)}  |r|: {round(np.linalg.norm(skullpoint - gw[0:3, 3]),4)} lim: {round(1/maxCurvature,10)} |tau|: {round(np.linalg.norm(tau),10)}")
                 print(f"manip: {manipMag.m.reshape(-1,)/np.linalg.norm(manipMag.m)} needle: {screwMag.m.reshape(-1,)/np.linalg.norm(screwMag.m)} x: {gw[0:3,0].reshape(-1,)} y: {gw[0:3,1].reshape(-1,)} r: {(skullpoint - gw[0:3, 3])/np.linalg.norm(skullpoint - gw[0:3, 3])}")
@@ -262,7 +284,7 @@ class SteerableNeedle:
             sg = p - self.p
             sg_hat = sg/np.linalg.norm(sg)
             # get the closest point on the skull from the screw, and its distance
-            skullpoint = np.asarray(closestPoint(self.skull_tree, self.gw[0:3,3]))
+            
 
             # for the control magnet, just get an orthogonal vector
             screwmagdipole = np.array([[self.gw[0,2]],[self.gw[1,2]],[self.gw[2,2]]])
@@ -301,50 +323,43 @@ class SteerableNeedle:
             gw_new = np.matmul(self.gw, gm)
             if print_:
                 print(gw_new) 
-            manipmagdipole = np.cross(self.gw[0:3,2], gw_new[0:3,2], axis=0)
 
+            normal_vec = np.cross(self.gw[0:3,2], gw_new[0:3,2], axis=0)
+            # print(f"normal: {normal_vec.reshape(-1,)} zold: {self.gw[0:3,2].reshape(-1,)} znew: {gw_new[0:3,2].reshape(-1,)}")
 
-            # if np.linalg.norm(manipmagdipole) < 1e-1:
-            #     temp_lim = self.needle_lims[1,1]
-            #     self.needle_lims[1,1] = _MAXK
-            #     q,phi = self.ik(p,print_=print_)
-
-            #     theta = q[2]
-            #     # xm = np.array([sin(theta), cos(theta), 0, 0])
-            #     # ym = np.array([-cos(theta), sin(theta), 0, 0])
-            #     # zm = np.array([0, 0, 1, 0])
-            #     # dm = np.array([0, 0, 0, 1])
-
-            #     # gm_old = np.transpose(np.vstack((xm, ym, zm, dm)))
-            #     # if print_:
-            #     #     print(gm)
-            #     #     print(np.matmul(self.gw, gm))
-
-            #     xm = np.array([-sin(theta), cos(theta), 0, 0])
-            #     ym = np.array([-cos(theta)*cos(phi), -sin(theta)*cos(phi), sin(phi), 0])
-            #     zm = np.array([cos(theta)*sin(phi), sin(theta)*sin(phi), cos(phi), 0])
-            #     dm = np.array([0, 0, 0, 1])
-
-            #     gm = np.transpose(np.vstack((xm, ym, zm, dm)))
-            #     gw_new = np.matmul(self.gw, gm)
-            #     if print_:
-            #         print(gm)
-            #         print(gw_new) 
-            #     manipmagdipole = np.cross(self.gw[0:3,2], gw_new[0:3,2], axis=0)
-            if np.linalg.norm(manipmagdipole) < 1e-5:
+            if np.linalg.norm(normal_vec) < 1e-5:
                 manipmagdipole = np.array([[self.gw[0,0]],[self.gw[1,0]],[self.gw[2,0]]])
+                normal_vec = manipmagdipole
+            normal_vec = normal_vec/np.linalg.norm(normal_vec)
+            skullpoint1, skullpoint2 = np.asarray(closestPoint(self.skull_tree, self.gw[0:3,3], normal_vec))
 
-
+            manipmagdipole = np.cross(normal_vec, self.gw[0:3,2], axis=0)
             # has to be transposed because KD-tree expects 1x3 while Magnet Class expects 3x1
-            skulltranspose = skullpoint.reshape(3,1)
+            skulltranspose = skullpoint1.reshape(3,1)
             screwtranspose = self.gw[0:3,3].reshape(3,1)
 
             
-            manipMag = Magnet(skulltranspose, manipmagdipole, _MANIPMAG_STRENGTH)
+            manipMag1 = Magnet(skulltranspose, manipmagdipole, _MANIPMAG_STRENGTH)
             screwMag = Magnet(screwtranspose, screwmagdipole, _SCREWMAG_STRENGTH)
 
-            f, tau = screwMag.get_force_torque(manipMag)
-            maxCurvature = (self.r_curvature_line[0] * np.linalg.norm(tau) + self.r_curvature_line[1])/1000
+            f1, tau1 = screwMag.get_force_torque(manipMag1)
+
+            maxCurvature1 = (self.r_curvature_line[0] * np.linalg.norm(tau1) + self.r_curvature_line[1])/1000
+            manipMag2 = Magnet(skullpoint2.reshape(3,1), manipmagdipole, _MANIPMAG_STRENGTH)
+            f2, tau2 = screwMag.get_force_torque(manipMag2)
+            maxCurvature2 = (self.r_curvature_line[0] * np.linalg.norm(tau2) + self.r_curvature_line[1])/1000
+            if maxCurvature1 > maxCurvature2:
+                maxCurvature = maxCurvature1
+                manipMag = manipMag1
+                tau = tau1
+                skullpoint = skullpoint1
+                # print(f"not chosen lims.. skull point: {np.round(skullpoint2,4)}  |r|: {round(np.linalg.norm(skullpoint2 - self.gw[0:3, 3]),4)} lim: {round(1/maxCurvature2,10)} |tau|: {round(np.linalg.norm(tau2),10)}")
+            else:
+                maxCurvature = maxCurvature2
+                manipMag = manipMag2
+                tau = tau2
+                skullpoint = skullpoint2
+                # print(f"not chosen lims.. skull point: {np.round(skullpoint1,4)}  |r|: {round(np.linalg.norm(skullpoint1 - self.gw[0:3, 3]),4)} lim: {round(1/maxCurvature1,10)} |tau|: {round(np.linalg.norm(tau1),10)}")
             if _DEBUG or print_:
                 print("new lim calcs")
                 print(f"skull point: {np.round(skullpoint,4)}  |r|: {round(np.linalg.norm(skullpoint - self.gw[0:3, 3]),4)} lim: {round(1/maxCurvature,10)} |tau|: {round(np.linalg.norm(tau),10)} sample: {p} p: {self.p}")
@@ -438,7 +453,7 @@ class SteerableNeedle:
 
 
 # LIKELY NEEDS TO BE CHANGED
-def closestPoint(skulltree:KDTree, position:npt.NDArray) -> npt.NDArray:
+def closestPoint(skulltree:KDTree, position:npt.NDArray, normal_vec:npt.NDArray) -> npt.NDArray:
     """
     Given a skull segmentation and a point in 3D, returns the closest point on the skull to that point and its distance.
 
@@ -451,17 +466,73 @@ def closestPoint(skulltree:KDTree, position:npt.NDArray) -> npt.NDArray:
     """
     padding = 20 # CHANGE this value to reflect real world, also might not be needed here
     # may need to convert the frame of points IMPORTANT
-    
+    normal_vec = normal_vec.reshape(-1,)
     dist_, ind= skulltree.query(position.reshape(1, -1), k = 1, return_distance=True) 
+    skull_point_pos = skulltree.data[ind[0,0]] 
+    skull_point_neg = skulltree.data[ind[0,0]] 
+    r_ = skull_point_pos - position
+    r_hat_ = r_/np.linalg.norm(r_)
+    diff = np.dot(r_hat_, normal_vec)
+    diff_pos = diff
+    diff_neg = diff
+    dist_pos = dist_
+    dist_neg = dist_
 
+    for i in range(-100, 110, 10):
+        position_ = position + i*normal_vec
 
-    skullpoint = skulltree.data[ind[0,0]] 
+        dist_, ind= skulltree.query(position_.reshape(1, -1), k = 1, return_distance=True)
+        skullpoint_ = np.asarray(skulltree.data[ind[0,0]])
+        r_ = skullpoint_ - position
+        r_hat_ = r_/np.linalg.norm(r_)
+        diff = np.dot(r_hat_, normal_vec)
+        if diff < 0 and diff < diff_neg:
+            dist_neg = np.linalg.norm(skullpoint_ - position)
+            diff_neg = diff
+            skull_point_neg = skullpoint_
+        elif diff > 0 and diff > diff_pos:
+            dist_pos = np.linalg.norm(skullpoint_ - position)
+            diff_pos = diff
+            skull_point_pos = skullpoint_
+        # print(f"i: {i} pos: {position_.reshape(-1,)} skull: {skullpoint_} dist: {dist_[0][0]} diff: {diff} r: {r_} r_hat: {r_hat_}")
+    # skullpoint = skulltree.data[ind[0,0]] 
 
-    diff = skullpoint - position
-    dist = np.linalg.norm(diff)
+    # if abs(diff_pos) - abs(diff_neg) < 0.01:
+    #     if dist_neg < dist_pos:
+    #         skullpoint = skull_point_neg
+    #     else:
+    #         skullpoint = skull_point_pos
+    # elif abs(diff_pos) > abs(diff_neg):
+    #     skullpoint = skull_point_pos
+    # else:
+    #     skullpoint = skull_point_neg
+    # TODO: might need to change this to just return both options and check which leads to a better limit
+    r = skull_point_pos - position
+    r_mag = np.linalg.norm(r)
+    r_hat = r/r_mag
 
+    r_mag += padding
     # print(f"og point: [{round(skullpoint[0],6)} {round(skullpoint[1],6)} {round(skullpoint[2],6)}] dist: {round(dist,6)} diff:{np.round(diff,6)} position: {position} dist: {dist_}")
-    skullpoint = (padding + dist) * diff / dist + position
-        # print(f"pos: {position} skull: {skullpoint} dist: {dist}")
+    skull_point_pos = position + r_mag*r_hat
+    dist_, ind= skulltree.query(skull_point_pos.reshape(1, -1), k = 1, return_distance=True)
+    while dist_[0][0] < padding:
+        r_mag += 1
+        skull_point_pos = position + r_mag*r_hat
+        dist_, ind= skulltree.query(skull_point_pos.reshape(1, -1), k = 1, return_distance=True)
+
+    r = skull_point_neg - position
+    r_mag = np.linalg.norm(r)
+    r_hat = r/r_mag
+
+    r_mag += padding
+    # print(f"og point: [{round(skullpoint[0],6)} {round(skullpoint[1],6)} {round(skullpoint[2],6)}] dist: {round(dist,6)} diff:{np.round(diff,6)} position: {position} dist: {dist_}")
+    skull_point_neg = position + r_mag*r_hat
+    dist_, ind= skulltree.query(skull_point_neg.reshape(1, -1), k = 1, return_distance=True)
+
+    while dist_[0][0] < padding:
+        r_mag += 1
+        skull_point_neg = position + r_mag*r_hat
+        dist_, ind= skulltree.query(skull_point_neg.reshape(1, -1), k = 1, return_distance=True)   
+
         
-    return skullpoint
+    return skull_point_pos, skull_point_neg

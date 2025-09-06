@@ -62,7 +62,7 @@ def draw_ptc(ptc):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         # fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240925-12-25-03_ptcloud.txt", "../data/output/20240925-12-25-03_interp.txt", "../data/output/20240925-12-24-44_ptcloud.txt", "../data/output/20240925-12-24-44_interp.txt", "../data/output/20240925-12-28-14_interp.txt", "../data/output/20240925-12-33-06_interp.txt"]
-        fileNames = ["../data/input/remind_001_skull_outline_shuffled.txt", "../data/output/20250826-15-35-46_rrt_remind_001_ptcloud.txt", "../data/output/20250826-15-35-46_rrt_remind_001_org.txt"] #, "../data/output/20250508-15-10-26_rrt_remind_003_interp.txt"]
+        fileNames = ["../data/input/remind_001_skull_outline_shuffled.txt", "../data/output/20250905-08-57-34_rrt_remind_001_org.txt", "../data/output/20250905-09-01-36_aorrt_remind_001_org.txt", "../data/output/20250905-09-05-40_rcs_remind_001_org.txt", "../data/output/20250905-09-09-01_rcs_star_remind_001_org.txt"] #, "../data/output/20250508-15-10-26_rrt_remind_003_interp.txt"]
     else:
         fileNames = sys.argv[1:]
 
@@ -103,7 +103,9 @@ if __name__ == "__main__":
             goal_q = path_points[-1,3:7]
         elif ptcFile.__contains__("ptcloud"):
             path_points = np.loadtxt(ptcFile, max_rows=2)
-            start_p = path_points[0,0:3]                     
+            start_p = path_points[0,0:3]  
+        elif ptcFile.__contains__("sg_pairs"):
+            path_points = np.loadtxt(ptcFile, max_rows=2)     
 
         numpoints = np.shape(ptc.points)
         print(numpoints)

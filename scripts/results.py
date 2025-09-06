@@ -253,6 +253,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
     labels = []
     plotter.title(title)
     lines = []
+
     for i in range(len(planners)):
         planner_indices = get_planner_indices(data, planners[i])
         if index == stats_indices['lengths']:
@@ -263,7 +264,6 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
             continue
         colors += [planners[i].color]
         labels += [planners[i].label]
-
         flat = []
         for x in data_ind:
             for xi in x:
@@ -280,7 +280,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
         time = time[sortedinds]
         flat = flat[sortedinds]
 
-        n = 10 #window
+        n = 2 #window
         average = np.cumsum(flat)
         average[n:] = average[n:] - average[:-n]
         average[n-1:] = average[n-1:]/n
@@ -290,9 +290,9 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
         averagetime[n-1:] = averagetime[n-1:]/n
 
         if np.shape(average)[0] > 0:
-            for i in range(0, n-1):
-                average[i] = average[i]/(i+1)
-                averagetime[i] = averagetime[i]/(i+1)
+            for j in range(0, n-1):
+                average[j] = average[j]/(j+1)
+                averagetime[j] = averagetime[j]/(j+1)
 
 
         line = plotter.plot(averagetime, average, color=planners[i].color)
@@ -409,11 +409,11 @@ def make_figures(data, time_data, title):
     # make success bar subplot with 95% confidence interval
     plotter.subplot(rows,num_plots//rows,2)
     # make_success_bar(data, hatch)
-    make_time_figure(data, time_data, stats_indices['lengths'], r'Distance vs time', r'$\ell$', y_min=1, y_max=1.25)
+    make_time_figure(data, time_data, stats_indices['lengths'], r'Distance vs time', r'$\ell$ (mm)', y_min=1, y_max=1.25)
 
     # make violin subplot of total phis for planners with log scale
     plotter.subplot(rows,num_plots//rows,3)
-    make_violin_figure(plan_data, stats_indices['phi'], r'Total $\phi$ for Planner Variations', r'$\phi$ (radians)', y_min=0.0, y_max=6)
+    make_violin_figure(plan_data, stats_indices['phi'], r'Total $\phi$ for Planner Variations', r'$\phi$ (radians)', y_min=0.0, y_max=3.14)
 
     # make a violin subplot of the path length ratios for planners, no log scale
     plotter.subplot(rows,num_plots//rows,4)

@@ -287,9 +287,9 @@ class RRT(object):
             if _DEBUG:
                 if self.K > 10:
                     if k%(self.K//10) == 0:
-                        print(f"sample {k}/{self.K}... nodes: {self.T.nodes.__len__()}")
+                        print(f"sample {k}/{self.K-1}... nodes: {self.T.nodes.__len__()}")
                 else:
-                    print(f"sample {k}/{self.K}... nodes: {self.T.nodes.__len__()}")
+                    print(f"sample {k}/{self.K-1}... nodes: {self.T.nodes.__len__()}")
 
             if self.K > 10 and k%(self.K//10) == 0 and time.time() - start_time > self.time_limit:
                 break          
@@ -303,6 +303,7 @@ class RRT(object):
                     print(f"state not reached! {random_state} parent: {parent} k: {k} status: {keep_extending}\n")
                     # break
                     return None, None, _UNREACHABLE, _UNREACHABLE 
+        print("all points verified!!")
 
         return None, None, _UNREACHABLE, _UNREACHABLE   
 
@@ -391,16 +392,16 @@ class RRT(object):
                 return (_TRAPPED, new_node)
 
         
-        # print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
-        # next_node = nearest_node
-        # while next_node.parent is not None:
-        #     print()
-        #     next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=True)
-        #     next_node = next_node.parent
+        print(f"sample: {sample} parent: {parent} nearest: {nearest_node.needle_model.p} dist: {magnitude} ik says not reachable! print parent")
+        next_node = nearest_node
+        while next_node.parent is not None:
+            print()
+            next_node.parent.needle_model.move_needle(next_node.needle_model.p, print_=True)
+            next_node = next_node.parent
 
-        # print("printing sample ik!")
-        # q, phi = nearest_node.needle_model.ik(sample, print_=True)
-        # nearest_node.needle_model.get_new_lims(sample, print_=True)
+        print("printing sample ik!")
+        q, phi = nearest_node.needle_model.ik(sample, print_=True)
+        nearest_node.needle_model.get_new_lims(sample, print_=True)
         return (_TRAPPED, None)
 
 

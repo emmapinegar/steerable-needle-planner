@@ -23,15 +23,23 @@ do
         # ./app/rcs -seed 8965 -scan $j -r 20 -l 100 -phi 180 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
         # ./app/rcs_star -seed 8965 -scan $j -r 20 -l 100 -phi 180 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
 
-        ./app/rrt -seed $i -scan $j -r 30 -l 100 -phi 180 -timeout 1000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 500
-        ./app/aorrt -seed $i -scan $j -r 30 -l 100 -phi 180 -timeout 1000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 500
-        ./app/rcs -seed 8965 -scan $j -r 30 -l 100 -phi 180 -timeout 1000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 500
-        ./app/rcs_star -seed 8965 -scan $j -r 30 -l 100 -phi 180 -timeout 1000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 500
+        # ./app/rrt -seed $i -scan $j -r 25 -l 100 -phi 180 -timeout 100000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 100 -save_pc
+        # ./app/aorrt -seed $i -scan $j -r 25 -l 100 -phi 180 -timeout 100000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 100 -save_pc
+        ./app/rcs -seed 8965 -scan $j -r 25 -l 100 -phi 180 -timeout 100000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 250 
+        ./app/rcs_star -seed 8965 -scan $j -r 25 -l 100 -phi 180 -timeout 100000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 250
 
-        # ./app/rrt -seed $i -scan $j -r 40 -l 100 -phi 180 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
-        # ./app/aorrt -seed $i -scan $j -r 40 -l 100 -phi 180 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
-        # ./app/rcs -seed 8965 -scan $j -r 40 -l 100 -phi 180 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
-        # ./app/rcs_star -seed 8965 -scan $j -r 40 -l 100 -phi 180 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt" 
+
+        ./app/rcs -seed 8965 -scan $j -r 25 -l 100 -phi 90 -timeout 100000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 250 
+        ./app/rcs_star -seed 8965 -scan $j -r 25 -l 100 -phi 90 -timeout 100000 -bias 0.05 -var_curve -sg_index 0 -stats_file "./../data/output/planner_stats.txt" -num_sg 250
+
+
+        ./app/rcs -seed 8965 -scan $j -r 25 -l 100 -phi 180 -timeout 100000 -bias 0.05 -var_curve -sg_index 250 -stats_file "./../data/output/planner_stats.txt" -num_sg 250 
+        ./app/rcs_star -seed 8965 -scan $j -r 25 -l 100 -phi 180 -timeout 100000 -bias 0.05 -var_curve -sg_index 250 -stats_file "./../data/output/planner_stats.txt" -num_sg 250
+
+
+        ./app/rcs -seed 8965 -scan $j -r 25 -l 100 -phi 90 -timeout 100000 -bias 0.05 -var_curve -sg_index 250 -stats_file "./../data/output/planner_stats.txt" -num_sg 250 
+        ./app/rcs_star -seed 8965 -scan $j -r 25 -l 100 -phi 90 -timeout 100000 -bias 0.05 -var_curve -sg_index 250 -stats_file "./../data/output/planner_stats.txt" -num_sg 250
+
 
         # ./app/rrt -seed $i -scan $j -r 50 -l 100 -phi 180 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
         # ./app/aorrt -seed $i -scan $j -r 50 -l 100 -phi 180 -timeout 10000 -bias 0.05 -save_pc -save_interp -var_curve -sg_index $k -stats_file "./../data/output/planner_stats.txt"
