@@ -280,7 +280,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
         time = time[sortedinds]
         flat = flat[sortedinds]
 
-        n = 2 #window
+        n = 25 #window
         average = np.cumsum(flat)
         average[n:] = average[n:] - average[:-n]
         average[n-1:] = average[n-1:]/n
@@ -342,9 +342,9 @@ def make_success_bar(data):
         labels += [planners[i].label]
         success, moe = get_success(data_ind)
         successes += [success]
-        plotter.hlines(success, i-viz_params['width']/2, i+viz_params['width']/2, color=planners[i].color, linestyles='dotted')
-        plotter.bar(i, moe*2, bottom=success - moe, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'], edgecolor=planners[i].color)
-        plotter.text(i-viz_params['width']/1.5, success, '%.2f' % success + '%', horizontalalignment='right', verticalalignment='center', fontsize=viz_params['textsize'])
+        plotter.hlines(success, len(colors)-1-viz_params['width']/2, len(colors)-1+viz_params['width']/2, color=planners[i].color, linestyles='dotted')
+        plotter.bar(len(colors)-1, moe*2, bottom=success - moe, color=planners[i].color, alpha=viz_params['alpha'], width=viz_params['width'], edgecolor=planners[i].color)
+        plotter.text(len(colors)-1-viz_params['width']/1.5, success, '%.2f' % success + '%', horizontalalignment='right', verticalalignment='center', fontsize=viz_params['textsize'])
 
     plotter.ylabel('Success Percentage')
     plotter.xticks(np.arange(0, len(colors)), labels, rotation=viz_params['rotation'])

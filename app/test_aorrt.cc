@@ -65,6 +65,10 @@ int main(int argc, char** argv) {
     // start_and_goal_file is defined in global_common.h 
     auto [start_p_, start_q, goal_p_, goal_q] = utils::ReadStartAndGoal(start_and_goal_file);
 
+    std::mt19937_64 seed_rng;
+    seed_rng.seed(global_seed);
+    RealUniformDist seed_generator = RealUniformDist(0, 14227);
+
 
     cfg->direct_connect_ratio = 1.0;
     // cfg->goal_pos_tolerance = 1.0;
@@ -78,7 +82,7 @@ int main(int argc, char** argv) {
     int max_sg = global_sg_index + global_sg_num;
     for (global_sg_index; global_sg_index < max_sg; global_sg_index++) {
         Str date_and_time = utils::DateAndTime();
-
+        cfg->seed = seed_generator(seed_rng);
         cfg->output_file_root = "../data/output/" + date_and_time + suffix;
         auto [start_p, goal_p] = utils::ReadSGPair(sg_pairs_file, global_sg_index);
         

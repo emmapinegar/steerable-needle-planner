@@ -20,6 +20,7 @@ import nibabel as nib
 from scipy import stats
 
 _KAPPA = 0.04
+_OBSTACLES = 7
 _GOAL = 6
 _START = 5
 _TUMOR = 4
@@ -215,6 +216,7 @@ def write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cp
     if os.path.exists(pyobstaclefilename):
         obstacles = np.load(pyobstaclefilename)
         if not os.path.exists(cppobstaclefilename):
+            obstacles = np.logical_or(scan_data == _OBSTACLES, scan_data == _VENTRICLES)
             obstacles_ = np.where(obstacles)
             obstaclepoints = np.empty(np.shape(obstacles_))
             if np.shape(obstacles_)[0] > 0:
@@ -235,6 +237,7 @@ def write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cp
         np.save(pyobstaclefilename, obstacles)
         np.save(segmentationfilename, scan_data)
 
+        obstacles = np.logical_or(scan_data == _OBSTACLES, scan_data == _VENTRICLES)
         obstacles_ = np.where(obstacles)
         obstaclepoints = np.empty(np.shape(obstacles_))
         if np.shape(obstacles_)[0] > 0:
@@ -347,24 +350,37 @@ def verify_ReMIND_env(lines, starts, goals):
         # print(start)
         env.parse_start(['1.0', '0.0', '0.0', str(start[0]), '0.0', '1.0', '0.0', str(start[1]), '0.0', '0.0', '1.0', str(start[2]), '0.0', '0.0', '0.0', '1.0'])
         if not env.test_collisions_buffered(env.start):
+            next_pairs = []
             np.random.shuffle(open_goals)
             for goal in open_goals:
                 if i < 10 and len(sg_pairs) < 2000:
                     env.change_goal(goal)
                     if not env.test_collisions_world(env.goal):
-                        q, phi = env.robot.ik(env.goal)
-                        # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
-                        if q is not None:
-                            rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
-                            rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
+                        valid = True
+                        for rad in [50]:
+                            if valid:
+                                env.robot.needle_lims[1,1] = 1/rad
+                                q, phi = env.robot.ik(env.goal)
+                                # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
+                                if q is not None:
+                                    rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
+                                    rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
+                                    (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
 
-                            (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
-                            if not status == _REACHED:
-                                sg_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
-                                i += 1
-                                if len(sg_pairs) >= 1000:
-                                    break
-                            # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
+                                    if status == _REACHED:
+                                        valid = False
+                                    # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
+                                else:
+                                    valid = False
+                            else:
+                                break
+                        if valid:
+                            next_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
+                            i += 1
+            if i == 10:
+                sg_pairs += next_pairs
+                # print(sg_pairs)
+        
         i = 0
 
     return sg_pairs
