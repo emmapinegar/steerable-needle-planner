@@ -14,7 +14,7 @@ _PINK = '#C33AAC'
 _RED = '#BF0F67'
 
 
-stats_indices = {'env': 0, 'sg_index': 1, 'sg_mag': 2, 'planner': 3, 'ell': 4, 'phi': 5, 'time': 6, 'success': 7, 'approx_success': 8, 'spreading': 9, 'maxphi': 10, 'maxell': 11, 'minrad': 12, 'times': 13, 'costs': 14, 'lengths': 15, 'phis': 16}
+stats_indices = {'env': 0, 'sg_index': 1, 'sg_mag': 2, 'planner': 3, 'ell': 4, 'phi': 5, 'time': 6, 'success': 7, 'approx_success': 8, 'spreading': 9, 'maxphi': 10, 'maxell': 11, 'minrad': 12, 'varcurv':13, 'times': 14, 'costs': 15, 'lengths': 16, 'phis': 17}
 viz_params = {'alpha': 0.25, 'rotation': 10, 'width': 0.2, 'textsize': 10}
 
 
@@ -459,7 +459,7 @@ def get_distances_time(data, time_data):
 if __name__=='__main__':
 
     files = fnmatch.filter(os.listdir('./../data/output/'), '*_stats.txt')
-    data = np.empty((0,13))
+    data = np.empty((0,14))
     time_data = []
     def conv(x):
         x_ = x.decode()
@@ -472,10 +472,10 @@ if __name__=='__main__':
         
     convs = {0: lambda x: conv(x), 1: lambda x: conv(x), 2: lambda x: conv(x), 3: lambda x: conv(x)}
     for file in files:
-        next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12))
+        next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13))
 
         data = np.vstack((data, next_data))
-        next_time_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(13,14,15,16), converters=conv, dtype=object, quotechar='"')
+        next_time_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(14,15,16,17), converters=conv, dtype=object, quotechar='"')
 
         # print(np.shape(next_time_data))
         time_data.append(next_time_data)
@@ -484,6 +484,7 @@ if __name__=='__main__':
     hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
+    varcurvs = np.unique(data[:, stats_indices['varcurv']])
     # make figures for each of the kappa values used in experiments
     for i in range(np.shape(kappas)[0]):
         kappa = kappas[i]
@@ -498,8 +499,12 @@ if __name__=='__main__':
                 phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
                 phi_data = env_data[phi_inds,:]
                 if np.shape(phi_data)[0] > 0:
-                    # print(np.shape(phi_data))
-                    make_figures(phi_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env)
+                    for l in range(np.shape(varcurvs)[0]):
+                        varcurv = varcurvs[l]
+                        varcurv_inds = np.where(phi_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = phi_data[varcurv_inds,:]
+                        if np.shape(varcurv_data)[0] > 0:
+                            make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv)
         # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
         # analyze_pairs(data)
     plotter.show()

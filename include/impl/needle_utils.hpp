@@ -1007,7 +1007,7 @@ bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
  * @returns bool true if stats were written to file, false otherwise
  */
 bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
-                      const bool spreading, const Str& planner_type, const Str& file_root, const Str& file_name, const std::vector<std::tuple<float, RealNum, RealNum, RealNum>>& results, const bool show_log)
+                      const bool spreading, const bool variable_curvature, const Str& planner_type, const Str& file_root, const Str& file_name, const std::vector<std::tuple<float, RealNum, RealNum, RealNum>>& results, const bool show_log)
 {
     std::ofstream fout;
     fout.open(file_name, std::ios::app); //https://www.w3resource.com/cpp-exercises/file-handling/cpp-file-handling-exercise-7.php#:~:text=Use%20the%20std%3A%3Aofstream,using%20the%20is_open()%20function.
@@ -1037,10 +1037,10 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
     }
 
 
-    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
+    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
     fout.close();
 
-    std::cout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << std::endl;
+    std::cout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << std::endl;
     if (show_log) {
         std::cout << "Result with " << path_length << " mm long path and " << ang_total << " radians with to " << file_name << std::endl;
     }

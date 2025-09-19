@@ -320,7 +320,9 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
                 lines[2] = f"Start: {start[0,0]} {start[0,1]} {start[0,2]} {start[0,3]} {start[1,0]} {start[1,1]} {start[1,2]} {start[1,3]} {start[2,0]} {start[2,1]} {start[2,2]} {start[2,3]} {start[3,0]} {start[3,1]} {start[3,2]} {start[3,3]}\n"
                 lines[3] = f"Goal: {sg_pairs[0,3]} {sg_pairs[0,4]} {sg_pairs[0,5]}\n"
         else:
-            sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals))
+            sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=15)
+            sg_pairs += verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=25)
+            sg_pairs += verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=50)
             # np.random.shuffle(sg_pairs)
             np.savetxt(pypairfilename, sg_pairs, fmt='%d')
             if len(sg_pairs) == 0:
@@ -329,7 +331,7 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
         textfile.writelines(lines)
 
 
-def verify_ReMIND_env(lines, starts, goals):
+def verify_ReMIND_env(lines, starts, goals, k=15):
     env = ReMINDEnvironment()
     env.read_lines(lines, variable_curvature=False)
     sg_pairs = []
@@ -345,6 +347,7 @@ def verify_ReMIND_env(lines, starts, goals):
             open_goals += [goal]
 
     print(f"goals: {np.shape(goals)} good: {len(open_goals)}")
+    env.robot.needle_lims[1,1] = 1/k
     i = 0
     for start in starts:
         # print(start)
@@ -353,27 +356,23 @@ def verify_ReMIND_env(lines, starts, goals):
             next_pairs = []
             np.random.shuffle(open_goals)
             for goal in open_goals:
-                if i < 10 and len(sg_pairs) < 2000:
+                if i < 10 and len(sg_pairs) < 1000:
                     env.change_goal(goal)
                     if not env.test_collisions_world(env.goal):
                         valid = True
-                        for rad in [50]:
-                            if valid:
-                                env.robot.needle_lims[1,1] = 1/rad
-                                q, phi = env.robot.ik(env.goal)
-                                # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
-                                if q is not None:
-                                    rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
-                                    rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
-                                    (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
+                        q, phi = env.robot.ik(env.goal)
+                        # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
+                        if q is not None:
+                            rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
+                            rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
+                            (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
 
-                                    if status == _REACHED:
-                                        valid = False
-                                    # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
-                                else:
-                                    valid = False
-                            else:
-                                break
+                            if status == _REACHED:
+                                valid = False
+                            # env.draw_path(None, rrt, dynamic_tree=False, dynamic_plan=False, show=True)
+                        else:
+                            valid = False
+
                         if valid:
                             next_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
                             i += 1
@@ -527,111 +526,6 @@ def create_test_env(r=150,spacing=150):
 
     print(skull_coords)
     np.save("./ReMIND_envs/skull_segmentation_test.npy", skull_coords)
-
-
-# def get_obstacles_outline(voxel_grid):
-#     """
-#     Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
-#     """
-#     mask = np.zeros_like(voxel_grid)
-#     for i in range(0,int(np.shape(voxel_grid)[0])):
-#         eroded_mask = np.logical_not(get_shell(voxel_grid[i,:,:]))
-#         mask[i,:,:] = np.logical_and(voxel_grid[i,:,:], eroded_mask)
-#         # if i == self.start[0,0]:
-#         #     plt.imshow(self.voxel_grid[i,:,:])
-#         #     plt.show()
-#         #     plt.imshow(eroded_mask)
-#         #     plt.show()
-#         #     plt.imshow(mask[i,:,:])
-#         #     plt.show()
-#     obstacle_coords = np.where(mask == 1)
-#     obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
-#     return obstacle_arr
-
-
-# def get_obstacles_outline_speckled(voxel_grid):
-#     """
-#     Write the obstacle file to a text file with the transformation matrix preceeding the obstacle voxel coordinates.
-#     """
-#     mask = np.zeros_like(voxel_grid)
-#     for i in range(0,int(np.shape(voxel_grid)[0])):
-#         eroded_mask = np.logical_not(get_shell(voxel_grid[i,:,:]))
-#         arr_shape = np.shape(eroded_mask)
-#         obstacle_x = np.random.random_integers(0,arr_shape[0]-1,(arr_shape[0]*arr_shape[1])//32)
-#         obstacle_y = np.random.random_integers(0,arr_shape[1]-1,(arr_shape[0]*arr_shape[1])//32)
-#         # print(np.shape(eroded_mask))
-#         eroded_mask[obstacle_x, obstacle_y] = 1.0
-#         # plt.imshow(eroded_mask)
-#         # plt.show() 
-#         mask[i,:,:] = np.logical_and(voxel_grid[i,:,:], eroded_mask)
-#         # plt.imshow(mask[i,:,:])
-#         # plt.show()
-    
-#     obstacle_coords = np.where(mask == 1)
-#     obstacle_arr = np.array((obstacle_coords[0], obstacle_coords[1], obstacle_coords[2])).transpose()
-#     return obstacle_arr
-
-
-
-# # from the opencv demo https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html  
-# def get_shell(image):
-#     global src
-#     uint_img = np.array(image*255).astype('uint8')
-#     src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
-#     if src is None:
-#         print('Could not open or find the image: ', image)
-#         exit(0)
- 
-#     erosion_dst = erosion(0, erosion_size=1)
-#     erosion_dst = np.asarray(erosion_dst)
-#     # print(np.shape(erosion_dst))
-#     erosion_dst = erosion_dst[:,:,0]//255
-#     # print(np.shape(erosion_dst))
-#     return erosion_dst
-
-
-
-# def remove_shell(image):
-#     global src
-#     uint_img = np.array(image*255).astype('uint8')
-#     src = cv.cvtColor(uint_img, cv.COLOR_GRAY2BGR)
-#     if src is None:
-#         print('Could not open or find the image: ', image)
-#         exit(0)
- 
-#     src = erosion(0, erosion_size=5)
-#     dilation_dst = dilatation(0, dilatation_size=7)
-#     morph_dst = np.asarray(dilation_dst)
-#     morph_dst = morph_dst[:,:,0]//255
-#     return morph_dst
-
-
-# # optional mapping of values with morphological shapes
-# def morph_shape(val):
-#     if val == 0:
-#         return cv.MORPH_RECT
-#     elif val == 1:
-#         return cv.MORPH_CROSS
-#     elif val == 2:
-#         return cv.MORPH_ELLIPSE
-
-
-# def erosion(val, erosion_size = 2):
-#     erosion_shape = morph_shape(val)
-#     element = cv.getStructuringElement(erosion_shape, (2 * erosion_size + 1, 2 * erosion_size + 1),
-#                                        (erosion_size, erosion_size))
-#     erosion_dst = cv.erode(src, element)
-#     return erosion_dst
-
-
-# def dilatation(val, dilatation_size=1):
-#     dilation_shape = morph_shape(val)
-#     element = cv.getStructuringElement(dilation_shape, (2 * dilatation_size + 1, 2 * dilatation_size + 1),
-#                                        (dilatation_size, dilatation_size))
-#     dilatation_dst = cv.dilate(src, element)
-#     return dilatation_dst
-
-
 
 
 
