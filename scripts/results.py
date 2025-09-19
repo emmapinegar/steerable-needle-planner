@@ -233,7 +233,6 @@ def make_violin_figure(data, index, title, ylabel, y_min=0, y_max=10, ylog=False
     plotter.ylim([y_min, y_max])
 
 
-
 def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, ylog=False):
     """    
     Makes violin plots for the planner variations.
@@ -313,11 +312,106 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
     x_max = np.floor(np.max(data[:,stats_indices['time']]))
     plotter.xlim([0, x_max])
     plotter.ylim([y_min,y_max])
-
+    plotter.xlabel('seconds')
     if ylog:
         plotter.yscale('log')
     else:
         plotter.yscale('linear')
+
+
+def make_success_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, xlog=True):
+    """    
+    Makes violin plots for the planner variations.
+
+    Parameters:
+        data (n,13): data from the experiments to analyze
+        time_data (n,4): timewise data from the experiments to analyze, with arrays for each element in the array
+        index (int): index for the column of the data to be analyzed
+        title (string): title for the resulting plot
+        ylabel (string): label for the y axis of the plot
+        y_min (float): minimum y axis value, default=0
+        y_max (float): maximum y axis value, default=100
+        y_log (bool): if true makes the y axis scaled log, can throw off y axis limits
+    """
+
+    colors = []
+    labels = []
+    plotter.title(title)
+    lines = []
+
+    for i in range(len(planners)):
+        planner_indices = get_planner_indices(data, planners[i])
+        if index == stats_indices['lengths']:
+            data_ind = time_data[planner_indices,stats_indices['lengths']-stats_indices['times']]/data[planner_indices,stats_indices['sg_mag']]
+        else:
+            data_ind = time_data[planner_indices, index - stats_indices['times']]
+        if np.shape(data_ind)[0] == 0:
+            continue
+        colors += [planners[i].color]
+        labels += [planners[i].label]
+        # flat = []
+        # for x in data_ind:
+        #     for xi in x:
+        #         flat.append(xi)
+
+        time = []
+        success = []
+        j = 0
+        for x in time_data[planner_indices, stats_indices['times'] - stats_indices['times']]:
+            print(x)
+            if len(x) > 0:
+                time.append(x[0])
+                j += 1
+                success.append(100*j/np.shape(planner_indices)[0])
+
+
+                
+        time = np.array(time)
+        # flat = np.array(flat)
+        sortedinds = np.argsort(time)
+
+        time = time[sortedinds]
+        # flat = flat[sortedinds]
+
+    #     n = 25 #window
+    #     average = np.cumsum(flat)
+    #     average[n:] = average[n:] - average[:-n]
+    #     average[n-1:] = average[n-1:]/n
+
+    #     averagetime = np.cumsum(time)
+    #     averagetime[n:] = averagetime[n:] - averagetime[:-n]
+    #     averagetime[n-1:] = averagetime[n-1:]/n
+
+    #     if np.shape(average)[0] > 0:
+    #         for j in range(0, n-1):
+    #             average[j] = average[j]/(j+1)
+    #             averagetime[j] = averagetime[j]/(j+1)
+
+
+        line = plotter.plot(time, success, color=planners[i].color)
+        lines += [line]
+
+    if len(colors) > 0:
+        plotter.setp(lines[0], color=colors[0])
+    if len(colors) > 1:      
+        plotter.setp(lines[1], color=colors[1])
+    if len(colors) > 2:
+        plotter.setp(lines[2], color=colors[2])
+    if len(colors) > 3:
+        plotter.setp(lines[3], color=colors[3])
+
+
+    plotter.ylabel(ylabel)
+    plotter.legend(labels)
+    x_max = np.floor(np.max(data[:,stats_indices['time']]))
+    plotter.xlim([time[0], x_max])
+    plotter.ylim([0,100])
+    plotter.xlabel('seconds')
+
+    if xlog:
+        plotter.xscale('log')
+    else:
+        plotter.xscale('linear')
         
 
 def make_success_bar(data):
@@ -409,7 +503,7 @@ def make_figures(data, time_data, title):
     # make success bar subplot with 95% confidence interval
     plotter.subplot(rows,num_plots//rows,2)
     # make_success_bar(data, hatch)
-    make_time_figure(data, time_data, stats_indices['lengths'], r'Distance vs time', r'$\ell$ (mm)', y_min=1, y_max=1.25)
+    make_time_figure(data, time_data, stats_indices['lengths'], r'Distance vs Time', r'$\ell^\prime$', y_min=1, y_max=1.25)
 
     # make violin subplot of total phis for planners with log scale
     plotter.subplot(rows,num_plots//rows,3)
@@ -422,6 +516,45 @@ def make_figures(data, time_data, title):
     # title the whole figure and adjust the spacing of the plots and margins 
     plotter.suptitle(title, fontsize=18)
     plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
+
+
+def make_succes_time_figures(data, time_data):
+    fig = plotter.figure(figsize=[15, 8])
+    kappas = np.unique(data[:,stats_indices['minrad']])
+    hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
+    envs = np.unique(data[:, stats_indices['env']])
+    phis = np.unique(data[:,stats_indices['maxphi']])
+    varcurvs = np.unique(data[:, stats_indices['varcurv']])
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]*np.shape(varcurvs)[0]
+    rows = 2
+    cols = num_plots//rows
+    fig_ind = 0
+    # make figures for each of the kappa values used in experiments
+    for i in range(np.shape(kappas)[0]):
+        kappa = kappas[i]
+        kappa_inds = np.where(data[:,stats_indices['minrad']] == kappa)[0]
+        kappa_data = data[kappa_inds,:]
+        for j in range(np.shape(envs)[0]):
+            env = envs[j]
+            env_inds = np.where(kappa_data[:,stats_indices['env']] == env)[0]
+            env_data = kappa_data[env_inds,:]
+            for k in range(np.shape(phis)[0]):
+                phi = phis[k]
+                phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+                phi_data = env_data[phi_inds,:]
+                if np.shape(phi_data)[0] > 0:
+                    for l in range(np.shape(varcurvs)[0]):
+                        varcurv = varcurvs[l]
+                        varcurv_inds = np.where(phi_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = phi_data[varcurv_inds,:]
+                        if np.shape(varcurv_data)[0] > 0:
+                            make_success_time_figure(data, time_data, stats_indices['lengths'], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'Success Percentage', y_min=0, y_max=100)
+                            # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
+        # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
+        # analyze_pairs(data)
+    plotter.suptitle(r'Success vs Time', fontsize=18)
+    plotter.show()
+
 
 
 def get_distances(data):
@@ -479,6 +612,8 @@ if __name__=='__main__':
 
         # print(np.shape(next_time_data))
         time_data.append(next_time_data)
+
+    make_succes_time_figures(data, time_data[0])
 
     kappas = np.unique(data[:,stats_indices['minrad']])
     hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
