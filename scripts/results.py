@@ -358,7 +358,7 @@ def make_success_time_figure(data, time_data, index, title, ylabel, y_min=0, y_m
         success = []
         j = 0
         for x in time_data[planner_indices, stats_indices['times'] - stats_indices['times']]:
-            print(x)
+            # print(x)
             if len(x) > 0:
                 time.append(x[0])
                 j += 1
@@ -528,7 +528,7 @@ def make_succes_time_figures(data, time_data):
     num_plots = np.shape(kappas)[0]*np.shape(phis)[0]*np.shape(varcurvs)[0]
     rows = 2
     cols = num_plots//rows
-    fig_ind = 0
+    fig_ind = 1
     # make figures for each of the kappa values used in experiments
     for i in range(np.shape(kappas)[0]):
         kappa = kappas[i]
@@ -548,11 +548,14 @@ def make_succes_time_figures(data, time_data):
                         varcurv_inds = np.where(phi_data[:,stats_indices['varcurv']] == varcurv)[0]
                         varcurv_data = phi_data[varcurv_inds,:]
                         if np.shape(varcurv_data)[0] > 0:
-                            make_success_time_figure(data, time_data, stats_indices['lengths'], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'Success Percentage', y_min=0, y_max=100)
+                            plotter.subplot(rows, cols, fig_ind)
+                            make_success_time_figure(varcurv_data, time_data[kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], stats_indices['lengths'], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'Success Percentage', y_min=0, y_max=100)
+                            fig_ind += 1
                             # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
         # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
         # analyze_pairs(data)
     plotter.suptitle(r'Success vs Time', fontsize=18)
+    plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
     plotter.show()
 
 
