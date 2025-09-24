@@ -349,56 +349,44 @@ def make_success_time_figure(data, time_data, index, title, ylabel, y_min=0, y_m
             continue
         colors += [planners[i].color]
         labels += [planners[i].label]
-        # flat = []
-        # for x in data_ind:
-        #     for xi in x:
-        #         flat.append(xi)
 
         time = []
         success = []
+        success_upper = []
+        success_lower = []
         j = 0
         for x in time_data[planner_indices, stats_indices['times'] - stats_indices['times']]:
-            # print(x)
             if len(x) > 0:
                 time.append(x[0])
                 j += 1
-                success.append(100*j/np.shape(planner_indices)[0])
+                next_success = j/np.shape(planner_indices)[0]
+                success.append(100*next_success)
+                adjusted_proportion = (j + 2)/(np.shape(planner_indices)[0] + 4)
+                se_1 = adjusted_proportion*(1-adjusted_proportion)
+                se_2 = se_1/(np.shape(planner_indices)[0] + 4)
+                standard_error = np.sqrt(se_2)
+                margin_of_error = standard_error*2
+                success_upper.append(100*next_success + 100*margin_of_error)
+                success_lower.append(100*next_success - 100*margin_of_error)
 
-
-                
         time = np.array(time)
-        # flat = np.array(flat)
         sortedinds = np.argsort(time)
 
         time = time[sortedinds]
-        # flat = flat[sortedinds]
-
-    #     n = 25 #window
-    #     average = np.cumsum(flat)
-    #     average[n:] = average[n:] - average[:-n]
-    #     average[n-1:] = average[n-1:]/n
-
-    #     averagetime = np.cumsum(time)
-    #     averagetime[n:] = averagetime[n:] - averagetime[:-n]
-    #     averagetime[n-1:] = averagetime[n-1:]/n
-
-    #     if np.shape(average)[0] > 0:
-    #         for j in range(0, n-1):
-    #             average[j] = average[j]/(j+1)
-    #             averagetime[j] = averagetime[j]/(j+1)
-
-
         line = plotter.plot(time, success, color=planners[i].color)
-        lines += [line]
+        plotter.fill_between(time, success_upper, success_lower, color=planners[i].color, alpha=viz_params['alpha']/2)
+        # plotter.plot(time, success_upper, color=planners[i].color, alpha=viz_params['alpha'])
+        # plotter.plot(time, success_lower, color=planners[i].color, alpha=viz_params['alpha'])
+        # lines += [line]
 
-    if len(colors) > 0:
-        plotter.setp(lines[0], color=colors[0])
-    if len(colors) > 1:      
-        plotter.setp(lines[1], color=colors[1])
-    if len(colors) > 2:
-        plotter.setp(lines[2], color=colors[2])
-    if len(colors) > 3:
-        plotter.setp(lines[3], color=colors[3])
+    # if len(colors) > 0:
+    #     plotter.setp(lines[0], color=colors[0])
+    # if len(colors) > 1:      
+    #     plotter.setp(lines[1], color=colors[1])
+    # if len(colors) > 2:
+    #     plotter.setp(lines[2], color=colors[2])
+    # if len(colors) > 3:
+    #     plotter.setp(lines[3], color=colors[3])
 
 
     plotter.ylabel(ylabel)
@@ -518,16 +506,60 @@ def make_figures(data, time_data, title):
     plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
 
 
-def make_succes_time_figures(data, time_data):
+
+def make_success_time_figures(data, time_data):
     fig = plotter.figure(figsize=[15, 8])
     kappas = np.unique(data[:,stats_indices['minrad']])
     hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]*np.shape(varcurvs)[0]
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]
     rows = 2
     cols = num_plots//rows
+    fig_ind = 1
+    # make figures for each of the kappa values used in experiments
+
+    for j in range(np.shape(envs)[0]):
+        env = envs[j]
+        env_inds = np.where(data[:,stats_indices['env']] == env)[0]
+        env_data = data[env_inds,:]
+        for k in range(np.shape(phis)[0]):
+            phi = phis[k]
+            phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+            phi_data = env_data[phi_inds,:]
+            if np.shape(phi_data)[0] > 0:
+                for i in range(np.shape(kappas)[0]):
+                    kappa = kappas[i]
+                    kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
+                    kappa_data = phi_data[kappa_inds,:]
+                    for l in range(np.shape(varcurvs)[0]):
+                        varcurv = varcurvs[l]
+                        varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = kappa_data[varcurv_inds,:]
+                        if np.shape(varcurv_data)[0] > 0:
+                            plotter.subplot(rows, cols, fig_ind)
+                            make_success_time_figure(varcurv_data, time_data[env_inds,:][phi_inds,:][kappa_inds,:][varcurv_inds,:], stats_indices['lengths'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'Success Percentage', y_min=0, y_max=100)
+                            fig_ind += 1
+                            # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
+        # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
+        # analyze_pairs(data)
+    plotter.suptitle(r'Success vs Time', fontsize=18)
+    plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
+    plotter.show()
+
+
+def make_length_time_figures(data, time_data):
+    fig = plotter.figure(figsize=[15, 8])
+    kappas = np.unique(data[:,stats_indices['minrad']])
+    hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
+    envs = np.unique(data[:, stats_indices['env']])
+    phis = np.unique(data[:,stats_indices['maxphi']])
+    varcurvs = np.unique(data[:, stats_indices['varcurv']])
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]
+    rows = 2
+    cols = num_plots//rows
+    print(cols)
     fig_ind = 1
     # make figures for each of the kappa values used in experiments
     for i in range(np.shape(kappas)[0]):
@@ -549,14 +581,15 @@ def make_succes_time_figures(data, time_data):
                         varcurv_data = phi_data[varcurv_inds,:]
                         if np.shape(varcurv_data)[0] > 0:
                             plotter.subplot(rows, cols, fig_ind)
-                            make_success_time_figure(varcurv_data, time_data[kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], stats_indices['lengths'], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'Success Percentage', y_min=0, y_max=100)
+                            make_time_figure(varcurv_data, time_data[kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], stats_indices['lengths'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'$\ell^\prime$', y_min=1, y_max=1.25)
                             fig_ind += 1
                             # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
         # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
         # analyze_pairs(data)
-    plotter.suptitle(r'Success vs Time', fontsize=18)
+    plotter.suptitle(r'Distance vs Time', fontsize=18)
     plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
     plotter.show()
+
 
 
 
@@ -616,7 +649,8 @@ if __name__=='__main__':
         # print(np.shape(next_time_data))
         time_data.append(next_time_data)
 
-    make_succes_time_figures(data, time_data[0])
+    make_success_time_figures(data, time_data[0])
+    make_length_time_figures(data, time_data[0])
 
     kappas = np.unique(data[:,stats_indices['minrad']])
     hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
@@ -642,7 +676,7 @@ if __name__=='__main__':
                         varcurv_inds = np.where(phi_data[:,stats_indices['varcurv']] == varcurv)[0]
                         varcurv_data = phi_data[varcurv_inds,:]
                         if np.shape(varcurv_data)[0] > 0:
-                            make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], r'$\kappa$ = %.4f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv)
+                            make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv)
         # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
         # analyze_pairs(data)
     plotter.show()
