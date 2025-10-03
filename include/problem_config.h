@@ -125,8 +125,8 @@ struct ProblemConfig {
 
     RealNum needle_mag = 0.0018;
     RealNum manip_mag = 66.03;
-    RealNum torque_b = 24.565146515698146;
-    RealNum torque_m = 321125.69590560044;
+    RealNum torque_b = 2.1496672696261783;
+    RealNum torque_m = 500525.18710019713;
 
 
 #ifndef HAVE_GLOBAL_VARIABLES

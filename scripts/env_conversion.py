@@ -109,6 +109,12 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
 
     torque = np.load(pytorquefilename)
 
+    if not os.path.exists(cpptorquefilename):
+        with open(cpptorquefilename, "w+") as textfile:
+            lines = [f"{torque[0]} {torque[1]}\n"]
+
+            textfile.writelines(lines)        
+
     if np.shape(starts)[1] > 0:
         start_index = np.random.randint(0,np.shape(starts)[1])
         start = np.array([starts[0][start_index], starts[1][start_index], starts[2][start_index]])
@@ -412,7 +418,7 @@ def get_min_curvature(lines, obstacles):
     return min_k
         
 
-def process_Pi_data(datafile, torquefilename):
+def process_Pi_data(datafile, torquefilename, cpptorquefilename):
     """
     Processes data from Pi dataset, saving linear regression data to a .npy file
     
@@ -432,12 +438,18 @@ def process_Pi_data(datafile, torquefilename):
         
         radius_by_stiffness_mean = np.squeeze(np.mean(radius_by_stiffness, 1))
         
-        torques = np.array((readtorques[0,3], readtorques[0,2], readtorques[0,1]))
-        radius_of_curvatures = np.array((radius_by_stiffness_mean[0,2], radius_by_stiffness_mean[0,1], radius_by_stiffness_mean[0,0]))
+        torques = np.array((readtorques[0,3], readtorques[0,2], readtorques[0,1], 0))
+        radius_of_curvatures = np.array((radius_by_stiffness_mean[0,2], radius_by_stiffness_mean[0,1], radius_by_stiffness_mean[0,0], 0))
 
         bestFit = np.array(stats.linregress(torques, radius_of_curvatures))
         
         np.save(torquefilename, bestFit) 
+        with open(cpptorquefilename, "w+") as textfile:
+            lines = [f"{bestFit[0]} {bestFit[1]}\n"]
+
+            textfile.writelines(lines)
+
+
     else:
         mat = scipy.io.loadmat(datafile)
         readtorques = mat["torques"]
@@ -576,7 +588,8 @@ def create_test_env(r=150,spacing=150):
 
 if __name__ == "__main__":
 
-    process_Pi_data("./../../data/PiGroup/curvature_pi_group_data.mat", "./envs/torque_curvature.npy")
+    cpptorquefilename = os.path.join("./../data/input/", f"torque_curvature.txt")
+    process_Pi_data("./../../data/PiGroup/curvature_pi_group_data.mat", "./envs/torque_curvature.npy", cpptorquefilename)
 
     # process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
 
