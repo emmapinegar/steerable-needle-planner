@@ -430,7 +430,7 @@ def process_Pi_data(datafile, torquefilename):
         radius_by_stiffness[1, :, :] = radius[1, :, 1:]
         radius_by_stiffness[2, :, :] = radius[5, :, 1:]
         
-        radius_by_stiffness_mean = np.squeeze(np.mean(radius_by_stiffness, 1));
+        radius_by_stiffness_mean = np.squeeze(np.mean(radius_by_stiffness, 1))
         
         torques = np.array((readtorques[0,3], readtorques[0,2], readtorques[0,1]))
         radius_of_curvatures = np.array((radius_by_stiffness_mean[0,2], radius_by_stiffness_mean[0,1], radius_by_stiffness_mean[0,0]))
@@ -438,6 +438,51 @@ def process_Pi_data(datafile, torquefilename):
         bestFit = np.array(stats.linregress(torques, radius_of_curvatures))
         
         np.save(torquefilename, bestFit) 
+    else:
+        mat = scipy.io.loadmat(datafile)
+        readtorques = mat["torques"]
+        radius = mat["kappa"]
+        
+        radius_by_stiffness = np.empty((3, radius.shape[1], radius.shape[2] - 1))
+        
+        radius_by_stiffness[0, :, :] = radius[4, :, 1:]  # this is the brain stiffness data
+        radius_by_stiffness[1, :, :] = radius[1, :, 1:]
+        radius_by_stiffness[2, :, :] = radius[5, :, 1:]
+
+        
+        radius_by_stiffness_mean = np.squeeze(np.mean(radius_by_stiffness, 1))
+        torques = np.array((readtorques[0,3], readtorques[0,2], readtorques[0,1], 0))
+        radius_of_curvatures = np.array((radius_by_stiffness_mean[0,2], radius_by_stiffness_mean[0,1], radius_by_stiffness_mean[0,0], 0)) # only use the brain stiffness data
+
+        bestFit = np.array(stats.linregress(torques, radius_of_curvatures))
+        m = bestFit[0]
+        b = bestFit[1]
+        torques_ = torques[:3]
+        print(torques)
+        print(radius_by_stiffness[0,0,:])
+        print(radius_by_stiffness_mean)
+        # print(radius)
+        # print(mat)
+        plt.figure()
+        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,0,2],radius_by_stiffness[0,0,1],radius_by_stiffness[0,0,0]]), c='k', marker='o', s=120, alpha=0.1)
+        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,1,2],radius_by_stiffness[0,1,1],radius_by_stiffness[0,1,0]]), c='k', marker='o', s=120, alpha=0.1)
+        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,2,2],radius_by_stiffness[0,2,1],radius_by_stiffness[0,2,0]]), c='k', marker='o', s=120, alpha=0.1)
+        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,3,2],radius_by_stiffness[0,3,1],radius_by_stiffness[0,3,0]]), c='k', marker='o', s=120, alpha=0.1)
+        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,4,2],radius_by_stiffness[0,4,1],radius_by_stiffness[0,4,0]]), c='k', marker='o', s=120, alpha=0.1)
+
+        plt.scatter(torques[:3], 1000/radius_of_curvatures[:3], s=30, alpha=1)
+        plt.scatter(torques_, 1000/(torques_*m + b), s=30, alpha=1)
+        extents = np.array([3e-5, 3.5e-5, 4e-5, 5e-5, 6e-5, 7e-5, 8e-5, torques_[2], torques_[1], torques_[0]])
+        plt.plot(extents, 1000/(extents*m + b), c='k', linestyle='--')
+
+        print(1000/(extents*m + b))
+        print(bestFit)
+
+        # https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ticklabel_format.html
+        plt.ticklabel_format(axis='x', style='sci', scilimits=(-3,3))
+        plt.xlabel("Torque (Nm)")
+        plt.ylabel("Radius of Curvature (mm)")
+        plt.show()
 
 
 def plot_slices(scan_data, x, y, z, cmap="plasma", figname=None, mask=False):
@@ -533,6 +578,6 @@ if __name__ == "__main__":
 
     process_Pi_data("./../../data/PiGroup/curvature_pi_group_data.mat", "./envs/torque_curvature.npy")
 
-    process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
+    # process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
 
 

@@ -347,8 +347,7 @@ def make_success_time_figure(data, time_data, index, title, ylabel, y_min=0, y_m
             data_ind = time_data[planner_indices, index - stats_indices['times']]
         if np.shape(data_ind)[0] == 0:
             continue
-        colors += [planners[i].color]
-        labels += [planners[i].label]
+
 
         time = []
         success = []
@@ -369,15 +368,20 @@ def make_success_time_figure(data, time_data, index, title, ylabel, y_min=0, y_m
                 success_upper.append(100*next_success + 100*margin_of_error)
                 success_lower.append(100*next_success - 100*margin_of_error)
 
-        time = np.array(time)
-        sortedinds = np.argsort(time)
+        if len(time) > 0:
 
-        time = time[sortedinds]
-        line = plotter.plot(time, success, color=planners[i].color)
-        plotter.fill_between(time, success_upper, success_lower, color=planners[i].color, alpha=viz_params['alpha']/2)
-        # plotter.plot(time, success_upper, color=planners[i].color, alpha=viz_params['alpha'])
-        # plotter.plot(time, success_lower, color=planners[i].color, alpha=viz_params['alpha'])
-        # lines += [line]
+            colors += [planners[i].color]
+            labels += [planners[i].label]
+
+            time = np.array(time)
+            sortedinds = np.argsort(time)
+
+            time = time[sortedinds]
+            line = plotter.plot(time, success, color=planners[i].color, label=planners[i].label)
+            plotter.fill_between(time, success_upper, success_lower, color=planners[i].color, alpha=viz_params['alpha']/2)
+            # plotter.plot(time, success_upper, color=planners[i].color, alpha=viz_params['alpha'])
+            # plotter.plot(time, success_lower, color=planners[i].color, alpha=viz_params['alpha'])
+            # lines += [line]
 
     # if len(colors) > 0:
     #     plotter.setp(lines[0], color=colors[0])
@@ -390,9 +394,10 @@ def make_success_time_figure(data, time_data, index, title, ylabel, y_min=0, y_m
 
 
     plotter.ylabel(ylabel)
-    plotter.legend(labels)
+    plotter.legend()
     x_max = np.floor(np.max(data[:,stats_indices['time']]))
-    plotter.xlim([time[0], x_max])
+    print(time)
+    plotter.xlim([0.0001, x_max])
     plotter.ylim([0,100])
     plotter.xlabel('seconds')
 
@@ -401,6 +406,93 @@ def make_success_time_figure(data, time_data, index, title, ylabel, y_min=0, y_m
     else:
         plotter.xscale('linear')
         
+
+def make_success_data_figure(data, time_data, index, title, ylabel, x_min=0, x_max=2, xlog=False):
+    """    
+    Makes violin plots for the planner variations.
+
+    Parameters:
+        data (n,13): data from the experiments to analyze
+        time_data (n,4): timewise data from the experiments to analyze, with arrays for each element in the array
+        index (int): index for the column of the data to be analyzed
+        title (string): title for the resulting plot
+        ylabel (string): label for the y axis of the plot
+        y_min (float): minimum y axis value, default=0
+        y_max (float): maximum y axis value, default=100
+        y_log (bool): if true makes the y axis scaled log, can throw off y axis limits
+    """
+
+    colors = []
+    labels = []
+    plotter.title(title)
+    lines = []
+
+    for i in range(len(planners)):
+        planner_indices = get_planner_indices(data, planners[i])
+        if index == stats_indices['lengths']:
+            data_ind = time_data[planner_indices,stats_indices['lengths']-stats_indices['times']]/data[planner_indices,stats_indices['sg_mag']]
+        else:
+            data_ind = time_data[planner_indices, index - stats_indices['times']]
+        if np.shape(data_ind)[0] == 0:
+            continue
+
+
+        plot_data = []
+        success = []
+        success_upper = []
+        success_lower = []
+        j = 0
+        for x in data_ind:
+            if len(x) > 0:
+                plot_data.append(x[-1])
+                j += 1
+                next_success = j/np.shape(planner_indices)[0]
+                success.append(100*next_success)
+                # adjusted_proportion = (j + 2)/(np.shape(planner_indices)[0] + 4)
+                # se_1 = adjusted_proportion*(1-adjusted_proportion)
+                # se_2 = se_1/(np.shape(planner_indices)[0] + 4)
+                # standard_error = np.sqrt(se_2)
+                # margin_of_error = standard_error*2
+                # success_upper.append(100*next_success + 100*margin_of_error)
+                # success_lower.append(100*next_success - 100*margin_of_error)
+
+        if len(plot_data) > 0:
+
+            colors += [planners[i].color]
+            labels += [planners[i].label]
+
+            plot_data = np.array(plot_data)
+            sortedinds = np.argsort(plot_data)
+
+            plot_data = plot_data[sortedinds]
+            line = plotter.plot(plot_data, success, color=planners[i].color)
+            # plotter.fill_between(time, success_upper, success_lower, color=planners[i].color, alpha=viz_params['alpha']/2)
+            # plotter.plot(time, success_upper, color=planners[i].color, alpha=viz_params['alpha'])
+            # plotter.plot(time, success_lower, color=planners[i].color, alpha=viz_params['alpha'])
+            # lines += [line]
+
+    # if len(colors) > 0:
+    #     plotter.setp(lines[0], color=colors[0])
+    # if len(colors) > 1:      
+    #     plotter.setp(lines[1], color=colors[1])
+    # if len(colors) > 2:
+    #     plotter.setp(lines[2], color=colors[2])
+    # if len(colors) > 3:
+    #     plotter.setp(lines[3], color=colors[3])
+
+
+    plotter.ylabel('Success Percentage')
+    plotter.legend(labels)
+
+    plotter.xlim([x_min, x_max])
+    plotter.ylim([0,100])
+    plotter.xlabel(ylabel)
+
+    if xlog:
+        plotter.xscale('log')
+    else:
+        plotter.xscale('linear')
+
 
 def make_success_bar(data):
     """    
@@ -506,7 +598,6 @@ def make_figures(data, time_data, title):
     plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
 
 
-
 def make_success_time_figures(data, time_data):
     fig = plotter.figure(figsize=[15, 8])
     kappas = np.unique(data[:,stats_indices['minrad']])
@@ -561,27 +652,27 @@ def make_length_time_figures(data, time_data):
     cols = num_plots//rows
     print(cols)
     fig_ind = 1
-    # make figures for each of the kappa values used in experiments
-    for i in range(np.shape(kappas)[0]):
-        kappa = kappas[i]
-        kappa_inds = np.where(data[:,stats_indices['minrad']] == kappa)[0]
-        kappa_data = data[kappa_inds,:]
-        for j in range(np.shape(envs)[0]):
-            env = envs[j]
-            env_inds = np.where(kappa_data[:,stats_indices['env']] == env)[0]
-            env_data = kappa_data[env_inds,:]
-            for k in range(np.shape(phis)[0]):
-                phi = phis[k]
-                phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
-                phi_data = env_data[phi_inds,:]
-                if np.shape(phi_data)[0] > 0:
+
+    for j in range(np.shape(envs)[0]):
+        env = envs[j]
+        env_inds = np.where(data[:,stats_indices['env']] == env)[0]
+        env_data = data[env_inds,:]
+        for k in range(np.shape(phis)[0]):
+            phi = phis[k]
+            phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+            phi_data = env_data[phi_inds,:]
+            if np.shape(phi_data)[0] > 0:
+                for i in range(np.shape(kappas)[0]):
+                    kappa = kappas[i]
+                    kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
+                    kappa_data = phi_data[kappa_inds,:]
                     for l in range(np.shape(varcurvs)[0]):
                         varcurv = varcurvs[l]
-                        varcurv_inds = np.where(phi_data[:,stats_indices['varcurv']] == varcurv)[0]
-                        varcurv_data = phi_data[varcurv_inds,:]
+                        varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = kappa_data[varcurv_inds,:]
                         if np.shape(varcurv_data)[0] > 0:
                             plotter.subplot(rows, cols, fig_ind)
-                            make_time_figure(varcurv_data, time_data[kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], stats_indices['lengths'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'$\ell^\prime$', y_min=1, y_max=1.25)
+                            make_time_figure(varcurv_data, time_data[env_inds,:][phi_inds,:][kappa_inds,:][varcurv_inds,:], stats_indices['lengths'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'$\ell^\prime$', y_min=1, y_max=1.25)
                             fig_ind += 1
                             # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
         # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
@@ -590,6 +681,230 @@ def make_length_time_figures(data, time_data):
     plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
     plotter.show()
 
+
+def make_angle_time_figures(data, time_data):
+    fig = plotter.figure(figsize=[15, 8])
+    kappas = np.unique(data[:,stats_indices['minrad']])
+    hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
+    envs = np.unique(data[:, stats_indices['env']])
+    phis = np.unique(data[:,stats_indices['maxphi']])
+    varcurvs = np.unique(data[:, stats_indices['varcurv']])
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]
+    rows = 2
+    cols = num_plots//rows
+    print(cols)
+    fig_ind = 1
+
+    for j in range(np.shape(envs)[0]):
+        env = envs[j]
+        env_inds = np.where(data[:,stats_indices['env']] == env)[0]
+        env_data = data[env_inds,:]
+        for k in range(np.shape(phis)[0]):
+            phi = phis[k]
+            phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+            phi_data = env_data[phi_inds,:]
+            if np.shape(phi_data)[0] > 0:
+                for i in range(np.shape(kappas)[0]):
+                    kappa = kappas[i]
+                    kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
+                    kappa_data = phi_data[kappa_inds,:]
+                    for l in range(np.shape(varcurvs)[0]):
+                        varcurv = varcurvs[l]
+                        varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = kappa_data[varcurv_inds,:]
+                        if np.shape(varcurv_data)[0] > 0:
+                            plotter.subplot(rows, cols, fig_ind)
+                            make_time_figure(varcurv_data, time_data[env_inds,:][phi_inds,:][kappa_inds,:][varcurv_inds,:], stats_indices['phis'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'$\ell^\prime$', y_min=0, y_max=3.14)
+                            fig_ind += 1
+                            # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
+        # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
+        # analyze_pairs(data)
+    plotter.suptitle(r'Angle vs Time', fontsize=18)
+    plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
+    plotter.show()
+
+
+
+
+def make_length_success_figures(data, time_data):
+    fig = plotter.figure(figsize=[15, 8])
+    kappas = np.unique(data[:,stats_indices['minrad']])
+    hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
+    envs = np.unique(data[:, stats_indices['env']])
+    phis = np.unique(data[:,stats_indices['maxphi']])
+    varcurvs = np.unique(data[:, stats_indices['varcurv']])
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]
+    rows = 2
+    cols = num_plots//rows
+    print(cols)
+    fig_ind = 1
+
+    for j in range(np.shape(envs)[0]):
+        env = envs[j]
+        env_inds = np.where(data[:,stats_indices['env']] == env)[0]
+        env_data = data[env_inds,:]
+        for k in range(np.shape(phis)[0]):
+            phi = phis[k]
+            phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+            phi_data = env_data[phi_inds,:]
+            if np.shape(phi_data)[0] > 0:
+                for i in range(np.shape(kappas)[0]):
+                    kappa = kappas[i]
+                    kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
+                    kappa_data = phi_data[kappa_inds,:]
+                    for l in range(np.shape(varcurvs)[0]):
+                        varcurv = varcurvs[l]
+                        varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = kappa_data[varcurv_inds,:]
+                        if np.shape(varcurv_data)[0] > 0:
+                            plotter.subplot(rows, cols, fig_ind)
+                            make_success_data_figure(varcurv_data, time_data[env_inds,:][phi_inds,:][kappa_inds,:][varcurv_inds,:], stats_indices['lengths'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'$\ell^\prime$', x_min =1, x_max = 1.3)
+                            fig_ind += 1
+                            # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
+        # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
+        # analyze_pairs(data)
+    plotter.suptitle(r'Success vs Distance', fontsize=18)
+    plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
+    plotter.show()
+
+
+def make_angle_success_figures(data, time_data):
+    fig = plotter.figure(figsize=[15, 8])
+    kappas = np.unique(data[:,stats_indices['minrad']])
+    hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
+    envs = np.unique(data[:, stats_indices['env']])
+    phis = np.unique(data[:,stats_indices['maxphi']])
+    varcurvs = np.unique(data[:, stats_indices['varcurv']])
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]
+    rows = 2
+    cols = num_plots//rows
+    print(cols)
+    fig_ind = 1
+
+    for j in range(np.shape(envs)[0]):
+        env = envs[j]
+        env_inds = np.where(data[:,stats_indices['env']] == env)[0]
+        env_data = data[env_inds,:]
+        for k in range(np.shape(phis)[0]):
+            phi = phis[k]
+            phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+            phi_data = env_data[phi_inds,:]
+            if np.shape(phi_data)[0] > 0:
+                for i in range(np.shape(kappas)[0]):
+                    kappa = kappas[i]
+                    kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
+                    kappa_data = phi_data[kappa_inds,:]
+                    for l in range(np.shape(varcurvs)[0]):
+                        varcurv = varcurvs[l]
+                        varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = kappa_data[varcurv_inds,:]
+                        if np.shape(varcurv_data)[0] > 0:
+                            plotter.subplot(rows, cols, fig_ind)
+                            make_success_data_figure(varcurv_data, time_data[env_inds,:][phi_inds,:][kappa_inds,:][varcurv_inds,:], stats_indices['phis'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'$\phi$', x_min=0, x_max=3.14)
+                            fig_ind += 1
+                            # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
+        # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
+        # analyze_pairs(data)
+    plotter.suptitle(r'Success vs Angle', fontsize=18)
+    plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
+    plotter.show()
+
+
+
+
+
+
+def make_length_violin_figures(data, time_data):
+    fig = plotter.figure(figsize=[15, 8])
+    kappas = np.unique(data[:,stats_indices['minrad']])
+    hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
+    envs = np.unique(data[:, stats_indices['env']])
+    phis = np.unique(data[:,stats_indices['maxphi']])
+    varcurvs = np.unique(data[:, stats_indices['varcurv']])
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]
+    rows = 2
+    cols = num_plots//rows
+    print(cols)
+    fig_ind = 1
+
+    for j in range(np.shape(envs)[0]):
+        env = envs[j]
+        env_inds = np.where(data[:,stats_indices['env']] == env)[0]
+        env_data = data[env_inds,:]
+        for k in range(np.shape(phis)[0]):
+            phi = phis[k]
+            phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+            phi_data = env_data[phi_inds,:]
+            if np.shape(phi_data)[0] > 0:
+                for i in range(np.shape(kappas)[0]):
+                    kappa = kappas[i]
+                    kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
+                    kappa_data = phi_data[kappa_inds,:]
+                    for l in range(np.shape(varcurvs)[0]):
+                        varcurv = varcurvs[l]
+                        varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = kappa_data[varcurv_inds,:]
+                        if np.shape(varcurv_data)[0] > 0:
+                            plan_data_ind = np.where(varcurv_data[:,stats_indices['success']] == 1)[0]
+                            plan_data = varcurv_data[plan_data_ind,:]
+                            if np.shape(plan_data)[0] > 0:
+                                print(plan_data)
+                                plotter.subplot(rows, cols, fig_ind)
+                                make_violin_figure(plan_data, stats_indices['ell'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'$\ell^\prime$', y_min=1, y_max=1.25, ylog=False)
+                                fig_ind += 1
+                            # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
+        # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
+        # analyze_pairs(data)
+    plotter.suptitle(r'$\ell^\prime$ ratio for Planner Variations', fontsize=18)
+    plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
+    plotter.show()
+
+
+
+def make_angle_violin_figures(data, time_data):
+    fig = plotter.figure(figsize=[15, 8])
+    kappas = np.unique(data[:,stats_indices['minrad']])
+    hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
+    envs = np.unique(data[:, stats_indices['env']])
+    phis = np.unique(data[:,stats_indices['maxphi']])
+    varcurvs = np.unique(data[:, stats_indices['varcurv']])
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]
+    rows = 2
+    cols = num_plots//rows
+    print(cols)
+    fig_ind = 1
+
+    for j in range(np.shape(envs)[0]):
+        env = envs[j]
+        env_inds = np.where(data[:,stats_indices['env']] == env)[0]
+        env_data = data[env_inds,:]
+        for k in range(np.shape(phis)[0]):
+            phi = phis[k]
+            phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+            phi_data = env_data[phi_inds,:]
+            if np.shape(phi_data)[0] > 0:
+                for i in range(np.shape(kappas)[0]):
+                    kappa = kappas[i]
+                    kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
+                    kappa_data = phi_data[kappa_inds,:]
+                    for l in range(np.shape(varcurvs)[0]):
+                        varcurv = varcurvs[l]
+                        varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
+                        varcurv_data = kappa_data[varcurv_inds,:]
+                        if np.shape(varcurv_data)[0] > 0:
+                            plan_data_ind = np.where(varcurv_data[:,stats_indices['success']] == 1)[0]
+                            plan_data = varcurv_data[plan_data_ind,:]
+                            if np.shape(plan_data)[0] > 0:
+                                print(plan_data)
+                                plotter.subplot(rows, cols, fig_ind)
+                                make_violin_figure(plan_data, stats_indices['phi'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'$\phi$', y_min=0, y_max=3.14, ylog=False)
+                                fig_ind += 1
+                            # make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], )
+        # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
+        # analyze_pairs(data)
+    plotter.suptitle(r'Angles', fontsize=18)
+    plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
+    plotter.show()    
 
 
 
@@ -651,32 +966,41 @@ if __name__=='__main__':
 
     make_success_time_figures(data, time_data[0])
     make_length_time_figures(data, time_data[0])
+    make_angle_time_figures(data, time_data[0])
 
-    kappas = np.unique(data[:,stats_indices['minrad']])
-    hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
-    envs = np.unique(data[:, stats_indices['env']])
-    phis = np.unique(data[:,stats_indices['maxphi']])
-    varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    # make figures for each of the kappa values used in experiments
-    for i in range(np.shape(kappas)[0]):
-        kappa = kappas[i]
-        kappa_inds = np.where(data[:,stats_indices['minrad']] == kappa)[0]
-        kappa_data = data[kappa_inds,:]
-        for j in range(np.shape(envs)[0]):
-            env = envs[j]
-            env_inds = np.where(kappa_data[:,stats_indices['env']] == env)[0]
-            env_data = kappa_data[env_inds,:]
-            for k in range(np.shape(phis)[0]):
-                phi = phis[k]
-                phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
-                phi_data = env_data[phi_inds,:]
-                if np.shape(phi_data)[0] > 0:
-                    for l in range(np.shape(varcurvs)[0]):
-                        varcurv = varcurvs[l]
-                        varcurv_inds = np.where(phi_data[:,stats_indices['varcurv']] == varcurv)[0]
-                        varcurv_data = phi_data[varcurv_inds,:]
-                        if np.shape(varcurv_data)[0] > 0:
-                            make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv)
-        # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
-        # analyze_pairs(data)
+    make_length_success_figures(data, time_data[0])
+    make_angle_success_figures(data, time_data[0])
+
+    make_length_violin_figures(data, time_data[0])
+    make_angle_violin_figures(data, time_data[0])
+
+
+
+    # kappas = np.unique(data[:,stats_indices['minrad']])
+    # hatches = ['O', '///', '\\\\\\',  'xxx', '.', '*', 'o']
+    # envs = np.unique(data[:, stats_indices['env']])
+    # phis = np.unique(data[:,stats_indices['maxphi']])
+    # varcurvs = np.unique(data[:, stats_indices['varcurv']])
+    # # make figures for each of the kappa values used in experiments
+    # for i in range(np.shape(kappas)[0]):
+    #     kappa = kappas[i]
+    #     kappa_inds = np.where(data[:,stats_indices['minrad']] == kappa)[0]
+    #     kappa_data = data[kappa_inds,:]
+    #     for j in range(np.shape(envs)[0]):
+    #         env = envs[j]
+    #         env_inds = np.where(kappa_data[:,stats_indices['env']] == env)[0]
+    #         env_data = kappa_data[env_inds,:]
+    #         for k in range(np.shape(phis)[0]):
+    #             phi = phis[k]
+    #             phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+    #             phi_data = env_data[phi_inds,:]
+    #             if np.shape(phi_data)[0] > 0:
+    #                 for l in range(np.shape(varcurvs)[0]):
+    #                     varcurv = varcurvs[l]
+    #                     varcurv_inds = np.where(phi_data[:,stats_indices['varcurv']] == varcurv)[0]
+    #                     varcurv_data = phi_data[varcurv_inds,:]
+    #                     if np.shape(varcurv_data)[0] > 0:
+    #                         make_figures(varcurv_data, time_data[0][kappa_inds,:][env_inds,:][phi_inds,:][varcurv_inds,:], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv)
+    #     # plotter.savefig('./figures/K0%.4f.pdf'% kappa )
+    #     # analyze_pairs(data)
     plotter.show()
