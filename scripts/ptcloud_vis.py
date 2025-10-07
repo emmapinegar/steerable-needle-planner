@@ -34,6 +34,7 @@ import sys
 import open3d as o3d
 import copy
 import numpy as np
+import os, fnmatch
 
 colorBank = {
     "0": [1, 0.706, 0],
@@ -61,23 +62,18 @@ def draw_ptc(ptc):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        # fileNames = ["../data/input/goal_regions.txt", "../data/input/start_and_goal_poses.txt", "../data/input/obstacles.txt", "../data/output/20240925-12-25-03_ptcloud.txt", "../data/output/20240925-12-25-03_interp.txt", "../data/output/20240925-12-24-44_ptcloud.txt", "../data/output/20240925-12-24-44_interp.txt", "../data/output/20240925-12-28-14_interp.txt", "../data/output/20240925-12-33-06_interp.txt"]
-        fileNames = ["../data/input/remind_001_skull_outline_shuffled.txt", "../data/output/20250905-08-57-34_rrt_remind_001_org.txt", "../data/output/20250905-09-01-36_aorrt_remind_001_org.txt", "../data/output/20250905-09-05-40_rcs_remind_001_org.txt", "../data/output/20250905-09-09-01_rcs_star_remind_001_org.txt"] #, "../data/output/20250508-15-10-26_rrt_remind_003_interp.txt"]
-    else:
-        fileNames = sys.argv[1:]
-
+        fileNames = ["./../data/input/remind_001_sg_pairs.txt"] 
+        files = ["./../data/output/" + file for file in fnmatch.filter(os.listdir('./../data/output/'), '*_rcs_star_remind_*.txt')]
+        print(files)
+        fileNames += files
     start_p = np.array([[0], [0], [0]])
     start_q = np.array([[0], [0], [1], [0]]) # np.array([[-0.0007], [0.0008], [0.0077], [0.9999]]) # w, x, y, z
 
     goal_p = np.array([[0], [0], [0]])
     goal_q = np.array([[0], [0], [1], [0]])
 
-
     start = o3d.geometry.TriangleMesh.create_coordinate_frame()
     world = copy.deepcopy(start)
-
-
-
 
     ptcs = [world]
     for i in range(len(fileNames)):
@@ -101,19 +97,20 @@ if __name__ == "__main__":
             start_q = path_points[0,3:7]
             goal_p = path_points[-1,0:3]
             goal_q = path_points[-1,3:7]
-        elif ptcFile.__contains__("ptcloud"):
-            path_points = np.loadtxt(ptcFile, max_rows=2)
-            start_p = path_points[0,0:3]  
+        # elif ptcFile.__contains__("ptcloud"):
+        #     path_points = np.loadtxt(ptcFile, max_rows=2)
+        #     print(path_points)
+        #     start_p = path_points[0:3]  
         elif ptcFile.__contains__("sg_pairs"):
-            path_points = np.loadtxt(ptcFile, max_rows=2)     
+            path_points = np.loadtxt(ptcFile)     
 
         numpoints = np.shape(ptc.points)
         print(numpoints)
 
-        if numpoints[0] > 10000000:
-            ptc = ptc.random_down_sample(0.001)
-        elif numpoints[0] > 1000000:
-            ptc = ptc.random_down_sample(0.01)
+        if numpoints[0] > 1000000:
+            ptc = ptc.random_down_sample(0.1)
+        elif numpoints[0] > 100000:
+            ptc = ptc.random_down_sample(0.5)
 
         print("Point cloud {}: ".format(i))
         print(ptc)
