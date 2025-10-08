@@ -123,10 +123,11 @@ struct ProblemConfig {
     Str healpix_file = global_healpix_file;
     Str skull_file = global_skull_file;
 
-    RealNum needle_mag = 0.0018;
-    RealNum manip_mag = 66.03;
-    RealNum torque_b = 2.1496672696261783;
-    RealNum torque_m = 500525.18710019713;
+    RealNum needle_mag = global_needle_mag;
+    RealNum manip_mag = global_manip_mag;
+    RealNum manip_r = global_manip_r;
+    RealNum torque_b = global_torque_b;
+    RealNum torque_m = global_torque_m;
 
 
 #ifndef HAVE_GLOBAL_VARIABLES

@@ -66,6 +66,9 @@ constexpr RealNum R_INF = std::numeric_limits<RealNum>::infinity();
 constexpr RealNum EPS = 1e-10;
 constexpr RealNum DEGREE_TO_RAD = M_PI/180.0;
 constexpr RealNum RAD_TO_DEGREE = 180.0/M_PI;
+constexpr RealNum M_TO_MM = 1000.0;
+constexpr RealNum MM_TO_M = 1/1000.0;
+constexpr RealNum PERM_FREE_SPACE = 4e-7*M_PI;
 
 using IdxPoint = Eigen::Matrix<Idx, 3, 1, Eigen::ColMajor>;
 using IntPoint = Eigen::Matrix<int, 3, 1, Eigen::ColMajor>;
@@ -173,8 +176,59 @@ SizeType global_num_plans_needed = 10;
 bool save_ptcloud = false;
 bool save_interp = false;
 
+RealNum global_torque_m = 0;
+RealNum global_torque_b = 0;
+RealNum global_manip_mag = 66.03;
+RealNum global_needle_mag = 0.0018;
+RealNum global_manip_r = 25.4;
 
 
+/**
+ * Reads in all the needle parameters for the planning problem.
+ * The format should be radius_curvature diameter insertion_length angle_constraint. 
+ * 
+ * @param filename: name of the text file containting the needle parameters
+ * @param print_info: if true prints all the parameters of the needle read in, defaults to false
+ * 
+ * @returns RealNum minimum radius of curvate possible with the needle, RealNum diameter of the needle, 
+ * RealNum maximum length the needle can be inserted, RealNum the maximum cumulative angle the needle can follow
+ * 
+ * @throws runtime_error if the file can't be opened 
+ */
+void ReadTorqueParameters(Str const& filename, const bool print_info=false) {
+    std::ifstream fin;
+    fin.open(filename);
+
+    if (!fin.is_open()) {
+        throw std::runtime_error("Failed to open " + filename);
+    }
+
+    // RealNum torque_m, torque_b, manip_mag, needle_mag, manip_r;
+
+    Str line;
+
+    if (std::getline(fin, line)) {
+        std::istringstream s(line);
+        s >> global_torque_m
+          >> global_torque_b
+          >> global_manip_mag
+          >> global_needle_mag
+          >> global_manip_r;
+    }
+
+    fin.close();
+
+    if (print_info) {
+        std::cout << "Torque parameters:"
+                  << "\ttorque m " << global_torque_m
+                  << "\ttorque b " << global_torque_b
+                  << "\tmanip mag " << global_manip_mag
+                  << "\tneedle mag " << global_needle_mag
+                  << "\tmanip mag radius " << global_manip_r
+                  << std::endl;
+    }
+
+}
 
 
 std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** argv, RealNum min_curve_rad, RealNum insertion_length, RealNum angle_constraint_degree, Str suffix) {
@@ -262,6 +316,9 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
     global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outline_shuffled.txt";
     goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";
     suffix = suffix + "_remind_" + padded_scan_num; 
+
+    ReadTorqueParameters(magnet_torque_file, true);
+
     
 #ifdef HAVE_GLOBAL_VARIABLES
     global::needle_min_curve_rad = min_curve_rad;
@@ -271,8 +328,6 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
 
     return {constrain_goal_orientation, suffix, min_curve_rad, insertion_length, angle_constraint_degree};
 }
-
-
 
 
 } // namespace unc::robotics::snp

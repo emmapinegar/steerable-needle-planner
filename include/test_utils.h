@@ -109,6 +109,8 @@ ReadNeedleParameters(Str const& filename, const bool print_info=false) {
     return {rad_curv, diameter, length, ang_constraint};
 }
 
+
+
 /**
  * Reads in the start and goal states for the planning problem. 
  * The format for each line should be pos_x pos_y pos_z quat_w quat_x quat_y quat_z. Start should be given before goal.

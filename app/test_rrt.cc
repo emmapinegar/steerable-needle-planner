@@ -54,14 +54,13 @@ int main(int argc, char** argv) {
     
     auto [constrain_goal_orientation, suffix, min_curve_rad, insertion_length, angle_constraint_degree] = ParseArgs(argc, argv, min_curve_rad_, insertion_length_, angle_constraint_degree_, suffix_);
 
-
     ConfigPtr cfg(new ProblemConfig(constrain_goal_orientation,
                                     min_curve_rad,
                                     needle_diameter,
                                     insertion_length,
                                     angle_constraint_degree));
 
-    
+
     // start_and_goal_file is defined in global_common.h 
     auto [start_p_, start_q, goal_p_, goal_q] = utils::ReadStartAndGoal(start_and_goal_file);
 

@@ -3,6 +3,7 @@ import open3d as o3d
 import os, fnmatch
 import matplotlib.pyplot as plotter
 from dataclasses import dataclass
+import copy
 
 from viz_utils import stats_indices, planners, viz_params, get_planner_indices, make_violin_figure
 
@@ -53,7 +54,7 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
         time = time[sortedinds]
         flat = flat[sortedinds]
 
-        n = 50 #window
+        n = 25 #window
         average = np.cumsum(flat)
         average[n:] = average[n:] - average[:-n]
         average[n-1:] = average[n-1:]/n
@@ -465,46 +466,87 @@ def make_success_heat_figures(data, time_data):
                             fig_ind += 1
     plotter.suptitle(r'Success vs Pairs', fontsize=18)
     plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
-    plotter.show()
 
 
-def make_success_brain_figures(data, time_data):
+def make_success_brain_figures(data):
     fig = plotter.figure(figsize=[15, 8])
     kappas = np.unique(data[:,stats_indices['minrad']])
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0]
-    rows = 2
-    cols = num_plots//rows
-    fig_ind = 1
     # make figures for each of the kappa values used in experiments
 
     for j in range(np.shape(envs)[0]):
         env = envs[j]
         env_inds = np.where(data[:,stats_indices['env']] == env)[0]
         env_data = data[env_inds,:]
-        for k in range(np.shape(phis)[0]):
-            phi = phis[k]
-            phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
-            phi_data = env_data[phi_inds,:]
-            if np.shape(phi_data)[0] > 0:
-                for i in range(np.shape(kappas)[0]):
-                    kappa = kappas[i]
-                    kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
-                    kappa_data = phi_data[kappa_inds,:]
-                    for l in range(np.shape(varcurvs)[0]):
-                        varcurv = varcurvs[l]
-                        varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
-                        varcurv_data = kappa_data[varcurv_inds,:]
-                        if np.shape(varcurv_data)[0] > 0:
-                            plotter.subplot(rows, cols, fig_ind)
-                            make_success_heat_figure(varcurv_data, time_data[env_inds,:][phi_inds,:][kappa_inds,:][varcurv_inds,:], stats_indices['lengths'], r'$\kappa$ = %.1f $mm^{-1}$' % kappa + r' $\phi = %d$' % phi + r' env = $ %d$' %env + r' var = $ %d$' %varcurv, r'Success Percentage', y_min=0, y_max=100)
-                            fig_ind += 1
-    plotter.suptitle(r'Success vs Pairs', fontsize=18)
-    plotter.subplots_adjust(top=0.9, bottom=0.075, right=0.98, left=0.065, hspace=0.25, wspace=0.15)
-    plotter.show()
+        phi_data = env_data
+        # for k in range(np.shape(phis)[0]):
+        #     phi = phis[k]
+        #     phi_inds = np.where(env_data[:,stats_indices['maxphi']] == phi)[0]
+        #     phi_data = env_data[phi_inds,:]
+        #     if np.shape(phi_data)[0] > 0:
+        for i in range(np.shape(kappas)[0]):
+            kappa = kappas[i]
+            kappa_inds = np.where(phi_data[:,stats_indices['minrad']] == kappa)[0]
+            kappa_data = phi_data[kappa_inds,:]
+            for l in range(np.shape(varcurvs)[0]):
+                varcurv = varcurvs[l]
+                varcurv_inds = np.where(kappa_data[:,stats_indices['varcurv']] == varcurv)[0]
+                varcurv_data = kappa_data[varcurv_inds,:]
+                if np.shape(varcurv_data)[0] > 0:
+                    make_success_brain_figure(varcurv_data)
 
+
+def make_success_brain_figure(data):
+    """    
+    Makes violin plots for the planner variations.
+
+    Parameters:
+        data (n,13): data from the experiments to analyze
+        time_data (n,4): timewise data from the experiments to analyze, with arrays for each element in the array
+        index (int): index for the column of the data to be analyzed
+        title (string): title for the resulting plot
+        ylabel (string): label for the y axis of the plot
+        y_min (float): minimum y axis value, default=0
+        y_max (float): maximum y axis value, default=100
+        y_log (bool): if true makes the y axis scaled log, can throw off y axis limits
+    """
+    min_pair = int(np.min(data[:,stats_indices['sg_index']]))
+    max_pair = int(np.max(data[:,stats_indices['sg_index']]))
+    pairs_file = "./../data/input/remind_001_sg_pairs.txt"
+    pairs = np.loadtxt(pairs_file)
+    pairs = pairs[min_pair:max_pair+1, :]
+    numpairs = np.shape(pairs)[0]
+    print(f"min pair: {min_pair} max pair: {max_pair}")
+    pairs_success = np.zeros(numpairs)
+
+
+    for i in range(np.shape(data)[0]):
+
+        if int(data[i, stats_indices['success']]) == 1:
+            # print(f"index: {int(data[i,stats_indices['sg_index']])} num: {pairs_success[int(data[i,stats_indices['sg_index']])] + 1}")
+            pairs_success[int(data[i,stats_indices['sg_index']]) - min_pair] = pairs_success[int(data[i,stats_indices['sg_index']]) - min_pair] + 1
+
+    colors = [[1,0,0], [0.85, 0.85, 0.85], [0.76, 0.74, 0.88], [0.63, 0.61, 0.77], [0.56, 0.52, 0.74], [0.53, 0.48, 0.69], [0.42, 0.33, 0.70], [0.26, 0.16, 0.63], [0.16, 0.01, 0.67]]
+
+    start = o3d.geometry.TriangleMesh.create_coordinate_frame()
+    ptcs = [start]
+
+    for i in range(numpairs):
+        point = o3d.geometry.TriangleMesh.create_sphere(radius=0.5)
+        point.translate(pairs[i,0:3])
+        point.paint_uniform_color(colors[int(pairs_success[i])])
+        ptcs.append(point)
+
+    for i in range(numpairs):
+        point = o3d.geometry.TriangleMesh.create_sphere(radius=0.5)
+        point.translate(pairs[i,3:6])
+        point.paint_uniform_color(colors[int(pairs_success[i])])
+        ptcs.append(point)
+
+
+    o3d.visualization.draw_geometries(ptcs)   
 
 
 
@@ -530,6 +572,9 @@ if __name__=='__main__':
         next_time_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(14,15,16,17), converters=conv, dtype=object, quotechar='"')
 
         time_data.append(next_time_data)
+
+    # make_success_brain_figure(data)
+    # make_success_brain_figures(data)
 
     make_success_heat_figures(data, time_data[0])
 
