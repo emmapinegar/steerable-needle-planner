@@ -393,7 +393,7 @@ def make_scaled_length_time_figures(data, time_data, index, y_min, y_max, fig_ti
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 6
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -451,7 +451,7 @@ def make_success_time_figures(data, time_data):
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 6
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -488,7 +488,7 @@ def make_time_figures(data, time_data, index, y_min, y_max, fig_title, axis_labe
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 6
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -524,7 +524,7 @@ def make_success_figures(data, time_data, index, y_min, y_max, fig_title, axis_l
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 6
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -560,7 +560,7 @@ def make_violin_figures(data, time_data, index, y_min, y_max, fig_title, axis_la
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 6
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -599,7 +599,7 @@ def make_success_heat_figures(data, time_data):
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 6
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -894,14 +894,14 @@ if __name__=='__main__':
     
 
     # make_time_figures(data, time_data[0], stats_indices['lengths'], 1, 1.05, r'Distance vs Time', r'$\ell^\prime$')
-    # make_scaled_length_time_figures(data, time_data[0], stats_indices['lengths'], 1, 1.05, r'Distance vs Time', r'$\ell^\prime$')
-    # make_time_figures(data, time_data[0], stats_indices['phis'], 0, 2.5, r'Angle vs Time', r'$\phi$')
+    make_scaled_length_time_figures(data, time_data[0], stats_indices['lengths'], 1, 1.05, r'Distance vs Time', r'$\ell^\prime$')
+    make_time_figures(data, time_data[0], stats_indices['phis'], 0, 2.5, r'Angle vs Time', r'$\phi$')
 
-    # make_success_figures(data, time_data[0], stats_indices['lengths'], 1, 1.3, r'Success vs Distance', r'$\ell^\prime$')
-    # make_success_figures(data, time_data[0], stats_indices['phis'], 0, 3.14, r'Success vs Angle', r'$\phi$')
+    make_success_figures(data, time_data[0], stats_indices['lengths'], 1, 1.3, r'Success vs Distance', r'$\ell^\prime$')
+    make_success_figures(data, time_data[0], stats_indices['phis'], 0, 3.14, r'Success vs Angle', r'$\phi$')
 
-    # make_violin_figures(data, time_data[0], stats_indices['ell'], 1, 1.3, r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$')
-    # make_violin_figures(data, time_data[0], stats_indices['phi'], 0, 3.14, r'Angles', r'$\phi$')
+    make_violin_figures(data, time_data[0], stats_indices['ell'], 1, 1.3, r'$\ell^\prime$ ratio for Planner Variations', r'$\ell^\prime$')
+    make_violin_figures(data, time_data[0], stats_indices['phi'], 0, 3.14, r'Angles', r'$\phi$')
 
 
     # make_scaled_length_time_figures(data, time_data[0], stats_indices['lengths'], 1, 1.05, r'Distance vs Time', r'$\ell^\prime$')
