@@ -36,12 +36,12 @@ multi_stats_file="./../data/output/planner_stats_multi.txt"
         
 #     done
 # done
-
+i=0
 
 for j in ${scan_array[@]}
 do
 
-    while [$i -lt ${#rads[@]} ]
+    while [ $i -lt ${#rads[@]} ]
     do
         echo ""
         echo "seed $i scan $j radius ${rads[$i]}"
@@ -61,7 +61,7 @@ do
         
     done
 
-    while [$i -lt ${#rads[@]} ]
+    while [ $i -lt ${#rads[@]} ]
     do
         echo ""
         echo "seed $i scan $j radius ${rads[$i]}"
