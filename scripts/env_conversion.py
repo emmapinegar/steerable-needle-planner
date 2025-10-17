@@ -109,11 +109,11 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
 
     torque = np.load(pytorquefilename)
 
-    if not os.path.exists(cpptorquefilename):
-        with open(cpptorquefilename, "w+") as textfile:
-            lines = [f"{torque[0]} {torque[1]}\n"]
+    # if not os.path.exists(cpptorquefilename):
+    #     with open(cpptorquefilename, "w+") as textfile:
+    #         lines = [f"{torque[0]} {torque[1]}\n"]
 
-            textfile.writelines(lines)        
+    #         textfile.writelines(lines)        
 
     if np.shape(starts)[1] > 0:
         start_index = np.random.randint(0,np.shape(starts)[1])
@@ -141,81 +141,127 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
     y = ystart
     z = zstart
 
+    start = np.zeros((4,4))
+    start[0,1] = -1
+    start[1,0] = 1
+    start[2,2] = 1
+    start[3,3] = 1
+    start[0,3] = xstart
+    start[1,3] = ystart
+    start[2,3] = zstart
+
+    lines = [f"Bounds: 0 {scandims[0]} 0 {scandims[1]} 0 {scandims[2]}\n", 
+            f"Transform: {transform[0,0]} {transform[0,1]} {transform[0,2]} {transform[0,3]} {transform[1,0]} {transform[1,1]} {transform[1,2]} {transform[1,3]} {transform[2,0]} {transform[2,1]} {transform[2,2]} {transform[2,3]} {transform[3,0]} {transform[3,1]} {transform[3,2]} {transform[3,3]}\n",
+            f"Start: {start[0,0]} {start[0,1]} {start[0,2]} {start[0,3]} {start[1,0]} {start[1,1]} {start[1,2]} {start[1,3]} {start[2,0]} {start[2,1]} {start[2,2]} {start[2,3]} {start[3,0]} {start[3,1]} {start[3,2]} {start[3,3]}\n", 
+            f"Goal: {xgoal} {ygoal} {zgoal}\n", 
+            f"Obstacles: {pyobstaclefilename}\n", 
+            f"Skull: {pyskullsegmentationfilename}\n",
+            f"Torque: {torque[0]} {torque[1]} {pytorquefilename}\n",
+            f"Pairs: {pypairfilename}\n",
+            f"NeedleRobot: 0 100 0 {_KAPPA} -3.14 3.14\n"]
+
+    # sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=100)
+
+
+    # pair_lines = []
+    # with open(cpppairfilename, "a+") as textfile:
+    #     for i in range(np.shape(sg_pairs)[0]):
+    #         # print(np.shape(sg_pairs))
+    #         # print(i)
+    #         # print(sg_pairs[i][0])
+    #         start = transform_xyz(transform, sg_pairs[i][0], sg_pairs[i][1], sg_pairs[i][2])
+    #         goal = transform_xyz(transform, sg_pairs[i][3], sg_pairs[i][4], sg_pairs[i][5])
+    #         pair_lines += [f"{start[0,3]} {start[1,3]} {start[2,3]} {goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]
+
+    #     textfile.writelines(pair_lines)
+
+    sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=250)
+
+    pair_lines = []
+    with open(cpppairfilename, "a+") as textfile:
+        for i in range(np.shape(sg_pairs)[0]):
+            start = transform_xyz(transform, sg_pairs[i][0], sg_pairs[i][1], sg_pairs[i][2])
+            goal = transform_xyz(transform, sg_pairs[i][3], sg_pairs[i][4], sg_pairs[i][5])
+            pair_lines += [f"{start[0,3]} {start[1,3]} {start[2,3]} {goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]
+
+        textfile.writelines(pair_lines)
+
+
     # print(f"goal: {goal} \t center: {center} \t start: {start} \t x: {x}   y: {y}   z: {z}")
 
     # plot_slices(scan_data, x, y, z, mask=False)
 
-    write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cppobstaclefilename, transform, scandims)
+    # write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cppobstaclefilename, transform, scandims)
 
 
-    # plot_slices(obstacles, x, y, z, mask=True)  
+    # # plot_slices(obstacles, x, y, z, mask=True)  
 
-    write_segmentation_files(pyskullsegmentationfilename, scan_data, transform, cppskullsegmentationfilename, scandims)
+    # write_segmentation_files(pyskullsegmentationfilename, scan_data, transform, cppskullsegmentationfilename, scandims)
 
 
 
-    # plt.show()
+    # # plt.show()
     
 
-    write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename, starts, goals)
+    # write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, scandims, transform, xgoal, ygoal, zgoal, pyobstaclefilename, pyskullsegmentationfilename, torque, pytorquefilename, starts, goals)
 
 
 
-    if os.path.exists(pypairfilename):
-        sg_pairs = np.loadtxt(pypairfilename)
-        if len(sg_pairs) > 0:
+    # if os.path.exists(pypairfilename):
+    #     sg_pairs = np.loadtxt(pypairfilename)
+    #     if len(sg_pairs) > 0:
 
-            xstart = sg_pairs[0,0]
-            ystart = sg_pairs[0,1]
-            zstart = sg_pairs[0,2]
-            xgoal = sg_pairs[0,3]
-            ygoal = sg_pairs[0,4]
-            zgoal = sg_pairs[0,5]
+    #         xstart = sg_pairs[0,0]
+    #         ystart = sg_pairs[0,1]
+    #         zstart = sg_pairs[0,2]
+    #         xgoal = sg_pairs[0,3]
+    #         ygoal = sg_pairs[0,4]
+    #         zgoal = sg_pairs[0,5]
 
-            with open(cppstartgoaltext, "w+") as textfile:
-                start = transform_xyz(transform, xstart, ystart, zstart)
-                goal = transform_xyz(transform, xgoal, ygoal, zgoal)
+    #         with open(cppstartgoaltext, "w+") as textfile:
+    #             start = transform_xyz(transform, xstart, ystart, zstart)
+    #             goal = transform_xyz(transform, xgoal, ygoal, zgoal)
 
-                r = R.from_quat([0,0, 1, 0], scalar_first=False)
-                # print(r.as_matrix())
-                # start_t = np.zeros((3,3))
-                # start_t[1,0] = 1
-                # start_t[0,1] = 1
-                # start_t[2,2] = -1
-                # r = R.from_matrix(start_t)
-                q = r.as_quat()
-                # print(q)
-                lines = [f"{start[0,3]} {start[1,3]} {start[2,3]} {q[0]} {q[1]} {q[2]} {q[3]}\n", 
-                         f"{goal[0,3]} {goal[1,3]} {goal[2,3]} {q[0]} {q[1]} {q[2]} {q[3]}\n"]
-                textfile.writelines(lines)
+    #             r = R.from_quat([0,0, 1, 0], scalar_first=False)
+    #             # print(r.as_matrix())
+    #             # start_t = np.zeros((3,3))
+    #             # start_t[1,0] = 1
+    #             # start_t[0,1] = 1
+    #             # start_t[2,2] = -1
+    #             # r = R.from_matrix(start_t)
+    #             q = r.as_quat()
+    #             # print(q)
+    #             lines = [f"{start[0,3]} {start[1,3]} {start[2,3]} {q[0]} {q[1]} {q[2]} {q[3]}\n", 
+    #                      f"{goal[0,3]} {goal[1,3]} {goal[2,3]} {q[0]} {q[1]} {q[2]} {q[3]}\n"]
+    #             textfile.writelines(lines)
 
-            with open(cpptorquefilename, "w+") as textfile:
-                lines = [f"{torque[0]} {torque[1]}\n"]
+    #         with open(cpptorquefilename, "w+") as textfile:
+    #             lines = [f"{torque[0]} {torque[1]}\n"]
 
-                textfile.writelines(lines)
+    #             textfile.writelines(lines)
 
-            with open(cppgoalregiontext, "w+") as textfile:
-                lines = [f"{torque[0]} {torque[1]}\n"]
+    #         with open(cppgoalregiontext, "w+") as textfile:
+    #             lines = [f"{torque[0]} {torque[1]}\n"]
 
-                textfile.writelines(lines)           
+    #             textfile.writelines(lines)           
             
-            lines = []
-            with open(cpppairfilename, "w+") as textfile:
-                for i in range(np.shape(sg_pairs)[0]):
-                    start = transform_xyz(transform, sg_pairs[i,0], sg_pairs[i,1], sg_pairs[i,2])
-                    goal = transform_xyz(transform, sg_pairs[i,3], sg_pairs[i,4], sg_pairs[i,5])
-                    lines += [f"{start[0,3]} {start[1,3]} {start[2,3]} {goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]
+    #         lines = []
+    #         with open(cpppairfilename, "w+") as textfile:
+    #             for i in range(np.shape(sg_pairs)[0]):
+    #                 start = transform_xyz(transform, sg_pairs[i,0], sg_pairs[i,1], sg_pairs[i,2])
+    #                 goal = transform_xyz(transform, sg_pairs[i,3], sg_pairs[i,4], sg_pairs[i,5])
+    #                 lines += [f"{start[0,3]} {start[1,3]} {start[2,3]} {goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]
 
-                textfile.writelines(lines)
+    #             textfile.writelines(lines)
 
-            lines = []
-            with open(cppgoalregiontext, "w+") as textfile:
-                inds = np.where(np.logical_and(sg_pairs[:,0] == xstart,np.logical_and(sg_pairs[:,1] == ystart, sg_pairs[:,2] == zstart)))[0]
-                for i in range(np.shape(inds)[0]):
-                    goal = transform_xyz(transform, sg_pairs[i,3], sg_pairs[i,4], sg_pairs[i,5])
-                    lines += [f"{goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]
+    #         lines = []
+    #         with open(cppgoalregiontext, "w+") as textfile:
+    #             inds = np.where(np.logical_and(sg_pairs[:,0] == xstart,np.logical_and(sg_pairs[:,1] == ystart, sg_pairs[:,2] == zstart)))[0]
+    #             for i in range(np.shape(inds)[0]):
+    #                 goal = transform_xyz(transform, sg_pairs[i,3], sg_pairs[i,4], sg_pairs[i,5])
+    #                 lines += [f"{goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]
 
-                textfile.writelines(lines)                    
+    #             textfile.writelines(lines)                    
 
 
 def write_obstacle_files(pyobstaclefilename, scan_data, segmentationfilename, cppobstaclefilename, transform, scandims):
@@ -326,9 +372,11 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
                 lines[2] = f"Start: {start[0,0]} {start[0,1]} {start[0,2]} {start[0,3]} {start[1,0]} {start[1,1]} {start[1,2]} {start[1,3]} {start[2,0]} {start[2,1]} {start[2,2]} {start[2,3]} {start[3,0]} {start[3,1]} {start[3,2]} {start[3,3]}\n"
                 lines[3] = f"Goal: {sg_pairs[0,3]} {sg_pairs[0,4]} {sg_pairs[0,5]}\n"
         else:
-            sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=15)
-            sg_pairs += verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=25)
-            sg_pairs += verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=50)
+            # sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=15)
+            # sg_pairs += verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=25)
+            # sg_pairs += verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=50)
+            sg_pairs += verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=100)
+            sg_pairs += verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=250)
             # np.random.shuffle(sg_pairs)
             np.savetxt(pypairfilename, sg_pairs, fmt='%d')
             if len(sg_pairs) == 0:
@@ -345,6 +393,12 @@ def verify_ReMIND_env(lines, starts, goals, k=15):
     print(len(goals))
     np.random.shuffle(starts)
     np.random.shuffle(goals)
+    num_pairs = 1000
+    num_goals = 20
+    # if k > 100:
+    #     num_pairs = 7500
+    # elif k > 50:
+    #     num_pairs = 5000
     
     open_goals = []
     for goal in goals:
@@ -362,7 +416,7 @@ def verify_ReMIND_env(lines, starts, goals, k=15):
             next_pairs = []
             np.random.shuffle(open_goals)
             for goal in open_goals:
-                if i < 10 and len(sg_pairs) < 1000:
+                if i < num_goals and len(sg_pairs) < num_pairs:
                     env.change_goal(goal)
                     if not env.test_collisions_world(env.goal):
                         valid = True
@@ -382,9 +436,9 @@ def verify_ReMIND_env(lines, starts, goals, k=15):
                         if valid:
                             next_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
                             i += 1
-            if i == 10:
+            if i == num_goals:
                 sg_pairs += next_pairs
-                # print(sg_pairs)
+                print(len(sg_pairs))
         
         i = 0
 
@@ -589,8 +643,8 @@ def create_test_env(r=150,spacing=150):
 if __name__ == "__main__":
 
     cpptorquefilename = os.path.join("./../data/input/", f"torque_curvature.txt")
-    process_Pi_data("./../../data/PiGroup/curvature_pi_group_data.mat", "./envs/torque_curvature.npy", cpptorquefilename)
+    # process_Pi_data("./../../data/PiGroup/curvature_pi_group_data.mat", "./envs/torque_curvature.npy", cpptorquefilename)
 
-    # process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
+    process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
 
 

@@ -119,15 +119,15 @@ def make_violin_figure(data, index, title, ylabel, y_min=0, y_max=10, ylog=False
 
         median = np.median(data_ind)
 
-        _bp = plotter.violinplot(data_ind, positions=[len(colors)-1], widths=viz_params['width']*np.shape(data_ind)[0]/350, showmedians=True)
+        _bp = plotter.violinplot(data_ind, positions=[len(colors)-1+2*viz_params['width']/3], widths=viz_params['width']*np.shape(data_ind)[0]/350, showmedians=True)
         color_violinplot(_bp, planners[i].color)
 
         # plotter.hlines(median, i-viz_params['width'], i+viz_params['width'], color=planners[i].color, linestyles='dashed')
 
-        plotter.text(len(colors)-1-viz_params['width']/2, median,'%.3f' % median, horizontalalignment='right', verticalalignment='center', fontsize=viz_params['textsize'])
+        plotter.text(len(colors)-1, median,'%.3f' % median, horizontalalignment='right', verticalalignment='center', fontsize=viz_params['textsize'])
 
     plotter.ylabel(ylabel)
-    plotter.xticks(np.arange(0,len(colors)), labels, rotation=viz_params['rotation'])
+    plotter.xticks(np.arange(0,len(colors))+2*viz_params['width']/3, labels, rotation=viz_params['rotation'])
     plotter.xlim([-0.5, len(colors)-0.5])
 
     if ylog:

@@ -12,7 +12,7 @@ _MU_O = 4.0*np.pi*1e-7 # permeability of free space, should not be changed
 
 class Magnet():
 
-    def __init__(self, position:npt.NDArray, m:npt.NDArray, m_mag:float):
+    def __init__(self, position:npt.NDArray, m:npt.NDArray, m_mag:float, radius=0.0, Br=0.0, shape='cube'):
         """
         Class to define magnet objects.
 
@@ -26,9 +26,24 @@ class Magnet():
         self.m = np.array(m)
         norm = np.linalg.norm(self.m)
         self.m = np.divide(self.m, norm)
-        self.m = np.multiply(m_mag, self.m)
+        self.radius = radius
+        self.Br = Br
+        self.shape = shape
+        if radius > 0.0 and Br > 0.0:
+            if shape == 'cube':
+                width = np.sqrt(((2*radius)**2)/2)
+                volume = (width)**3
+            elif shape == 'sphere':
+                volume = (4/3)*np.pi*(radius**3)
+            else:
+                volume = 0.0
+            new_m = (Br*volume)/_MU_O
+            if new_m > 0.0:
+                m_mag = new_m
         self.mag = m_mag
+        self.m = np.multiply(m_mag, self.m)
         self.skew_m = vector_to_skew(self.m)
+
         
 
     def get_Bb(self, other_magnet:'Magnet') -> tuple[npt.NDArray, npt.NDArray]:

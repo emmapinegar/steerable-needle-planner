@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
         if numpoints[0] > 1000000:
             ptc = ptc.random_down_sample(0.1)
-        elif numpoints[0] > 100000:
+        elif numpoints[0] > 1000000:
             ptc = ptc.random_down_sample(0.5)
 
         print("Point cloud {}: ".format(i))

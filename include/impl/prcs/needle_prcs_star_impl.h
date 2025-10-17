@@ -700,7 +700,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
      */
     template <typename DoneFn>
     void solve(Planner& planner, DoneFn done) {
-        MPT_LOG(INFO) << "worker running";
+        MPT_LOG(TRACE) << "worker running";
 
         configTolerance_ = scenario_.validator().ConfigTolerance();
         initNum_ = planner.propagator_.InitialNumberofOrientations();
@@ -738,7 +738,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             planner.removeActivateWorker();
         }
 
-        MPT_LOG(INFO) << "worker done";
+        MPT_LOG(TRACE) << "worker done";
     }
 
     /**
