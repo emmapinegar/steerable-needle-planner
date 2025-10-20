@@ -125,7 +125,7 @@ Str stats_file = "../data/output/planner_stats.txt";
 // Use single threads or multiple threads.
 bool global_multi_threading = false;
 // Position tolerance for the goal state.
-RealNum global_goal_pos_tolerance = 1; //EPS;
+RealNum global_goal_pos_tolerance = EPS;
 // Orientation tolerance for the goal state.
 RealNum goal_ang_tolerance = 0.005;
 

@@ -14,7 +14,7 @@ _PINK = '#C33AAC'
 _RED = '#BF0F67'
 
 
-stats_indices = {'env': 0, 'sg_index': 1, 'sg_mag': 2, 'planner': 3, 'ell': 4, 'phi': 5, 'time': 6, 'success': 7, 'approx_success': 8, 'spreading': 9, 'maxphi': 10, 'maxell': 11, 'minrad': 12, 'varcurv':13, 'times': 14, 'costs': 15, 'lengths': 16, 'phis': 17}
+stats_indices = {'env': 0, 'sg_index': 1, 'sg_mag': 2, 'planner': 3, 'ell': 4, 'phi': 5, 'time': 6, 'success': 7, 'approx_success': 8, 'spreading': 9, 'maxphi': 10, 'maxell': 11, 'minrad': 12, 'varcurv':13, 'multi':14, 'times': 15, 'costs': 16, 'lengths': 17, 'phis': 18}
 viz_params = {'alpha': 0.25, 'rotation': 10, 'width': 0.2, 'textsize': 10}
 
 

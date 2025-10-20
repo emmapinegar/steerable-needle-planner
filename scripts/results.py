@@ -179,12 +179,12 @@ def make_time_figure(data, time_data, index, title, ylabel, y_min=0, y_max=2, yl
         if np.shape(flat)[0] < n*5:
             n = 8
 
-        median = np.zeros(np.shape(flat)[0]-n)
-        median_time = np.zeros(np.shape(time)[0]-n)
+        # median = np.zeros(np.shape(flat)[0]-n)
+        # median_time = np.zeros(np.shape(time)[0]-n)
 
-        for j in range(np.shape(median)[0]):
-            median[j] = np.median(flat[j:j+n])
-            median_time[j] = np.median(time[j:j+n])
+        # for j in range(np.shape(median)[0]):
+        #     median[j] = np.median(flat[j:j+n])
+        #     median_time[j] = np.median(time[j:j+n])
 
 
         average = np.cumsum(flat)
@@ -393,7 +393,7 @@ def make_scaled_length_time_figures(data, time_data, index, y_min, y_max, fig_ti
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 4
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -451,7 +451,7 @@ def make_success_time_figures(data, time_data):
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 4
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -488,7 +488,7 @@ def make_time_figures(data, time_data, index, y_min, y_max, fig_title, axis_labe
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 4
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -524,7 +524,7 @@ def make_success_figures(data, time_data, index, y_min, y_max, fig_title, axis_l
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 4
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -560,7 +560,7 @@ def make_violin_figures(data, time_data, index, y_min, y_max, fig_title, axis_la
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 4
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -599,7 +599,7 @@ def make_success_heat_figures(data, time_data):
     envs = np.unique(data[:, stats_indices['env']])
     phis = np.unique(data[:,stats_indices['maxphi']])
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
-    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 8
+    num_plots = np.shape(kappas)[0]*np.shape(phis)[0] + 4
     rows = 2
     cols = max(num_plots//rows, 1)
     fig_ind = 1
@@ -763,7 +763,7 @@ def plot_magnet_options(datafile):
         needle = Magnet(np.array([[0], [0], [0]]), np.array([[0, 0, 1]]), 0.0018, radius=0.001)
      
         
-        colors = [ '#117733','#C33AAC','#BF0F67', '#332288'] # '#0063F8' '#40B3EC' '#44AA99' '#D46D7E' '#EF6E12'
+        colors = [ '#332288'] #'#117733','#C33AAC','#BF0F67',  '#0063F8' '#40B3EC' '#44AA99' '#D46D7E' '#EF6E12'
 
         
         samm = Magnet(np.array([[distances[0]], [0], [0]]), np.array([[0], [1], [0]]), 66.03, radius=0.0254, shape='sphere')
@@ -778,7 +778,7 @@ def plot_magnet_options(datafile):
         # uniformn52 = Magnet(np.array([[distances[0]], [0], [0]]), np.array([[0], [1], [0]]), 830, radius=0.055, Br=1.48, shape='sphere')
         # bigcuben52 = Magnet(np.array([[distances[0]], [0], [0]]), np.array([[0], [1], [0]]), 154.40, radius=0.03592, Br=1.45, shape='cube')  
 
-        magnets = [sammn52, smallcuben52, bigcuben42, samm] 
+        magnets = [samm] 
 
         for i in range(len(magnets)):
             dist_points = []
@@ -808,7 +808,7 @@ def plot_magnet_options(datafile):
 
             plotter.plot(dist_points, radius_points, color=colors[i], alpha=alpha)
         
-        radii = np.array([15, 25, 50, 100])
+        radii = np.array([15, 25, 50, 100, 250])
         for i in range(len(magnets)):
             dist_points = []
             radius_points = []
@@ -859,10 +859,34 @@ def plot_magnet_options(datafile):
 
 
 
+def fix_lines(filename):
+    newlines = []
+    with open(filename) as file:
+        file.readline()
+        glue = ","
+        
+        for line in file:
+            data = line.split(glue)
+            data = data[0:14] + ["0"] + data[14:]
+            # data[-1] += "\n"
+            
+            newline = glue.join(data)
+            newlines += [newline]
+
+    with open(filename, "w") as file:
+        file.writelines(newlines)
+
+        
+
+
+
 if __name__=='__main__':
 
     files = fnmatch.filter(os.listdir('./../data/output/'), '*_stats.txt')
-    data = np.empty((0,14))
+
+    # fix_lines('./../data/output/' + files[0])
+
+    data = np.empty((0,15))
     time_data = []
     def conv(x):
         x_ = x.decode()
@@ -874,18 +898,18 @@ if __name__=='__main__':
         
     convs = {0: lambda x: conv(x), 1: lambda x: conv(x), 2: lambda x: conv(x), 3: lambda x: conv(x)}
     for file in files:
-        next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13))
+        next_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14))
 
         data = np.vstack((data, next_data))
-        next_time_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(14,15,16,17), converters=conv, dtype=object, quotechar='"')
+        next_time_data = np.loadtxt('./../data/output/' + file, delimiter=',', comments='#', usecols=(15,16,17,18), converters=conv, dtype=object, quotechar='"')
 
         time_data.append(next_time_data)
 
     # plot_magnet_options("./../../data/PiGroup/curvature_pi_group_data.mat")
 
 
-    # make_success_brain_figure(data)
-    # make_success_brain_figures(data)
+    # # make_success_brain_figure(data)
+    # # make_success_brain_figures(data)
 
     make_success_heat_figures(data, time_data[0])
 
@@ -904,6 +928,6 @@ if __name__=='__main__':
     make_violin_figures(data, time_data[0], stats_indices['phi'], 0, 3.14, r'Angles', r'$\phi$')
 
 
-    # make_scaled_length_time_figures(data, time_data[0], stats_indices['lengths'], 1, 1.05, r'Distance vs Time', r'$\ell^\prime$')
+    # # make_scaled_length_time_figures(data, time_data[0], stats_indices['lengths'], 1, 1.05, r'Distance vs Time', r'$\ell^\prime$')
 
     plotter.show()
