@@ -162,13 +162,9 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
 
     # sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=100)
 
-
     # pair_lines = []
     # with open(cpppairfilename, "a+") as textfile:
     #     for i in range(np.shape(sg_pairs)[0]):
-    #         # print(np.shape(sg_pairs))
-    #         # print(i)
-    #         # print(sg_pairs[i][0])
     #         start = transform_xyz(transform, sg_pairs[i][0], sg_pairs[i][1], sg_pairs[i][2])
     #         goal = transform_xyz(transform, sg_pairs[i][3], sg_pairs[i][4], sg_pairs[i][5])
     #         pair_lines += [f"{start[0,3]} {start[1,3]} {start[2,3]} {goal[0,3]} {goal[1,3]} {goal[2,3]}\n"]
@@ -393,7 +389,7 @@ def verify_ReMIND_env(lines, starts, goals, k=15):
     print(len(goals))
     np.random.shuffle(starts)
     np.random.shuffle(goals)
-    num_pairs = 1000
+    num_pairs = 7500
     num_goals = 20
     # if k > 100:
     #     num_pairs = 7500
