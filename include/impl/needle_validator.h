@@ -614,9 +614,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     Quat result_q;
     RealNum result_rad;
 
-    if (print_) {
-        std::cout << "\n\tverifying p: " << gp.transpose() << std::endl;
-    }
+    // if (print_) {
+    //     std::cout << "\n\tverifying p: " << gp.transpose() << std::endl;
+    // }
     
 
     // checking that there aren't collisions along the path, if the path is relatively straight
@@ -628,9 +628,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
             result_p = sp + st * l;
 
             if (!env->CollisionFree(result_p)) {
-                if (print_) {
-                    std::cout << "collision!" << std::endl;
-                }
+                // if (print_) {
+                //     std::cout << "collision!" << std::endl;
+                // }
                 return false;
             }
 
@@ -640,6 +640,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
                 // if the "distance to the trumpet boundary" is "nonzero" return false
                 if (DistanceToTrumpetBoundary(sp, st, result_p, result_rad) > EPS) {
+                    if (print_) {
+                        std::cout << "sp not reachable" << std::endl;
+                    }                    
                     return false;
                 }
             }        
@@ -664,10 +667,11 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     if (cfg->variable_curvature){
         result_rad = GetCurvature(gp, gq_normalized, normal_vec, cfg, rad_curv);
 
-        PrintStep(-1, 0, result_rad, gp, gq_normalized, normal_vec, cfg, print_);
+        // PrintStep(-1, 0, result_rad, gp, gq_normalized, normal_vec, cfg, print_);
 
         if (DistanceToTrumpetBoundary(sp, st, gp, result_rad) > EPS) {
             if (print_) {
+                PrintStep(-1, 0, result_rad, gp, gq_normalized, normal_vec, cfg, print_);
                 std::cout << "gp not reachable" << std::endl;
             }
             return false;
@@ -685,10 +689,10 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     const RealNum angle_step = resolution / r;
     int i = 0;
 
-    if (print_) {
-        std::cout << "angle: " << max_angle << " center: " << center.transpose() << " r: " << r << " diff: " << center_diff.transpose();
-        std::cout << " |r|: " << center_diff.norm()  << " |center|: " << center.norm() <<std::endl;
-    }
+    // if (print_) {
+    //     std::cout << "angle: " << max_angle << " center: " << center.transpose() << " r: " << r << " diff: " << center_diff.transpose();
+    //     std::cout << " |r|: " << center_diff.norm()  << " |center|: " << center.norm() <<std::endl;
+    // }
 
     for (RealNum ang = 0; ang < max_angle + angle_step; ang += angle_step) {
         ang = std::fmin(ang, max_angle);
@@ -696,9 +700,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         result_p = proceed_quat*(sp - center) + center;
         
         if (!env->CollisionFree(result_p)) {
-            if (print_) {
-                std::cout << "collision!! " << result_p.transpose() << std::endl;
-            }
+            // if (print_) {
+            //     std::cout << "collision!! " << result_p.transpose() << std::endl;
+            // }
             return false;
         }
 
@@ -706,11 +710,12 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
             result_q = (proceed_quat*sq_normalized).normalized();
             result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, rad_curv);
 
-            PrintStep(i, ang, result_rad, result_p, result_q, normal_vec, cfg, print_);
+            // PrintStep(i, ang, result_rad, result_p, result_q, normal_vec, cfg, print_);
 
             // if the "distance to the trumpet boundary" is "nonzero" return false
             if (DistanceToTrumpetBoundary(sp, st, gp, result_rad) > EPS) {
                 if (print_) {
+                    PrintStep(i, ang, result_rad, result_p, result_q, normal_vec, cfg, print_);
                     std::cout << "radius limit!! " << result_p.transpose() << " r: " << r << std::endl;
                 }
                 
@@ -720,9 +725,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         }
     }
 
-    if (print_) {
-        std::cout << "motion valid!!!\n\n\n" << std::endl;
-    }
+    // if (print_) {
+    //     std::cout << "motion valid!!!\n\n\n" << std::endl;
+    // }
     return true;
 }
 
@@ -777,19 +782,23 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
         if (normal_vec.norm() < 1e-5) {
             normal_vec = (base_q*motion[0].rotation())*Vec3::UnitY();
         }
-        if (print_) {
-            std::cout << "\noffset " << offset << " len: " << motion.size() << " p: " << base_p.transpose() << " sample: " << result_p.transpose() << " base: " << base_t.transpose() << " q: " << base_q;
-            std::cout  << " final: " << result_t.transpose() << std::endl;
-        }
+        // if (print_) {
+        //     std::cout << "\noffset " << offset << " len: " << motion.size() << " p: " << base_p.transpose() << " sample: " << result_p.transpose() << " base: " << base_t.transpose() << " q: " << base_q;
+        //     std::cout  << " final: " << result_t.transpose() << std::endl;
+        // }
 
         result_rad = GetCurvature(base_p, base_q, normal_vec, cfg, cfg->rad_curv);
         if (result_rad > motion_rad) {
+            if (print_) {
+                std::cout << "new index -1  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << base_p.transpose() << " normal: " << normal_vec.transpose() << " z: " << base_t.transpose() << " y: " << (base_q*Vec3::UnitY()).normalized().transpose() << " x: " << (base_q*Vec3::UnitX()).normalized().transpose();
+                std::cout << std::endl;
+            }              
             return false;
         }
-        if (print_) {
-            std::cout << "new index -1  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << base_p.transpose() << " normal: " << normal_vec.transpose() << " z: " << base_t.transpose() << " y: " << (base_q*Vec3::UnitY()).normalized().transpose() << " x: " << (base_q*Vec3::UnitX()).normalized().transpose();
-            std::cout << std::endl;
-        }   
+        // if (print_) {
+        //     std::cout << "new index -1  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << base_p.transpose() << " normal: " << normal_vec.transpose() << " z: " << base_t.transpose() << " y: " << (base_q*Vec3::UnitY()).normalized().transpose() << " x: " << (base_q*Vec3::UnitX()).normalized().transpose();
+        //     std::cout << std::endl;
+        // }   
     }
 
 
@@ -806,19 +815,24 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
             result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, cfg->rad_curv);
 
             if (result_rad > motion_rad) {
+                if (print_) {
+                    std::cout << "new index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p.transpose() << " normal: " << normal_vec.transpose() << " z: " << result_t.transpose() << " y: " << (result_q*Vec3::UnitY()).normalized().transpose() << " x: " << (result_q*Vec3::UnitX()).normalized().transpose();
+                    std::cout << " q: " << motion[i].rotation().normalized() << " translation: " << motion[i].translation().transpose();
+                    std::cout << std::endl;
+                }                
                 return false;
             }
-            if (print_) {
-                std::cout << "new index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p.transpose() << " normal: " << normal_vec.transpose() << " z: " << result_t.transpose() << " y: " << (result_q*Vec3::UnitY()).normalized().transpose() << " x: " << (result_q*Vec3::UnitX()).normalized().transpose();
-                std::cout << " q: " << motion[i].rotation().normalized() << " translation: " << motion[i].translation().transpose();
-                std::cout << std::endl;
-            }
+            // if (print_) {
+            //     std::cout << "new index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p.transpose() << " normal: " << normal_vec.transpose() << " z: " << result_t.transpose() << " y: " << (result_q*Vec3::UnitY()).normalized().transpose() << " x: " << (result_q*Vec3::UnitX()).normalized().transpose();
+            //     std::cout << " q: " << motion[i].rotation().normalized() << " translation: " << motion[i].translation().transpose();
+            //     std::cout << std::endl;
+            // }
         }
     } 
 
-    if (print_) {
-        std::cout << "motion valid!!!\n\n" << std::endl;
-    }
+    // if (print_) {
+    //     std::cout << "motion valid!!!\n\n" << std::endl;
+    // }
     
 
 

@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     // start_and_goal_file is defined in global_common.h 
     auto [start_p, start_q] = utils::ReadStart(start_and_goal_file);
 
-    cfg->output_file_root = "../data/output/" + date_and_time + suffix;
+    cfg->output_file_root = global_output_file_root + date_and_time + suffix;
     cfg->sample_orientation = true;
     cfg->direct_connect_ratio = 1.0;
     // cfg->goal_pos_tolerance = 3.0;

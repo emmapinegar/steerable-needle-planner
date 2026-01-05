@@ -790,7 +790,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 return;
             }
 
-            auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex(), node->parent()->curve_lim());
+            auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex());
 
             if (!propagated) {
                 recycle(node);

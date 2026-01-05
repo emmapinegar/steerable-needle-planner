@@ -107,7 +107,7 @@ RealNum global_sg_mag = 0.0;
 
 Str padded_scan_num = std::string(3 - std::to_string(scan_number).length(), '0') + std::to_string(scan_number);
 
-Str global_output_file_root = "../data/output/test";
+Str global_output_file_root = "../data/output/points/";
 Str global_obstacle_file = "../data/input/remind_" + padded_scan_num + "_obstacles.txt";
 Str global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outline_shuffled.txt";
 Str global_cost_file = "../data/input/costs.txt";

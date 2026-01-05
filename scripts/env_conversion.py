@@ -91,8 +91,8 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
     pytextfilename = os.path.join(pythonenvfolder, f"ReMIND_info_{scannum}.txt")
     cppstartgoaltext = os.path.join(cppenvfolder, f"remind_{scannum}_start_and_goal_poses.txt")
     cppgoalregiontext = os.path.join(cppenvfolder, f"remind_{scannum}_goal_regions.txt")
-    pypairfilename = os.path.join(pythonenvfolder, f"ReMIND_starts_{scannum}.txt")
-    cpppairfilename = os.path.join(cppenvfolder, f"remind_{scannum}_sg_pairs.txt")
+    pypairfilename = os.path.join(pythonenvfolder, f"ReMIND_starts_{scannum}_dynamic.txt")
+    cpppairfilename = os.path.join(cppenvfolder, f"remind_{scannum}_sg_pairs_dynamic.txt")
     pytorquefilename=os.path.join(pythonenvfolder,"torque_curvature.npy")
     cpptorquefilename = os.path.join(cppenvfolder, f"torque_curvature.txt")
 
@@ -171,7 +171,7 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
 
     #     textfile.writelines(pair_lines)
 
-    sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=250)
+    sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=25)
 
     pair_lines = []
     with open(cpppairfilename, "a+") as textfile:
@@ -383,14 +383,14 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
 
 def verify_ReMIND_env(lines, starts, goals, k=15):
     env = ReMINDEnvironment()
-    env.read_lines(lines, variable_curvature=False)
+    env.read_lines(lines, variable_curvature=True)
     sg_pairs = []
     print(len(starts))
     print(len(goals))
     np.random.shuffle(starts)
     np.random.shuffle(goals)
-    num_pairs = 7500
-    num_goals = 20
+    num_pairs = 5000
+    num_goals = 50
     # if k > 100:
     #     num_pairs = 7500
     # elif k > 50:
@@ -419,7 +419,7 @@ def verify_ReMIND_env(lines, starts, goals, k=15):
                         q, phi = env.robot.ik(env.goal)
                         # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
                         if q is not None:
-                            rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
+                            rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=True)
                             rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
                             (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
 
@@ -432,9 +432,9 @@ def verify_ReMIND_env(lines, starts, goals, k=15):
                         if valid:
                             next_pairs += [[start[0], start[1], start[2], goal[0], goal[1], goal[2]]]
                             i += 1
-            if i == num_goals:
-                sg_pairs += next_pairs
-                print(len(sg_pairs))
+            # if i == num_goals:
+            sg_pairs += next_pairs
+            print(len(sg_pairs))
         
         i = 0
 
@@ -525,25 +525,35 @@ def process_Pi_data(datafile, torquefilename, cpptorquefilename):
         print(radius_by_stiffness_mean)
         # print(radius)
         # print(mat)
-        plt.figure()
-        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,0,2],radius_by_stiffness[0,0,1],radius_by_stiffness[0,0,0]]), c='k', marker='o', s=120, alpha=0.1)
-        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,1,2],radius_by_stiffness[0,1,1],radius_by_stiffness[0,1,0]]), c='k', marker='o', s=120, alpha=0.1)
-        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,2,2],radius_by_stiffness[0,2,1],radius_by_stiffness[0,2,0]]), c='k', marker='o', s=120, alpha=0.1)
-        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,3,2],radius_by_stiffness[0,3,1],radius_by_stiffness[0,3,0]]), c='k', marker='o', s=120, alpha=0.1)
-        plt.scatter(torques_, 1000/np.array([radius_by_stiffness[0,4,2],radius_by_stiffness[0,4,1],radius_by_stiffness[0,4,0]]), c='k', marker='o', s=120, alpha=0.1)
+        plt.figure(figsize=[10,8])
+        plot_torques = np.ones((np.shape(torques_)[0],np.shape(radius_by_stiffness)[1]))
+        plot_curvatures = np.zeros((np.shape(torques_)[0],np.shape(radius_by_stiffness)[1]))
+        for torque_i in range(np.shape(torques_)[0]):
+            plot_curvatures[torque_i, :] = 1000/np.array([radius_by_stiffness[0,:,np.shape(torques_)[0]-1-torque_i]])
 
-        plt.scatter(torques[:3], 1000/radius_of_curvatures[:3], s=30, alpha=1)
-        plt.scatter(torques_, 1000/(torques_*m + b), s=30, alpha=1)
-        extents = np.array([3e-5, 3.5e-5, 4e-5, 5e-5, 6e-5, 7e-5, 8e-5, torques_[2], torques_[1], torques_[0]])
-        plt.plot(extents, 1000/(extents*m + b), c='k', linestyle='--')
+            plot_torques[torque_i, :] = torques_[torque_i]*plot_torques[torque_i,:] 
+
+        plt.scatter(plot_torques.reshape(-1,), plot_curvatures.reshape(-1,), c='darkgray', marker='o', s=500, alpha=0.3, label=r'RoC$_{measured}$ @$\Vert\tau \Vert $', edgecolors='k', linewidths=0.5)
+        
+        plt.scatter(torques_[:3], 1000/radius_of_curvatures[:3], c='k', marker='o', s=15, alpha=1, label=r'$\overline{RoC}_{measured}$ @ $\Vert\tau \Vert$')
+
+        # plt.scatter(torques_, 1000/(torques_*m + b), c='k', s=2, alpha=1)
+        extents = np.array([1e-15, 1e-9, 1e-8, 1e-7, 5e-7, 1e-6, 3e-6, 5e-6, 7e-6, 1e-5, 1.5e-5, 2e-5, 2.5e-5, 3e-5, 3.5e-5, 4e-5, 4.5e-5, 5e-5, 5.5e-5, 6e-5, 6.5e-5, 7e-5, 8e-5, 8.5e-5, 9e-5, torques_[2], 1e-4, 1.1e-4, torques_[1], 1.25e-4, 1.4e-4, torques_[0]])
+        plt.plot(extents, 1000/(extents*m + b), c='k', linestyle='--', label=r'RoC$_{est}$ = $\frac{1000}{m_{torque}*\Vert \tau \Vert + b_{torque}}$', linewidth=2)
 
         print(1000/(extents*m + b))
         print(bestFit)
 
         # https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ticklabel_format.html
         plt.ticklabel_format(axis='x', style='sci', scilimits=(-3,3))
-        plt.xlabel("Torque (Nm)")
-        plt.ylabel("Radius of Curvature (mm)")
+        plt.ylim([0,50])
+        plt.xlim([0,1.6e-4])
+        plt.tick_params(labelsize=16)
+        plt.xlabel("||Torque (Nm)||", fontsize=20)
+        plt.ylabel("Radius of Curvature (mm)", fontsize=20)
+        plt.title("Radius of Curvature vs. Torque Magnitude", fontsize=24)
+        plt.legend(fontsize=18)
+        plt.subplots_adjust(top=0.95, bottom=0.085, left=0.075, right=0.975)
         plt.show()
 
 
@@ -639,8 +649,8 @@ def create_test_env(r=150,spacing=150):
 if __name__ == "__main__":
 
     cpptorquefilename = os.path.join("./../data/input/", f"torque_curvature.txt")
-    # process_Pi_data("./../../data/PiGroup/curvature_pi_group_data.mat", "./envs/torque_curvature.npy", cpptorquefilename)
+    process_Pi_data("./../../data/PiGroup/curvature_pi_group_data.mat", "./envs/torque_curvature.npy", cpptorquefilename)
 
-    process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
+    # process_all_ReMIND("./../../data/ReMIND/", "./envs/", "./../data/input/")
 
 

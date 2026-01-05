@@ -1155,7 +1155,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             return nullptr;
         }
 
-        auto propagated = planner.propagator_(from, radIndex, lengthIndex, parent->curve_lim());
+        auto propagated = planner.propagator_(from, radIndex, lengthIndex);
 
         if (!propagated) {
             return nullptr;

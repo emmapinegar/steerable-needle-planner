@@ -3,8 +3,9 @@ import os, fnmatch
 import matplotlib.pyplot as plotter
 from dataclasses import dataclass
 
-_PURPLE = '#332288'
-_GREEN = '#117733'
+_INDIGO = '#332288'
+_PURPLE = '#7031BD'
+_GREEN = '#368E04'
 _TEAL = '#44AA99'
 _BLUE = '#40B3EC'
 
@@ -15,7 +16,12 @@ _RED = '#BF0F67'
 
 
 stats_indices = {'env': 0, 'sg_index': 1, 'sg_mag': 2, 'planner': 3, 'ell': 4, 'phi': 5, 'time': 6, 'success': 7, 'approx_success': 8, 'spreading': 9, 'maxphi': 10, 'maxell': 11, 'minrad': 12, 'varcurv':13, 'multi':14, 'times': 15, 'costs': 16, 'lengths': 17, 'phis': 18}
-viz_params = {'alpha': 0.25, 'rotation': 10, 'width': 0.2, 'textsize': 10}
+viz_params = {'alpha': 0.25, 'rotation': 10, 'width': 0.2, 'textsize': 10, 'titlesize': 34, 'subtitlesize': 22, 'labelsize': 22, 'ticksize': 15, 'legendsize': 15, 'capstyle': "round", 'dashjoinstyle': "round"}
+
+
+                            
+
+
 
 
 @dataclass
@@ -24,15 +30,16 @@ class Planner:
     color: str
     label: str
     linestyle: str
+    marker: str
 
-rrt_info = Planner(1, _PINK, r'RGRRT', '-')
-aorrt_info = Planner(2, _ORANGE, r'AORRT', '-.')
-rcs_info = Planner(3, _BLUE, r'RCS', '--')
-rcsstar_info = Planner(4, _PURPLE, r'RCS*', ':')
+rrt_info = Planner(1, _PINK, r'RGRRT', '-', 'o')
+aorrt_info = Planner(2, _ORANGE, r'AORRT', (0,(2,2)), 'v')
+rcs_info = Planner(3, _BLUE, r'RCS', (0,(1,2)), 'x') #
+rcsstar_info = Planner(4, _INDIGO, r'RCS*', (0,(0.25,2)), 'P') #
 
-rrt_spreading_info = Planner(5, _RED, r'RGRRT_s', '-')
-aorrt_spreading_info = Planner(6, _RED, r'AORRT_s', '-')
-rcs_spreading_info = Planner(7, _RED, r'RCS_s', '-')
+rrt_spreading_info = Planner(5, _RED, r'RGRRT_s', '-', '.')
+aorrt_spreading_info = Planner(6, _RED, r'AORRT_s', '-', '.')
+rcs_spreading_info = Planner(7, _RED, r'RCS_s', '-', '.')
 
 planners = [rrt_info, aorrt_info, rcs_info, rcsstar_info] #, rrt_spreading_info, aorrt_spreading_info, rcs_spreading_info]
 
@@ -107,10 +114,7 @@ def make_violin_figure(data, index, title, ylabel, y_min=0, y_max=10, ylog=False
     plotter.title(title)
     for i in range(len(planners)):
         planner_indices = get_planner_indices(data, planners[i])
-        if index == stats_indices['ell']:
-            data_ind = data[planner_indices, index]/data[planner_indices, stats_indices['sg_mag']]
-        else:
-            data_ind = data[planner_indices, index]
+        data_ind = data[planner_indices, index]
         if np.shape(data_ind)[0] == 0:
             continue
 
@@ -119,7 +123,7 @@ def make_violin_figure(data, index, title, ylabel, y_min=0, y_max=10, ylog=False
 
         median = np.median(data_ind)
 
-        _bp = plotter.violinplot(data_ind, positions=[len(colors)-1+2*viz_params['width']/3], widths=viz_params['width']*np.shape(data_ind)[0]/350, showmedians=True)
+        _bp = plotter.violinplot(data_ind, positions=[len(colors)-1+2*viz_params['width']/3], widths=viz_params['width']*np.shape(data_ind)[0]/200, showmedians=True)
         color_violinplot(_bp, planners[i].color)
 
         # plotter.hlines(median, i-viz_params['width'], i+viz_params['width'], color=planners[i].color, linestyles='dashed')

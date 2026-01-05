@@ -311,13 +311,11 @@ class MotionPrimitivePropagator {
      * 
      * @returns State from after being moved using the motion primitives specified if successful
      */
-    std::optional<State> operator()(const State& from, const std::array<unsigned, 3>& indices, const RealNum& curve_lim) const {
+    std::optional<State> operator()(const State& from, const std::array<unsigned, 3>& indices) const {
         auto const& base_state = motion_primitives_[indices[0]][indices[1]].FinalState();
         RealNum rad = RadiusOfCurvature(indices[0]);
         
-        if (curve_lim < rad) {
-            return utils::TransformToNewBase(base_state, this->ComputeStartPose(from, indices[2]));
-        } 
+        return utils::TransformToNewBase(base_state, this->ComputeStartPose(from, indices[2]));
     }
 
     /**
@@ -330,13 +328,11 @@ class MotionPrimitivePropagator {
      * @returns State from after being moved using the motion primitives specified if successful
      */
     std::optional<State> operator()(const State& from, const unsigned& rad_idx,
-                                    const unsigned& length_idx, const RealNum& curve_lim) const {
+                                    const unsigned& length_idx) const {
         auto const& base_state = motion_primitives_[rad_idx][length_idx].FinalState();
         RealNum rad = RadiusOfCurvature(rad_idx);
-        if (curve_lim < rad) {
-            // std::cout << "radius: " << rad << " lim: " << curve_lim << std::endl;
-            return utils::TransformToNewBase(base_state, from);
-        } 
+
+        return utils::TransformToNewBase(base_state, from);
     }
 
     /**

@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     for (global_sg_index; global_sg_index < max_sg; global_sg_index++) {
         Str date_and_time = utils::DateAndTime();
 
-        cfg->output_file_root = "../data/output/" + date_and_time + suffix;
+        cfg->output_file_root = global_output_file_root + date_and_time + suffix;
         auto [start_p, goal_p] = utils::ReadSGPair(sg_pairs_file, global_sg_index);
 
         std::cout << "Planning parameters: r " << cfg->rad_curv << " l " << cfg->ins_length << " phi " << cfg->ang_constraint_degree 

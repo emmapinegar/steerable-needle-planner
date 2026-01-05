@@ -63,7 +63,7 @@ def draw_ptc(ptc):
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         fileNames = ["./../data/input/remind_001_sg_pairs.txt"] 
-        files = ["./../data/output/" + file for file in fnmatch.filter(os.listdir('./../data/output/'), '*_rcs_star_remind_*.txt')]
+        files = ["./../data/output/" + file for file in fnmatch.filter(os.listdir('./../data/output/'), '*_rrt_remind_*.txt')]
         print(files)
         fileNames += files
     start_p = np.array([[0], [0], [0]])
