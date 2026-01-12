@@ -49,6 +49,16 @@ struct Point2PointScenario {
 };
 
 template <typename Scalar>
+struct SteinPoint2PointScenario {
+    using Space = NeedleSpace<Scalar>;
+    using State = typename Space::Type;
+    using Sampler = NeedleSampler<State, sample_stein>;
+    using Propagator = CurvePropagator<State>;
+    using Validator = Point2PointCurveValidator<State>;
+    using Type = NeedlePlanningScenario<Space, Sampler, Propagator, Validator, 0>;
+};
+
+template <typename Scalar>
 struct SpreadingScenario {
     using Space = NeedleSpace<Scalar>;
     using State = typename Space::Type;
@@ -93,7 +103,7 @@ struct PAORRTPoint2PointScenario {
     using Space = ConfigCostSpace<Scalar>;
     using State = typename Space::Type;
     using Sampler = NeedleSampler<State, sample_random>; // CHANGE: originally sample_random
-    using Propagator = RandomForwardPropagator<State>;
+    using Propagator = CurvePropagator<State>;
     using Validator = Point2PointCurveValidator<State>;
     using Type = NeedlePlanningScenario<Space, Sampler, Propagator, Validator, 0>;
 };

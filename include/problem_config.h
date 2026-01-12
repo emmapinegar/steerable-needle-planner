@@ -122,6 +122,9 @@ struct ProblemConfig {
     Str cost_file = global_cost_file;
     Str healpix_file = global_healpix_file;
     Str skull_file = global_skull_file;
+    Str sample_file = global_sample_file;
+    Str sample_record = global_sample_record;
+    bool record_samples = global_record_samples;
 
     RealNum needle_mag = global_needle_mag;
     RealNum manip_mag = global_manip_mag;

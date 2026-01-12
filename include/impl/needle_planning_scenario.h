@@ -234,6 +234,9 @@ class NeedlePlanningScenario<DistanceSpace, PoseSampler, StatePropagator, StateV
      * @returns bool true if the state, length, and angle are all valid, false otherwise
      */
     bool valid(const State& s, const Distance& length, const Scalar& angle) const {
+        if (global_record_samples) {
+            global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 12" << std::endl;
+        }         
         return validator_.Valid(s, length, angle);
     }
 

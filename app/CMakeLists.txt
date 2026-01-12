@@ -8,3 +8,5 @@ add_executable(rcs test_rcs.cc)
 add_executable(rcs_spreading test_rcs_spreading.cc)
 
 add_executable(rcs_star test_rcs_star.cc)
+
+add_executable(stein_rrt test_stein_rrt.cc)

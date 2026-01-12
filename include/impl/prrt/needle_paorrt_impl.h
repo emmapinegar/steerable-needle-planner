@@ -711,8 +711,13 @@ unbiasedSamplingLoop:
      * @param randState: random state to try to add
      */
     void addSample(Planner& planner, State& randState) {
-
+        // if (global_record_samples) {
+        //     global_sample_stream << randState.translation()[0] << " " << randState.translation()[1] << " " << randState.translation()[2] << " 10" << std::endl;
+        // }  
         if (scenario_.collision(randState)) {
+            if (global_record_samples) {
+                global_sample_stream << randState.translation()[0] << " " << randState.translation()[1] << " " << randState.translation()[2] << " 1" << std::endl;
+            }            
             return;
         }
 
@@ -723,34 +728,63 @@ unbiasedSamplingLoop:
         State newState = randState;
 
         if (scenario_.PositionDist(nearNode->state(), randState) < snp::EPS) {
+            if (global_record_samples) {
+                global_sample_stream << randState.translation()[0] << " " << randState.translation()[1] << " " << randState.translation()[2] << " 8" << std::endl;
+            }            
             return;
         }
 
         auto propagated = propagator_(nearNode->state(), randState, rng_, nearNode->curve_lim());
 
         if (!propagated) {
+            if (global_record_samples) {
+                global_sample_stream << randState.translation()[0] << " " << randState.translation()[1] << " " << randState.translation()[2] << " 3" << std::endl;
+            }            
             return;
         }
 
         newState = *propagated;
 
-        auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
-        auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
-
-        if (!scenario_.valid(newState, newLength, newAngle)) {
-            return;
+        RealNum prop_diff = (newState.translation() - randState.translation()).norm();
+        if (prop_diff > 0.1) {
+            std::cout << "rand: " << randState.translation()[0] << " " << randState.translation()[1] << " " << randState.translation()[2] << " new: " << newState.translation()[0] << " " << newState.translation()[1] << " " << newState.translation()[2] << std::endl;
         }
 
+        auto const& newLength = nearNode->length() + snp::CurveLength(nearNode->state(), newState);
+        auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
+        // if (global_record_samples) {
+        //     // global_sample_stream << randState.translation()[0] << " " << randState.translation()[1] << " " << randState.translation()[2] << " 11" << std::endl;
+        //     global_sample_stream << newState.translation()[0] << " " << newState.translation()[1] << " " << newState.translation()[2] << " 11" << std::endl;
+        //     // std::cout << newState.translation()[0] << " " << newState.translation()[1] << " " << newState.translation()[2] << " ell: " << newLength << " phi: " << newAngle << std::endl; 
+        // }
+        if (!scenario_.valid(newState, newLength, newAngle)) {
+            // if (global_record_samples) {
+            //     // global_sample_stream << randState.translation()[0] << " " << randState.translation()[1] << " " << randState.translation()[2] << " 13" << std::endl;
+            //     global_sample_stream << newState.translation()[0] << " " << newState.translation()[1] << " " << newState.translation()[2] << " 13" << std::endl;
+            // }            
+            return;
+        }
+        // if (global_record_samples) {
+        //     global_sample_stream << newState.translation()[0] << " " << newState.translation()[1] << " " << newState.translation()[2] << " 13" << std::endl;
+        // }
         auto const& newCost = nearNode->cost() + scenario_.CurveCost(nearNode->state(), newState);
 
         if (planner.solved() && newCost > planner.bestCost_) {
+            if (global_record_samples) {
+                global_sample_stream << randState.translation()[0] << " " << randState.translation()[1] << " " << randState.translation()[2] << " 9" << std::endl;
+            }
             return;
         }
 
         newState.cost() = newCost;
 
-
+        // if (global_record_samples) {
+        //     global_sample_stream << newState.translation()[0] << " " << newState.translation()[1] << " " << newState.translation()[2] << " 14" << std::endl;
+        // }
         if (auto traj = validMotion(nearNode->state(), newState)) {
+            if (global_record_samples) {
+                global_sample_stream << newState.translation()[0] << " " << newState.translation()[1] << " " << newState.translation()[2] << " 0" << std::endl;
+            }            
             auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, newState);
             auto const& goalState = goalStates[0];
 
@@ -774,7 +808,9 @@ unbiasedSamplingLoop:
                     if (!scenario_.valid(goalState, goalLength, goalAngle)) {
                         return;
                     }
-
+                    if (global_record_samples) {
+                        global_sample_stream << goalState.translation()[0] << " " << goalState.translation()[1] << " " << goalState.translation()[2] << " 0" << std::endl;
+                    }
                     if (goalCost < planner.bestCost_) {
                         Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
                         goalNode->length() = goalLength;

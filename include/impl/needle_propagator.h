@@ -68,23 +68,47 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
 
     const Vec3 sg = gp - sp;
     const RealNum d = sg.norm();
-    const RealNum cos_theta = (sg.normalized()).dot(st);
+    const RealNum cos_theta = st.dot(sg.normalized());
+    const RealNum sin_theta = (st.cross(sg.normalized())).norm();
+    const RealNum theta = std::atan2(sin_theta, cos_theta);
 
     if (d < EPS || cos_theta > 1 - EPS) {
         result.translation() = from.translation() + st*d;
         result.rotation() = sq;
+        std::cout << "moving straight " << gp[0] << " " << gp[1] << " " << gp[2] << " " << result.translation()[0] << " " << result.translation()[1] << " " << result.translation()[2] << std::endl;
         return result;
     }
 
     RealNum r = rad_curv;
 
     if (cos_theta > 0) {
-        r = std::fmax(rad_curv, 0.5*d/std::sin(std::acos(cos_theta)));
+        r = 0.5*d/std::sin(std::acos(cos_theta));
+        // if (r < rad_curv) {
+        //     return {};
+        // }
+        // r = std::fmax(rad_curv, );
+    } else {
+        r = 0.5*d/std::sin(std::acos(-cos_theta)+M_PI/2);
+    }
+
+    // r = 0.5*d/std::sin(theta);
+    
+    if (r < rad_curv) {
+        return {};
     }
 
     const Vec3 normal = (st.cross(sg)).normalized();
     const Vec3 center = sp + r*(normal.cross(st));
-    const RealNum max_ang = std::acos(((gp - center).normalized()).dot((sp - center).normalized()));
+    RealNum sin_phi = (((gp - center).normalized()).cross((sp - center).normalized())).norm();
+    RealNum cos_phi = ((gp - center).normalized()).dot((sp - center).normalized());
+    RealNum max_ang_ =  std::atan2(sin_phi, cos_phi); //
+    RealNum max_ang = std::acos(((gp - center).normalized()).dot((sp - center).normalized()));
+
+    if (cos_phi > 0) {
+        max_ang = std::acos(cos_phi);
+    } else {
+        max_ang = std::acos(-cos_phi) + M_PI/2;
+    }
 
     RealNum proceed_ang = max_ang;
 
@@ -102,6 +126,14 @@ std::optional<State> ConnectPointWithCurveDirectly(const State& from, const Stat
 
     result.translation() = proceed_quat*(sp - center) + center;
     result.rotation() = (proceed_quat*sq).normalized();
+
+    std::cout << "\ndiff: " << (gp - result.translation()).norm() << " ctheta: " << cos_theta << " stheta: " << sin_theta << " theta: " << theta << " sangle calc: " << (((gp - center).normalized()).cross((sp - center).normalized())).transpose() << " sangle: " << sin_phi << " cangle: " << cos_phi << " angle: " << proceed_ang << " other angle: " << max_ang_ << " ell: " << r*proceed_ang << " d: " << d << " steer: " << steer_step << " min rad: " << rad_curv << " r: " << r << " other r: " << 0.5*d/std::sin(theta) << std::endl;
+    std::cout << "sp: " << sp.transpose() << " moving along curve goal: " << gp.transpose() << " result: " << result.translation().transpose() << " " << max_ang << " gz: " << (result.rotation()*Vec3::UnitZ()).transpose() << " sz: " << st.transpose() << " atan2: " << std::atan2(st.cross(result.rotation()*Vec3::UnitZ()).norm(), st.dot(result.rotation()*Vec3::UnitZ())) << std::endl;
+    std::cout << "normal: " << normal.transpose() << " center: " << center.transpose() << " gp-center: " << (gp - center).normalized().transpose() << " sp-center: " << (sp-center).normalized().transpose() << std::endl;
+           
+    if ((gp - result.translation()).norm() > 0.01) {
+        return {};
+    }
 
     if (std::isnan(result.rotation().w())) {
         throw std::runtime_error("[ConnectPointWithCurveDirectly] Get nan result quaternion!");

@@ -43,6 +43,7 @@ namespace unc::robotics::snp {
 
 struct null_sampler {};
 struct sample_random {};
+struct sample_stein {};
 struct sample_sphere {};
 struct sample_trumpet {};
 struct sample_rugby {};
@@ -310,7 +311,9 @@ class NeedleSampler<State, sample_random> {
         else {
             sample.rotation() = start_q_;
         }
-
+        // if (global_record_samples) {
+        //     global_sample_stream << sample.translation()[0] << " " << sample.translation()[1] << " " << sample.translation()[2] << " 10" << std::endl;
+        // }        
         return sample;
     }
 
@@ -324,6 +327,69 @@ class NeedleSampler<State, sample_random> {
     RealUniformDist uniform_;
     RealNormalDist normal_;
 };
+
+
+template<typename State>
+class NeedleSampler<State, sample_stein> {
+  public:
+    NeedleSampler(const ConfigPtr cfg, const State& start, const State& goal)
+        : sample_orientation_(cfg->sample_orientation)
+        , start_p_(start.translation())
+        , start_q_(start.rotation().normalized())
+        , rad_curv_(cfg->rad_curv)
+        , ins_length_(cfg->ins_length + 10)
+        , cfg_(cfg) {
+
+            fin.open(cfg_->sample_file);
+
+    }
+
+    /**
+     * Gets a random sample that within the sphere of the maximum insertion limit of the needle and randomly sampled orientation.
+     * 
+     * @param rng: random number generator
+     * 
+     * @returns State randomly sampled state
+     */
+    template <typename RNG>
+    State operator() (RNG& rng) {
+
+        Str line;
+        State sample;
+        if (std::getline(fin, line)) {
+            std::istringstream s(line);
+            Vec3 translation;
+            s >> translation[0] >> translation[1] >> translation[2];
+            sample.translation() = translation;
+        }
+        else {
+            sample.translation() = start_p_ + ins_length_*utils::SampleInUnitSphere(rng, uniform_, normal_);
+        }
+
+        if (sample_orientation_) {
+            sample.rotation() = utils::SampleOrientation(rng, uniform_);
+        }
+        else {
+            sample.rotation() = start_q_;
+        }
+
+        return sample;
+    }
+
+  private:
+    const bool sample_orientation_;
+    const Vec3 start_p_;
+    const Quat start_q_;
+    const RealNum rad_curv_;
+    const RealNum ins_length_;
+    const ConfigPtr cfg_;
+
+    RealUniformDist uniform_;
+    RealNormalDist normal_;
+    std::ifstream fin; 
+
+};
+
 
 template<typename State>
 class NeedleSampler<State, sample_sphere> {

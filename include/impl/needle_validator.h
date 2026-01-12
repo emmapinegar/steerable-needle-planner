@@ -631,6 +631,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 // if (print_) {
                 //     std::cout << "collision!" << std::endl;
                 // }
+                if (global_record_samples) {
+                    global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 2" << std::endl;
+                }                 
                 return false;
             }
 
@@ -642,7 +645,10 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 if (DistanceToTrumpetBoundary(sp, st, result_p, result_rad) > EPS) {
                     if (print_) {
                         std::cout << "sp not reachable" << std::endl;
-                    }                    
+                    }  
+                    if (global_record_samples) {
+                        global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 4" << std::endl;
+                    }                                       
                     return false;
                 }
             }        
@@ -656,11 +662,17 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
     // if the orthogonal vector and the vector between the start and goal are orthogonal return false
     if (normal_vec.dot(relative_pos.normalized()) > EPS) {
+        if (global_record_samples) {
+            global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 7" << std::endl;
+        }        
         return false;
     }
 
     // if the "distance to the trumpet boundary" is "nonzero" return false
     if (DistanceToTrumpetBoundary(sp, st, gp, rad_curv) > EPS) {
+        if (global_record_samples) {
+            global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 7" << std::endl;
+        }        
         return false;
     }
 
@@ -674,6 +686,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 PrintStep(-1, 0, result_rad, gp, gq_normalized, normal_vec, cfg, print_);
                 std::cout << "gp not reachable" << std::endl;
             }
+            if (global_record_samples) {
+                global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 4" << std::endl;
+            }             
             return false;
         }        
     }
@@ -703,6 +718,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
             // if (print_) {
             //     std::cout << "collision!! " << result_p.transpose() << std::endl;
             // }
+            if (global_record_samples) {
+                global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 2" << std::endl;
+            }             
             return false;
         }
 
@@ -718,7 +736,9 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                     PrintStep(i, ang, result_rad, result_p, result_q, normal_vec, cfg, print_);
                     std::cout << "radius limit!! " << result_p.transpose() << " r: " << r << std::endl;
                 }
-                
+                if (global_record_samples) {
+                    global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 4" << std::endl;
+                }                 
                 return false;
             }
             i++;
@@ -1204,14 +1224,23 @@ class ValidatorBase {
      */
     bool Valid (const State& s, const RealNum& length, const RealNum& ang_total) const {
         if (InCollision(s)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 1" << std::endl;
+            }            
             return false;
         } 
         
         if (!utils::ValidLength(length, ins_length_)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 5" << std::endl;
+            }            
             return false;
         }
 
         if (!utils::ValidAngle(ang_total, ang_constraint_rad_)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 6" << std::endl;
+            }            
             return false;
         }
 
@@ -1309,25 +1338,49 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
      * @returns bool true if the state is not in collision, respects needle lims, and can reach at least one goal position, false otherwise
      */
     bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
-
+        // if (global_record_samples) {
+        //     global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 13" << std::endl;
+        // } 
         if (radius_status_ > 0 && utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 6" << std::endl;
+            }              
             return false;
         }
 
         if (ang_total > ang_constraint_rad_) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 6" << std::endl;
+            }              
             return false;
         }
 
         if (!base::ValidLength(length)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 5" << std::endl;
+            }  
             return false;
         }
 
         if (base::InCollision(s)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 1" << std::endl;
+            }  
             return false;
         }
 
-        return utils::ValidStateWithGoalReachability(s, goal_, pos_tolerance_, ang_tolerance_, base::env_,
-                rad_curv_, constrain_goal_orientation_);
+
+        if (!utils::ValidStateWithGoalReachability(s, goal_, pos_tolerance_, ang_tolerance_, base::env_, rad_curv_, constrain_goal_orientation_)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 7" << std::endl;
+            } 
+            return false;            
+        } else {
+            return true;
+        }
+
+        // return utils::ValidStateWithGoalReachability(s, goal_, pos_tolerance_, ang_tolerance_, base::env_,
+        //         rad_curv_, constrain_goal_orientation_);
     }
 
     /**

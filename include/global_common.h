@@ -112,6 +112,8 @@ Str global_obstacle_file = "../data/input/remind_" + padded_scan_num + "_obstacl
 Str global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outline_shuffled.txt";
 Str global_cost_file = "../data/input/costs.txt";
 Str global_healpix_file = "../data/input/HEALPix.txt";
+Str global_sample_file = "../data/input/remind_" + padded_scan_num + "_samples.txt";
+Str global_sample_record = "../data/output/remind_" + padded_scan_num + "_samples.txt";
 Str needle_parameter_file = "../data/input/needle_parameters.txt";
 Str magnet_torque_file = "../data/input/torque_curvature.txt";
 Str start_and_goal_file = "../data/input/remind_" + padded_scan_num + "_start_and_goal_poses.txt";
@@ -119,7 +121,8 @@ Str sg_pairs_file = "../data/input/remind_" + padded_scan_num + "_sg_pairs.txt";
 Str goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";
 Str stats_file = "../data/output/planner_stats.txt";
 
-
+bool global_record_samples = true;
+std::ofstream global_sample_stream;
 
 // Planner behavior control. All parameters use [mm], [rad].
 // Use single threads or multiple threads.
@@ -314,8 +317,18 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
     sg_pairs_file = "../data/input/remind_" + padded_scan_num + "_sg_pairs.txt";
     global_obstacle_file = "../data/input/remind_" + padded_scan_num + "_obstacles.txt";
     global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outline_shuffled.txt";
+    global_sample_file = "../data/input/remind_" + padded_scan_num + "_samples.txt";
+    global_sample_record = "../data/output/remind_" + padded_scan_num + "_samples.txt";
+    
     goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";
     suffix = suffix + "_remind_" + padded_scan_num; 
+
+    if (global_record_samples) {
+        global_sample_stream.open(global_sample_record, std::ios::app);
+        if (!global_sample_stream.is_open()) {
+            throw std::runtime_error("Failed to open " + global_sample_record + " not recording samples...");
+        }
+    }
 
     ReadTorqueParameters(magnet_torque_file, true);
 
