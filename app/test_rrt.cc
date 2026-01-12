@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
     
     int max_sg = global_sg_index + global_sg_num;
     for (global_sg_index; global_sg_index < max_sg; global_sg_index++) {
+
         Str date_and_time = utils::DateAndTime();
         cfg->seed = seed_generator(seed_rng);
         cfg->output_file_root = "../data/output/" + date_and_time + suffix;

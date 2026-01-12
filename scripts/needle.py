@@ -464,7 +464,7 @@ def closestPoint(skulltree:KDTree, position:npt.NDArray, normal_vec:npt.NDArray)
     Returns:
         skullpoint (1x3 ndarray): point of skull closest to position, with an extra amount of padding added for safety
     """
-    padding = 20 # CHANGE this value to reflect real world, also might not be needed here
+    padding = 25.4 # CHANGE this value to reflect real world, also might not be needed here
     # may need to convert the frame of points IMPORTANT
     normal_vec = normal_vec.reshape(-1,)
     dist_, ind= skulltree.query(position.reshape(1, -1), k = 1, return_distance=True) 

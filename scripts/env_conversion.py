@@ -91,8 +91,8 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
     pytextfilename = os.path.join(pythonenvfolder, f"ReMIND_info_{scannum}.txt")
     cppstartgoaltext = os.path.join(cppenvfolder, f"remind_{scannum}_start_and_goal_poses.txt")
     cppgoalregiontext = os.path.join(cppenvfolder, f"remind_{scannum}_goal_regions.txt")
-    pypairfilename = os.path.join(pythonenvfolder, f"ReMIND_starts_{scannum}.txt")
-    cpppairfilename = os.path.join(cppenvfolder, f"remind_{scannum}_sg_pairs.txt")
+    pypairfilename = os.path.join(pythonenvfolder, f"ReMIND_starts_{scannum}_dynamic.txt")
+    cpppairfilename = os.path.join(cppenvfolder, f"remind_{scannum}_sg_pairs_dynamic.txt")
     pytorquefilename=os.path.join(pythonenvfolder,"torque_curvature.npy")
     cpptorquefilename = os.path.join(cppenvfolder, f"torque_curvature.txt")
 
@@ -171,7 +171,7 @@ def process_ReMIND_scan(scanfilename, pythonenvfolder, cppenvfolder, scannum, go
 
     #     textfile.writelines(pair_lines)
 
-    sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=250)
+    sg_pairs = verify_ReMIND_env(lines, np.transpose(starts), np.transpose(goals), k=15)
 
     pair_lines = []
     with open(cpppairfilename, "a+") as textfile:
@@ -383,14 +383,14 @@ def write_python_files(pypairfilename, pytextfilename, xstart, ystart, zstart, s
 
 def verify_ReMIND_env(lines, starts, goals, k=15):
     env = ReMINDEnvironment()
-    env.read_lines(lines, variable_curvature=False)
+    env.read_lines(lines, variable_curvature=True)
     sg_pairs = []
     print(len(starts))
     print(len(goals))
     np.random.shuffle(starts)
     np.random.shuffle(goals)
-    num_pairs = 7500
-    num_goals = 20
+    num_pairs = 140
+    num_goals = 10
     # if k > 100:
     #     num_pairs = 7500
     # elif k > 50:
@@ -419,7 +419,7 @@ def verify_ReMIND_env(lines, starts, goals, k=15):
                         q, phi = env.robot.ik(env.goal)
                         # print(f"start: {start} goal: {goal} q: {q} start_w: {env.start} goal_w: {env.goal}")
                         if q is not None:
-                            rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=False)
+                            rrt = RRT(100, 3, 0.5, lims=env.lims, skull_tree=env.skulltree, r_curvature_line=env.torque, connect_prob=0.1, collision_func=env.test_collisions_world, custom_sample_func=env.sample_sphere_intersects_trumpet, variable_curvature=True)
                             rrt.rrt_setup(env.robot, env.goal, phi_constraint=False)
                             (status, new_node) = rrt.extend(rrt.T, env.goal, parent=env.start, k=0)
 
