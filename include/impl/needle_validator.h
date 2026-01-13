@@ -609,7 +609,15 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     const Quat gq_normalized = to.rotation().normalized();
     const Vec3 st = (sq_normalized*Vec3::UnitZ()).normalized();                                     // the z axis of the start
     const Vec3 gt = (gq_normalized*Vec3::UnitZ()).normalized();                                     // the z axis of the goal
+    const Vec3 normal_vec = (st.cross(gt)).normalized();                                            // vector orthogonal to the z axes of the start and goal states
     const RealNum cos_theta = (relative_pos.normalized()).dot(st);                                  // cosine of the angle between the start and goal orientation
+    const RealNum sin_theta = (st.cross(sg_hat).dot(normal_vec));
+    RealNum theta = std::atan2(sin_theta, cos_theta);
+
+    if (theta < 0) {
+        theta = 2*M_PI + theta;
+    }
+
     Vec3 result_p;
     Quat result_q;
     RealNum result_rad;
@@ -632,7 +640,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 //     std::cout << "collision!" << std::endl;
                 // }
                 if (global_record_samples) {
-                    global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 2" << std::endl;
+                    global_sample_stream << to.translation().transpose() << " 2" << std::endl;
                 }                 
                 return false;
             }
@@ -647,7 +655,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                         std::cout << "sp not reachable" << std::endl;
                     }  
                     if (global_record_samples) {
-                        global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 4" << std::endl;
+                        global_sample_stream << to.translation().transpose() << " 4" << std::endl;
                     }                                       
                     return false;
                 }
@@ -657,13 +665,12 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         return true;
     }
 
-    // vector orthogonal to the z axes of the start and goal states
-    const Vec3 normal_vec = (st.cross(gt)).normalized();
+
 
     // if the orthogonal vector and the vector between the start and goal are orthogonal return false
     if (normal_vec.dot(relative_pos.normalized()) > EPS) {
         if (global_record_samples) {
-            global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 7" << std::endl;
+            global_sample_stream << to.translation().transpose() << " 7" << std::endl;
         }        
         return false;
     }
@@ -671,7 +678,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     // if the "distance to the trumpet boundary" is "nonzero" return false
     if (DistanceToTrumpetBoundary(sp, st, gp, rad_curv) > EPS) {
         if (global_record_samples) {
-            global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 7" << std::endl;
+            global_sample_stream << to.translation().transpose() << " 7" << std::endl;
         }        
         return false;
     }
@@ -687,7 +694,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                 std::cout << "gp not reachable" << std::endl;
             }
             if (global_record_samples) {
-                global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 4" << std::endl;
+                global_sample_stream << to.translation().transpose() << " 4" << std::endl;
             }             
             return false;
         }        
@@ -695,7 +702,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
    
 
     // the radius of curvature for the circle we're moving around 
-    const RealNum r = 0.5 * d / std::sin(std::acos(cos_theta));
+    const RealNum r = 0.5 * d / std::sin(theta);
 
     // getting the center of the circle to rotate about it
     const Vec3 center_diff = r*(normal_vec.cross(st));
@@ -704,10 +711,10 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     const RealNum angle_step = resolution / r;
     int i = 0;
 
-    // if (print_) {
-    //     std::cout << "angle: " << max_angle << " center: " << center.transpose() << " r: " << r << " diff: " << center_diff.transpose();
-    //     std::cout << " |r|: " << center_diff.norm()  << " |center|: " << center.norm() <<std::endl;
-    // }
+    if (print_) {
+        std::cout << "angle: " << max_angle << " center: " << center.transpose() << " r: " << r << " diff: " << center_diff.transpose();
+        std::cout << " |r|: " << center_diff.norm()  << " |center|: " << center.norm() <<std::endl;
+    }
 
     for (RealNum ang = 0; ang < max_angle + angle_step; ang += angle_step) {
         ang = std::fmin(ang, max_angle);
@@ -719,7 +726,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
             //     std::cout << "collision!! " << result_p.transpose() << std::endl;
             // }
             if (global_record_samples) {
-                global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 2" << std::endl;
+                global_sample_stream << to.translation().transpose() << " 2" << std::endl;
             }             
             return false;
         }
@@ -737,7 +744,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
                     std::cout << "radius limit!! " << result_p.transpose() << " r: " << r << std::endl;
                 }
                 if (global_record_samples) {
-                    global_sample_stream << to.translation()[0] << " " << to.translation()[1] << " " << to.translation()[2] << " 4" << std::endl;
+                    global_sample_stream << to.translation().transpose() << " 4" << std::endl;
                 }                 
                 return false;
             }
@@ -790,8 +797,12 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
 
     result_p = base_q * motion[motion.size()-1].translation() + base_p;
     if (!env->CollisionFree(result_p)) {
+        if (global_record_samples) {
+            global_record_stream << result_p.transpose() << " 1" << std::endl;
+        }           
         return false;                                        
-    }                              
+    }          
+                 
 
 
     if (cfg->variable_curvature) {

@@ -56,7 +56,7 @@ def plot_a_slice(scan_slice, sample_slice, maxval, cmap, figname, slice_plane, s
 
     """
     plt.figure()
-    numstatus = 14
+    numstatus = 10
     print(np.unique(scan_slice))
     plt.imshow(scan_slice, cmap=cmap, origin='lower', vmin=0, vmax=maxval)
     if mask:
@@ -101,8 +101,8 @@ def plot_a_slice(scan_slice, sample_slice, maxval, cmap, figname, slice_plane, s
 
     cbar = plt.colorbar()
     
-    cbar.ax.set_yticks([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
-    cbar.ax.set_yticklabels(['valid', 'sample collision', 'path collision', 'propagation', 'curvature', 'ell', 'phi', 'goal', 'similar', 'cost', 'sample', 'post similar', 'post prop', 'post ell/phi', 'post '])
+    cbar.ax.set_yticks([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    cbar.ax.set_yticklabels(['valid', 'sample collision', 'path collision', 'propagation', 'curvature', 'ell', 'phi', 'goal', 'similar', 'cost', 'sample'])
 
     if figname is not None:
         plt.savefig(f"{figname}-brain{slice_plane}.pdf")   
