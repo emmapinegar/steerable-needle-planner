@@ -760,7 +760,11 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                         + scenario_.FinalStateCost(goalState);
+                    if (global_record_samples) {
+                        global_sample_stream << goalState.translation().transpose() << " 0" << std::endl;
+                    }                                        
                     if (goalCost < planner.bestCost_) {
+
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
@@ -834,6 +838,9 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             auto duplicatedStart = similarState(planner, node->parent(), from);
 
             if (duplicatedStart) {
+                if (global_record_samples) {
+                    global_sample_stream << from.translation().transpose() << " 8" << std::endl;
+                }
                 recycle(node);
                 return;
             }
@@ -857,6 +864,9 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         if (!inevitableCollision && validNode(planner, node)) {
 
             if (auto traj = validMotion(planner, node, from)) {
+                if (global_record_samples) {
+                    global_sample_stream << node->state().translation().transpose() << " 0" << std::endl;
+                }
                 auto const validResult = checkTerminateCondition(planner, node);
 
                 if (done()) {

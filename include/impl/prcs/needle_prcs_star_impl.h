@@ -128,7 +128,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
      */
     void foundGoal(Node* node) {
         if constexpr (reportStats) {
-            MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->parent()->ang_total();
+            MPT_LOG(INFO) << "found solution with cost " << node->cost() << " angle total " << node->ang_total();
         }
 
         {
@@ -761,6 +761,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                         + scenario_.FinalStateCost(goalState);
+                    if (global_record_samples) {
+                        global_sample_stream << goalState.translation().transpose() << " 0" << std::endl;
+                    }
                     if (goalCost < planner.bestCost_) {
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
                         goalNode->length() = goalLength;
@@ -832,6 +835,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
         if (node->parent()) {
             if (planner.bestCost_ < node->parent()->f() + EPS) {
+                if (global_record_samples) {
+                    global_sample_stream << node->parent()->state().translation().transpose() << " 9" << std::endl;
+                }
                 recycle(node);
                 return;
             }
@@ -846,6 +852,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
         if (!inevitableCollision && validNode(planner, node)) {
             if (auto traj = validMotion(planner, node, from)) {
+                if (global_record_samples) {
+                    global_sample_stream << node->state().translation().transpose() << " 0" << std::endl;
+                }
                 auto const validResult = checkTerminateCondition(planner, node);
 
                 if (done()) {
@@ -856,6 +865,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     && !similarNode(planner.ic_nn_, node->state(), 1.0))
                 {
                     if (!scenario_.validReachableSpace(node->state())) {
+                        if (global_record_samples) {
+                            global_sample_stream << node->state().translation().transpose() << " 7" << std::endl;
+                        }
                         inevitableCollision = true;
                         planner.ic_invalid_nn_.insert(StateNode(node->state()));
                     }
@@ -1152,6 +1164,9 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         auto duplicatedStart = similarState(planner, parent, from);
 
         if (duplicatedStart) {
+            if (global_record_samples) {
+                global_sample_stream << from.translation().transpose() << " 8" << std::endl;
+            }
             return nullptr;
         }
 

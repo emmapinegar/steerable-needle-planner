@@ -796,14 +796,13 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
     Vec3 result_t;
 
     result_p = base_q * motion[motion.size()-1].translation() + base_p;
+    Vec3 goal_p = base_q * motion[motion.size()-1].translation() + base_p;
     if (!env->CollisionFree(result_p)) {
         if (global_record_samples) {
-            global_record_stream << result_p.transpose() << " 1" << std::endl;
+            global_sample_stream << goal_p.transpose() << " 1" << std::endl;
         }           
         return false;                                        
     }          
-                 
-
 
     if (cfg->variable_curvature) {
         result_p = base_q * motion[motion.size()-1].translation() + base_p;
@@ -820,6 +819,9 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
 
         result_rad = GetCurvature(base_p, base_q, normal_vec, cfg, cfg->rad_curv);
         if (result_rad > motion_rad) {
+            if (global_record_samples) {
+                global_sample_stream << goal_p.transpose() << " 4" << std::endl;
+            }
             if (print_) {
                 std::cout << "new index -1  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << base_p.transpose() << " normal: " << normal_vec.transpose() << " z: " << base_t.transpose() << " y: " << (base_q*Vec3::UnitY()).normalized().transpose() << " x: " << (base_q*Vec3::UnitX()).normalized().transpose();
                 std::cout << std::endl;
@@ -836,6 +838,9 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
     for (unsigned i = 0; i < motion.size(); i++) {
         result_p = base_q * motion[i].translation() + base_p;
         if (!env->CollisionFree(result_p)) {
+            if (global_record_samples) {
+                global_sample_stream << goal_p.transpose() << " 2" << std::endl;
+            }
             return false;                                    
         }                              
 
@@ -846,6 +851,9 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
             result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, cfg->rad_curv);
 
             if (result_rad > motion_rad) {
+                if (global_record_samples) {
+                    global_sample_stream << goal_p.transpose() << " 4" << std::endl;
+                }
                 if (print_) {
                     std::cout << "new index " << i << "  rad: " << result_rad << " lim: " << cfg->rad_curv << " motion: " << motion_rad << " p: " << result_p.transpose() << " normal: " << normal_vec.transpose() << " z: " << result_t.transpose() << " y: " << (result_q*Vec3::UnitY()).normalized().transpose() << " x: " << (result_q*Vec3::UnitX()).normalized().transpose();
                     std::cout << " q: " << motion[i].rotation().normalized() << " translation: " << motion[i].translation().transpose();
@@ -1354,28 +1362,28 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
         // } 
         if (radius_status_ > 0 && utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
             if (global_record_samples) {
-                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 6" << std::endl;
+                global_sample_stream << s.translation().transpose() << " 6" << std::endl;
             }              
             return false;
         }
 
         if (ang_total > ang_constraint_rad_) {
             if (global_record_samples) {
-                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 6" << std::endl;
+                global_sample_stream << s.translation().transpose() << " 6" << std::endl;
             }              
             return false;
         }
 
         if (!base::ValidLength(length)) {
             if (global_record_samples) {
-                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 5" << std::endl;
+                global_sample_stream << s.translation().transpose() << " 5" << std::endl;
             }  
             return false;
         }
 
         if (base::InCollision(s)) {
             if (global_record_samples) {
-                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 1" << std::endl;
+                global_sample_stream << s.translation().transpose() << " 1" << std::endl;
             }  
             return false;
         }
@@ -1383,7 +1391,7 @@ class Point2PointCurveValidator : public ValidatorBase<State> {
 
         if (!utils::ValidStateWithGoalReachability(s, goal_, pos_tolerance_, ang_tolerance_, base::env_, rad_curv_, constrain_goal_orientation_)) {
             if (global_record_samples) {
-                global_sample_stream << s.translation()[0] << " " << s.translation()[1] << " " << s.translation()[2] << " 7" << std::endl;
+                global_sample_stream << s.translation().transpose() << " 7" << std::endl;
             } 
             return false;            
         } else {
@@ -1632,23 +1640,45 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
      */
     bool Valid(const State& s, const RealNum& length=0, const RealNum& ang_total=0) const {
         if (radius_status_ > 0 && utils::ExceedAngleConstraint(s, start_, ang_constraint_rad_)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation().transpose() << " 6" << std::endl;
+            }
             return false;
         }
 
         if (!base::ValidLength(length)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation().transpose() << " 5" << std::endl;
+            }
             return false;
         }
 
         if (ang_total > ang_constraint_rad_) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation().transpose() << " 6" << std::endl;
+            }
             return false;
         }
 
         if (base::InCollision(s)) {
+            if (global_record_samples) {
+                global_sample_stream << s.translation().transpose() << " 1" << std::endl;
+            }
             return false;
         }
 
-        return utils::ValidStateWithGoalReachability(s, goal_, pos_tolerance_, ang_tolerance_, base::env_,
-                rad_curv_, constrain_goal_orientation_);
+
+        if (utils::ValidStateWithGoalReachability(s, goal_, pos_tolerance_, ang_tolerance_, base::env_, rad_curv_, constrain_goal_orientation_)) {
+            return true;
+        } else {
+            if (global_record_samples) {
+                global_sample_stream << s.translation().transpose() << " 7" << std::endl;
+            }
+            return false;
+        }
+
+        // return utils::ValidStateWithGoalReachability(s, goal_, pos_tolerance_, ang_tolerance_, base::env_,
+        //         rad_curv_, constrain_goal_orientation_);
     }
 
     /**

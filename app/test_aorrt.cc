@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 
     cfg->direct_connect_ratio = 1.0;
     // cfg->goal_pos_tolerance = 1.0;
-    cfg->steer_step = -1.0;//16.0;
+    cfg->steer_step = 16.0;
     // cfg->goal_bias = 0.05;
     cfg->sample_orientation = true;
     cfg->optimal = true;
