@@ -444,7 +444,7 @@ def make_generic_test_figures(data, time_data, figure_function, figure_title, xa
             
 
             plotter.eventplot(notrgrrt_pairs, linelengths=line_increment, linewidths=linewidth, colors=planners[p].color, alpha=1, lineoffsets=line_offset)   #get_kappa_alpha(k,kappas)
-            plotter.eventplot(np.intersect1d(rgrrt25_pairs, successful_pairs), linelengths=line_increment, colors='k', alpha=0.1, lineoffsets=line_offset)
+            plotter.eventplot(np.intersect1d(rgrrt25_pairs, successful_pairs), linelengths=line_increment, colors=planners[p].color, alpha=0.5, lineoffsets=line_offset)
             line_offset += line_increment
 
     plotter.xlim([min_pair-1, max_pair+1])
@@ -1243,10 +1243,10 @@ def get_statistics(data, time_data):
                                 print()
 
     fields = ["problem start", "problem end", "multi", "dynamic", "radius", "phi max", "planner", "success", "ell improvement", "ell improvement +/-", "best ell", "worst ell", "phi improvement", " phi improvement +/-", "final phi", "first phi", "first solution time", "first solution time +/-", "final solution time", "final solution time +/-", "number of solutions", "number of solutions +/-", "exhausted", "successful exhausted", "exhausted time", "exhausted time +/-"]
-    with open("./../data/output/statistics.csv", "w") as file:                  # https://www.geeksforgeeks.org/python/working-csv-files-python/
-        csvwriter = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
-        csvwriter.writerow(fields)
-        csvwriter.writerows(rows)
+    # with open("./../data/output/statistics.csv", "w") as file:                  # https://www.geeksforgeeks.org/python/working-csv-files-python/
+    #     csvwriter = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
+    #     csvwriter.writerow(fields)
+    #     csvwriter.writerows(rows)
 
 
 def get_all_data(directory, file_spec):
@@ -1293,7 +1293,8 @@ def get_data(file):
 
 if __name__=='__main__':
 
-    data, time_data = get_all_data('./../data/output/', '*_stats*.txt')
+    # data, time_data = get_all_data('./../data/output/', '*_stats*.txt')
+    data, time_data = get_all_data('./../data/output/', '*_debug_longer.txt')
 
     pairs_mins = get_min_ell(data, time_data)
 
@@ -1307,7 +1308,13 @@ if __name__=='__main__':
 
     # find the mutli threaded 180 degree set of dynamic and non dynamic limits and plot them like the common planning problems
     mutli_inds = np.where(np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))[0]
+    # mutli_inds = np.where(np.logical_and(data[:,stats_indices['varcurv']] == 1, data[:,stats_indices['maxphi']] == 180))[0]
     make_generic_test_figures(data[mutli_inds,:], time_data[mutli_inds,:], make_success_time_figure, r'Success vs. Time', r'Time (seconds)', r'Success Percentage', stats_indices['lengths'], 0.0001, 100, -1, 100, True, False)
+
+
+    # mutli_inds = np.where(np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 0, data[:,stats_indices['maxphi']] == 180)))[0]
+    # # mutli_inds = np.where(np.logical_and(data[:,stats_indices['varcurv']] == 1, data[:,stats_indices['maxphi']] == 180))[0]
+    # make_generic_test_figures(data[mutli_inds,:], time_data[mutli_inds,:], make_success_time_figure, r'Success vs. Time', r'Time (seconds)', r'Success Percentage', stats_indices['lengths'], 0.0001, 100, -1, 100, True, False)
 
 
     # files = fnmatch.filter(os.listdir('./../data/output/'), '*_stats*.txt')

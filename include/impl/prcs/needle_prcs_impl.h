@@ -906,9 +906,9 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
             if (!inevitableCollision) {
                 auto longer = refine(planner, node, LONGER);
-                // if (inheritValidation && longer) {
-                //     longer->valid() = true;
-                // }
+                if (inheritValidation && longer) {
+                    longer->valid() = true;
+                }
             }
         }
 

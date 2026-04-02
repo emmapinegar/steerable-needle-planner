@@ -121,7 +121,7 @@ Str sg_pairs_file = "../data/input/remind_" + padded_scan_num + "_sg_pairs.txt";
 Str goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";
 Str stats_file = "../data/output/planner_stats.txt";
 
-bool global_record_samples = true;
+bool global_record_samples = false;
 std::ofstream global_sample_stream;
 
 // Planner behavior control. All parameters use [mm], [rad].
@@ -317,7 +317,7 @@ std::tuple<bool, Str, RealNum, RealNum, RealNum> ParseArgs(int argc, char ** arg
     sg_pairs_file = "../data/input/remind_" + padded_scan_num + "_sg_pairs.txt";
     global_obstacle_file = "../data/input/remind_" + padded_scan_num + "_obstacles.txt";
     global_skull_file = "../data/input/remind_" + padded_scan_num + "_skull_outline_shuffled.txt";
-    global_sample_file = "../data/input/remind_" + padded_scan_num + "_samples.txt";
+    global_sample_file = "../data/input/remind_" + padded_scan_num + "_grid_samples.txt";
     global_sample_record = "../data/output/remind_" + padded_scan_num + "_samples.txt";
     
     goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";

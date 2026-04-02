@@ -220,7 +220,11 @@ std::optional<State> RandomForward(const State& from, const State& to, RNG& rng,
 
     q = RotateAroundZ(q, theta);
 
-    const Vec3 center = p + rad_curv*(q*Vec3::UnitX());
+    RealNum curve = 1/rad_curv * uniform_dist(rng);
+    RealNum rad = 1/(curve);
+    // std::cout << "sample rad: " << rad << " rmin: " << rad_curv << " kappa: " << curve <<  std::endl;
+    const Vec3 center = p + rad*(q*Vec3::UnitX());
+    // const Vec3 center = p + rad_curv*(q*Vec3::UnitX());
     const RealNum max_ang = ell/rad_curv;
     const Vec3 normal_vec = q*Vec3::UnitY();
 
@@ -302,7 +306,7 @@ class MotionPrimitivePropagator {
         , delta_theta_max_(cfg->delta_theta_max)
         , delta_ell_min_(cfg->delta_ell_min)
         , delta_theta_min_(cfg->delta_theta_min) {
-        rad_sequence_.assign({rad_curv_, R_INF});
+        rad_sequence_.assign({rad_curv_, 2*rad_curv_, 3*rad_curv_, 4*rad_curv_, 5*rad_curv_, 6*rad_curv_, 7*rad_curv_, 8*rad_curv_, R_INF});
 
         max_length_i_ = std::ceil(std::log2(delta_ell_max_/delta_ell_min_));
         max_angle_i_ = std::ceil(std::log2(delta_theta_max_/delta_theta_min_));

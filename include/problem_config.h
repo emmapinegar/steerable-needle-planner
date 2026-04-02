@@ -96,7 +96,7 @@ struct ProblemConfig {
     // For RCS planner.
     RealNum delta_ell_max = 16.0;
     RealNum delta_theta_max = 0.5 * M_PI;
-    RealNum delta_ell_min = 0.125;
+    RealNum delta_ell_min = 0.5;                  // this is originally 0.125
     RealNum delta_theta_min = 0.157;
 
     // For RCS* planner.
