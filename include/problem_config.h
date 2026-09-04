@@ -38,6 +38,8 @@
 
 #include "global_common.h"
 #include "image_environment.h"
+#include "boundary_environment.h"
+#include <mutex>
 
 namespace unc::robotics::snp {
 
@@ -54,8 +56,8 @@ struct ProblemConfig {
 
     // Environment.
     EnvPtr env;
-
     EnvPtr skull;
+    BoundPtr new_bounds; 
 
     // Planner behavior control. All parameters use [mm], [rad].
     // If use goal state that considers orientation, this cannot be changed later.
@@ -132,6 +134,9 @@ struct ProblemConfig {
     RealNum torque_b = global_torque_b;
     RealNum torque_m = global_torque_m;
 
+    int halton_i = 0;
+    std::mutex halton_mutex;
+
 
 #ifndef HAVE_GLOBAL_VARIABLES
     ProblemConfig(const bool orientation=false,
@@ -190,10 +195,18 @@ struct ProblemConfig {
 
         if (variable_curvature)
         {
+            if (!env->ConstructEnvironmentFromFile("./../data/input/remind_001_insertion_stage_shuffled.txt", "stage")) {
+                throw std::runtime_error("Failed to add insertion stage to environment from file!");
+            }
             skull.reset(new ImageEnvironment());
             if (!skull->ConstructEnvironmentFromFile(skull_file))
             {
                 throw std::runtime_error("Failed to initialize skull from file!");
+            }
+
+            new_bounds.reset(new BoundEnvironment());
+            if (!new_bounds->ConstructBoundaryEnvironmentFromFile(skull_file)) {
+                throw std::runtime_error("Failed to initialize boundary from file!");
             }
         }
     }

@@ -95,6 +95,8 @@ const RealNum kAngleConstraintDegree = 90.0;
 
 
 
+
+
 // Misc.
 Idx global_seed = 1;
 bool global_show_logs = true;
@@ -128,7 +130,7 @@ std::ofstream global_sample_stream;
 // Use single threads or multiple threads.
 bool global_multi_threading = false;
 // Position tolerance for the goal state.
-RealNum global_goal_pos_tolerance = EPS;
+RealNum global_goal_pos_tolerance = 1e-2;
 // Orientation tolerance for the goal state.
 RealNum goal_ang_tolerance = 0.005;
 

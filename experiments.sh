@@ -5,20 +5,20 @@ cd ./build
 
 # seed_array=(8972 1784 7583 3829 6784 8392 7489 8753 4637 9874 4812 13242 9238 16458 5435 1658 535 4326 4389 6532 3063 2164 1167 7890 6114 2631 9296 1743 8294 4326 4439 7010 3880 3423 5432 2349) #(4545 3746 4654 8796 1564 3034 8653 4854 1318 5624)
 seed_array=(8965)
-scan_array=(3)                  # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
+scan_array=(1)                  # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
 phi_arr=(45)
 rads=(15)
-sgs=(0)
+sgs=(1500)
 seed=8965
-scan=3
+scan=1
 ell=100
 timeout=100000
-multi_timeout=10000
+multi_timeout=50000
 bias=0.05
-num_sg=500
+num_sg=20
 stats_file="./../data/output/planner_stats.txt"
 multi_stats_file="./../data/output/planner_stats_multi_test.txt"
-test_file="./../data/output/planner_stats_multi_debug_longer_3.txt"
+test_file="./../data/output/planner_stats_multi_debug_longer_6.txt"
 stein_file="./../data/output/planner_stats_multi_stein.txt"
 i=0
 
@@ -75,10 +75,14 @@ do
             # ./app/stein_rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve
             # ./app/stein_rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stein_file -var_curve -multi
 
-            ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+
+
+            # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+            # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+            # ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+            # ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+            ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve
+            # ./app/halton_rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve 
 
             # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
             # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi

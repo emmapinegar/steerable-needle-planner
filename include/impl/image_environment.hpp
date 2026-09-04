@@ -279,7 +279,8 @@ bool ImageEnvironment::ConstructEnvironmentFromFile(const Str file_name) {
     }
 
     this->SetIjkToRasAffine(ijk_to_ras);
-
+    all_ijk_to_ras_.insert(std::pair<Str, Affine>("default", ijk_to_ras));
+    all_ras_to_ijk_.insert(std::pair<Str, Affine>("default", ijk_to_ras.inverse()));
     IdxPoint size;
 
     if (std::getline(fin, line)) {
@@ -316,6 +317,98 @@ bool ImageEnvironment::ConstructEnvironmentFromFile(const Str file_name) {
         
     }
     std::cout << "\rLoaded obstacle points: " << obstacle_idx_["default"] << std::flush;
+    std::cout << std::endl;
+    return true;
+}
+
+/**
+ * Creates an environment using the provided file.
+ * 
+ * @param file_name: file containing the environment 
+ * 
+ * @returns bool true if the environment was successfully created, false otherwise
+ * @throws runtime_error if the file can't be opened
+ */
+bool ImageEnvironment::ConstructEnvironmentFromFile(const Str file_name, const Str nn_name) {
+    std::ifstream fin;
+    std::cout << "Opening file!" << std::endl;
+    fin.open(file_name);
+
+    char delimiter = ' ';
+    if (file_name.compare(file_name.size() - 4, 4, ".csv") == 0) {
+        delimiter = ',';
+    }
+
+    if (!fin.is_open()) {
+        throw std::runtime_error("Failed to open " + file_name);
+    }
+
+    Str field;
+
+    Str line;
+    Affine ijk_to_ras;
+    std::cout << "Reading transformation!" << std::endl;
+    for (auto i = 0; i < 4; ++i) {
+        if (std::getline(fin, line)) {
+            std::istringstream s(line);
+
+            for (auto j = 0; j < 4; ++j) {
+                std::getline(s, field, delimiter);
+                ijk_to_ras(i, j) = std::stod(field);
+            }
+        }
+        else {
+            std::cout << "Wrong format for ras_to_ijk affine!" << std::endl;
+            return false;
+        }
+    }
+
+    std::cout << "Transforms read! Inserting in maps for " << nn_name << std::endl;
+
+    all_ijk_to_ras_.insert(std::pair<Str, Affine>(nn_name, ijk_to_ras));
+
+    std::cout << "IJK to RAS inserted. " << std::endl;
+    all_ras_to_ijk_.insert(std::pair<Str, Affine>(nn_name, ijk_to_ras.inverse()));
+    std::cout << "RAS to IJK inserted. " << std::endl;
+    // // TODO: need to figure out how to handle translating (and eventually rotating) the entire insertion stage by sp, and untranslate it after 
+    // this->SetIjkToRasAffine(ijk_to_ras);
+
+    IdxPoint size;
+
+    if (std::getline(fin, line)) {
+        std::istringstream s(line);
+
+        for (auto i = 0; i < 3; ++i) {
+            std::getline(s, field, delimiter);
+            size[i] = std::stoi(field);
+        }
+    }
+    else {
+        std::cout << "Wrong format for image size!" << std::endl;
+        return false;
+    }
+
+    // this->SetImageSize(size);
+
+    this->CreateNewNN(nn_name);
+    IdxPoint obs;
+
+    while (std::getline(fin, line)) {
+        std::istringstream s(line);
+
+        for (auto i = 0; i < 3; ++i) {
+            std::getline(s, field, delimiter);
+            obs[i] = std::stoi(field);
+        }
+
+        this->AddObstacle(obs, nn_name);
+        if (obstacle_idx_[nn_name] % 1000 == 0)
+        {
+            std::cout << "\rLoaded obstacle points: " << obstacle_idx_[nn_name] << std::flush;
+        }
+        
+    }
+    std::cout << "\rLoaded obstacle points: " << obstacle_idx_[nn_name] << std::flush;
     std::cout << std::endl;
     return true;
 }
@@ -373,8 +466,19 @@ bool ImageEnvironment::ConstructCostFromFile(const Str file_name) {
  * 
  * @returns Vec3 world coordinates for the provided image coordinates
  */
-Vec3 ImageEnvironment::IjkToRas(const IdxPoint& p) const {
-    return ijk_to_ras_*Vec3(p[0], p[1], p[2]);
+Vec3 ImageEnvironment::IjkToRas(const IdxPoint& p, const Str& image_name) const {
+    auto search = all_ijk_to_ras_.find(image_name);
+    if (search == all_ijk_to_ras_.end()) {
+        // throw std::runtime_error("Image with name " + image_name + " does not exist! Cannot find transform!");
+        // std::cout << "Cannot find transform! Using the default transform!" << std::endl;
+        return ijk_to_ras_*Vec3(p[0], p[1], p[2]); 
+    } else {
+        Affine transform = search->second; 
+        // std::cout << "Found transform for " << image_name << "! Using it to transform!" << std::endl;
+        return transform*Vec3(p[0], p[1], p[2]);
+    }
+ 
+    
 }
 
 /**
@@ -456,9 +560,24 @@ void ImageEnvironment::AddObstacle(const IdxPoint& p, const Str& image_name) {
     if (!this->WithinImage(p)) {
         throw std::runtime_error("Trying to add an obstacle outside the image region.");
     }
-
-    auto ras_p = this->IjkToRas(p);
+    // std::cout << "adding obstacle to " << image_name << std::endl;
+    auto ras_p = this->IjkToRas(p, image_name);
     this->AddObstacle(ras_p, image_name);
+}
+
+
+void ImageEnvironment::UpdateStart(const Vec3& sp, const Quat& sq) {
+    start_p = sp;
+    start_q = sq;
+
+    // auto search = all_nns_.find(image_name);
+
+    // if (search == all_nns_.end()) {
+    //     throw std::runtime_error("Image with name " + image_name + " does not exist! Cannot add obstacle!");
+    // }    
+
+
+    // ImgNN* nn = search->second.second;
 }
 
 /**
@@ -556,11 +675,21 @@ std::pair<Vec3, RealNum> ImageEnvironment::NearestObstacleCenter(const Vec3& p) 
 
     for (auto const& [name, nn] : all_nns_) {
         if (nn.first) {
-            auto p_nearest = nn.second->nearest(p);
+            if (name == "stage") {
+                auto p_nearest = nn.second->nearest(p - start_p);
 
-            if (p_nearest && p_nearest->second < min_dist) {
-                min_dist = p_nearest->second;
-                point = p_nearest->first.point;
+                if (p_nearest && p_nearest->second < min_dist) {
+                    // std::cout << "stage point: " << p_nearest->first.point.transpose() << " transformed: " << (p_nearest->first.point + start_p).transpose() << " query: " << p.transpose() << " transformed: " << (p - start_p).transpose() << " old: " << min_dist << " new: " << p_nearest->second << std::endl;
+                    min_dist = p_nearest->second;
+                    point = p_nearest->first.point + start_p;
+                }                
+            } else {
+                auto p_nearest = nn.second->nearest(p);
+
+                if (p_nearest && p_nearest->second < min_dist) {
+                    min_dist = p_nearest->second;
+                    point = p_nearest->first.point;
+                }
             }
         }
     }

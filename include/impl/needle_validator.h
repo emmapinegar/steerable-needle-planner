@@ -407,9 +407,10 @@ RealNum GetCurvatureLim(const Vec3& p, const Vec3& skull_point, const Vec3& norm
     Vec3 tau = cfg->needle_mag * needle_mag.cross(b);
     RealNum curvature_lim = M_TO_MM / (cfg->torque_m * tau.norm() + cfg->torque_b);
 
-    // std::cout  << "\tcurvature lim: " << curvature_lim << " |r|: " << r_mag << " max K: " << cfg->rad_curv << " |tau|: " << tau.norm();
-    // std::cout  << " skull point: " << skull_point.transpose() << " r: " << r.transpose() << " mag point: " << mag_point.transpose() << std::endl;
-    // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " normal: " << normal_vec.transpose() << " rhat: " << r_hat.transpose() << " b: " << b.transpose() << " tau: " << tau.transpose() << std::endl;  
+    // std::cout  << "\tr lim: " << curvature_lim << " min r: " << cfg->rad_curv << " |r|: " << r_mag;
+    // std::cout  << " skull point: " << M_TO_MM*skull_point.transpose() << " mag point: " << M_TO_MM*mag_point.transpose() << std::endl;
+    // std::cout << "\tnormal: " << normal_vec.transpose() << " rhat: " << r_hat.transpose() << " |tau|: " << tau.norm() << " tau: " << tau.normalized().transpose() << std::endl;  
+    // std::cout << "\tmanip: " << manip_mag.transpose() << " needle: " << needle_mag.transpose() << " b: " << b.transpose() << std::endl; 
     return curvature_lim;
 }
 
@@ -428,40 +429,96 @@ RealNum GetCurvatureLim(const Vec3& p, const Vec3& skull_point, const Vec3& norm
 RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_vec, ConfigPtr cfg, const RealNum& rad_curv) {
 
     if (cfg->variable_curvature) {
+        Vec3 sz = sq*Vec3::UnitZ();
+        Vec3 sb = normal_vec.cross(sz);
+        // auto [new_skull_point, new_r_mag] = cfg->new_bounds->NearestBoundaryCenter(sp, normal_vec, cfg->needle_mag*sz, sb);
+        // // std::cout << "\nnew skull: " << new_skull_point.transpose() << " r: " << new_r_mag << " sp: " << sp.transpose() << " normal: " << normal_vec.transpose() << " r: " << (sp-new_skull_point).normalized().transpose()  << " ||r||: " << (sp-new_skull_point).norm() << std::endl;
+        // auto [new_skull_point_, new_r_mag_] = cfg->new_bounds->NearestBoundaryCenter(sp + (new_skull_point - sp).norm()*normal_vec, normal_vec, cfg->needle_mag*sz, sb);
+        // RealNum skull_pos_rad = GetCurvatureLim(MM_TO_M*sp, MM_TO_M*new_skull_point_, normal_vec, sq, cfg);
+        // // std::cout << " new skull: " << new_skull_point_.transpose() << " r limit: " << skull_pos_rad << " r: " << new_r_mag_ << " sp: " << sp.transpose() << " normal: " << normal_vec.transpose() << " r: " << (sp-new_skull_point_).normalized().transpose()  << " ||r||: " << (sp-new_skull_point_).norm() << std::endl;
+
+
+        // auto [new_skull_point__, new_r_mag__] = cfg->new_bounds->NearestBoundaryCenter(sp - (new_skull_point - sp).norm()*normal_vec, normal_vec, cfg->needle_mag*sz, sb);
+        // RealNum skull_neg_rad = GetCurvatureLim(MM_TO_M*sp, MM_TO_M*new_skull_point__, normal_vec, sq, cfg);
+        // // std::cout << " new skull: " << new_skull_point__.transpose() << " r limit: " << skull_neg_rad << " r: " << new_r_mag__ << " sp: " << sp.transpose() << " normal: " << normal_vec.transpose() << " r: " << (sp-new_skull_point__).normalized().transpose()  << " ||r||: " << (sp-new_skull_point__).norm() << std::endl;
+        // RealNum min_skull_rad = std::fmin(skull_neg_rad, skull_pos_rad);
+        
         auto [skull_point, r_mag] = cfg->skull->NearestObstacleCenter(sp);
-        skull_point = MM_TO_M * skull_point;
+        
+        // skull_point = MM_TO_M * skull_point;
         Vec3 p = MM_TO_M * sp;
 
-        Vec3 r = Vec3(skull_point[0] - p[0], skull_point[1] - p[1], skull_point[2] - p[2]);
-        Vec3 r_hat = r.normalized();
-        RealNum diff = normal_vec.dot(r_hat);
+        // Vec3 r = Vec3(skull_point[0] - p[0], skull_point[1] - p[1], skull_point[2] - p[2]);
+        // Vec3 r_hat = r.normalized();
+        // RealNum diff = normal_vec.dot(r_hat);
 
-        RealNum diff_pos = diff;
-        RealNum diff_neg = diff;
-        Vec3 skull_point_pos = skull_point;
-        Vec3 skull_point_neg = skull_point;
-        for (int i = -100; i <= 100; i += 10) {
-            Vec3 sp_ = sp + i*normal_vec;
-            auto [skull_point_, r_mag_] = cfg->skull->NearestObstacleCenter(sp_);
-            skull_point_ = MM_TO_M * skull_point_;
-            Vec3 p_ = MM_TO_M * sp_;
-            Vec3 r_ = Vec3(skull_point_[0] - p[0], skull_point_[1] - p[1], skull_point_[2] - p[2]);
-            Vec3 r_hat_ = r_.normalized(); 
+        // RealNum diff_pos = diff;
+        // RealNum diff_neg = diff;
+        Vec3 skull_point_pos = sp + r_mag*normal_vec;
+        
+        Vec3 skull_point_neg = sp - r_mag*normal_vec; 
+        
+        double r_mag_ = r_mag;
+        double r_mag_old = r_mag;
+        bool test = (r_mag_ > 1) && (r_mag_ < 150);
+        // std::cout << "\nskull+: " << skull_point_pos.transpose() << " query skull: " << skull_point.transpose() << " sp: " << sp.transpose() << " r: " << r_mag << " r: " << (sp-skull_point_pos).normalized().transpose() << " bool: " << test <<  std::endl;
+        while (test) {
+            auto [skull_point_, r_mag_] = cfg->skull->NearestObstacleCenter(skull_point_pos);
+            skull_point_pos = skull_point_pos + r_mag_*normal_vec;
+            test = (r_mag_ > 1) && (r_mag_ < 150);
+            // std::cout << " skull+: " << skull_point_pos.transpose() << " query skull: " << skull_point_.transpose() << " r: " << r_mag_  << " r old: " << r_mag_old << " r: " << (sp-skull_point_pos).normalized().transpose() << " n: " << normal_vec.transpose() << " bool: " << test <<  std::endl;
+            r_mag_old = r_mag_;
+            
+        }
+        skull_point_pos = skull_point_pos + normal_vec;
+
+        r_mag_ = r_mag;
+        r_mag_old = r_mag;
+        test = (r_mag_ > 1) && (r_mag_ < 150);
+        // std::cout << "\nskull-: " << skull_point_neg.transpose() << " query skull: " << skull_point.transpose() << " sp: " << sp.transpose() << " r: " << r_mag << " r: " << (sp-skull_point_neg).normalized().transpose() << " bool: " << test <<  std::endl;
+        
+        while (test) {
+            
+            auto [skull_point_, r_mag_] = cfg->skull->NearestObstacleCenter(skull_point_neg);
+            skull_point_neg = skull_point_neg - r_mag_*normal_vec;
+            test = (r_mag_ > 1) && (r_mag_ < 150);
+            // std::cout << " skull-: " << skull_point_neg.transpose() << " query skull: " << skull_point_.transpose() << " r: " << r_mag_  << " r old: " << r_mag_old << " r: " << (sp-skull_point_neg).normalized().transpose() << " n: " << normal_vec.transpose() << " bool: " << test <<  std::endl;
+            r_mag_old = r_mag_;
+        }  
+        skull_point_neg = skull_point_neg - normal_vec;      
+
+        
+        // for (int i = -100; i <= 100; i += 25) {
+        //     Vec3 sp_ = sp + i*normal_vec;
+        //     auto [skull_point_, r_mag_] = cfg->skull->NearestObstacleCenter(sp_);
+        //     skull_point_ = MM_TO_M * skull_point_;
+        //     Vec3 p_ = MM_TO_M * sp_;
+        //     Vec3 r_ = Vec3(skull_point_[0] - p[0], skull_point_[1] - p[1], skull_point_[2] - p[2]);
+        //     Vec3 r_hat_ = r_.normalized(); 
    
-            RealNum diff_ = normal_vec.dot(r_hat_); 
-            if ((diff_ > 0) && (diff_ > diff_pos)) {
-                diff_pos = diff_;
-                skull_point_pos = skull_point_;
-            }  else if ((diff_ < 0) && (diff_ < diff_neg)) {
-                diff_neg = diff_;
-                skull_point_neg = skull_point_;
-            }
-        }        
+        //     RealNum diff_ = normal_vec.dot(r_hat_); 
+        //     if ((diff_ > 0) && (diff_ > diff_pos)) {
+        //         diff_pos = diff_;
+        //         skull_point_pos = sp_ + r_mag_*normal_vec; //skull_point_;
+        //         std::cout << " skull+: " << skull_point_pos.transpose() << " r: " << diff_pos << " r: " << (sp-skull_point_pos).normalized().transpose() <<  std::endl;
+        //     }  else if ((diff_ < 0) && (diff_ < diff_neg)) {
+        //         diff_neg = diff_;
+        //         skull_point_neg = sp_ - r_mag_*normal_vec; //skull_point_;
+        //         std::cout << " skull-: " << skull_point_neg.transpose() << " r: " << diff_neg << " r: " << (sp-skull_point_neg).normalized().transpose() <<  std::endl;
+        //     }
+        // }    
+        
+        // std::cout << " skull+: " << skull_point_pos.transpose() << " r: " << diff_pos << " r: " << (sp-skull_point_pos).normalized().transpose() <<  std::endl;
+        // std::cout << " skull-: " << skull_point_neg.transpose() << " r: " << diff_neg << " r: " << (sp-skull_point_neg).normalized().transpose() <<  std::endl;
 
-        RealNum curvature_lim_pos = GetCurvatureLim(p, skull_point_pos, normal_vec, sq, cfg);
-        RealNum curvature_lim_neg = GetCurvatureLim(p, skull_point_neg, normal_vec, sq, cfg);
+        RealNum curvature_lim_pos = GetCurvatureLim(p, MM_TO_M*skull_point_pos, normal_vec, sq, cfg);
+        RealNum curvature_lim_neg = GetCurvatureLim(p, MM_TO_M*skull_point_neg, normal_vec, sq, cfg);
 
         RealNum curvature_lim = std::fmin(curvature_lim_neg, curvature_lim_pos);
+
+        // if (min_skull_rad < curvature_lim) {
+        //     std::cout << " torque limit results in better curvature limit! " << min_skull_rad << " " << curvature_lim << std::endl;
+        // }
 
         if (curvature_lim < cfg->rad_curv) {
             return cfg->rad_curv;
@@ -475,7 +532,6 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
     }
 
 }
-
 
 
 /**
@@ -556,6 +612,40 @@ RealNum GetCurvature(const Vec3& sp, const Quat& sq, ConfigPtr cfg, const RealNu
  */
 RealNum GetCurvature(const Vec3& sp, const Quat& sq, const Vec3& normal_vec, ConfigPtr cfg, const RealNum& rad_curv) {
     return GetCurvatureNormal(sp, sq, normal_vec, cfg, rad_curv);
+}
+
+
+RealNum DirectCheckCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_vec, ConfigPtr cfg, const RealNum& rad_desired, const RealNum& rad_min) {
+    RealNum result_rad = R_INF;
+    RealNum min_torque = ((M_TO_MM/rad_desired)-cfg->torque_b)/cfg->torque_m;
+    RealNum min_mag_r = M_TO_MM*std::cbrt(((cfg->needle_mag*cfg->manip_mag*PERM_FREE_SPACE)/(4 * M_PI))/min_torque);
+    auto [new_skull_point, new_r_mag] = cfg->skull->NearestObstacleCenter(sp + min_mag_r*normal_vec);
+    auto [new_skull_point_, new_r_mag_] = cfg->skull->NearestObstacleCenter(sp - min_mag_r*normal_vec);
+    auto [new_test_point, new_test_r_] = cfg->skull->NearestObstacleCenter(sp);
+    auto [new_obstacle_point, new_obs_r] = cfg->env->NearestObstacleCenter(sp + min_mag_r*normal_vec);
+    auto [new_obstacle_point_, new_obs_r_] = cfg->env->NearestObstacleCenter(sp - min_mag_r*normal_vec);
+    auto [new_obstacle_test, new_test_obs_r] = cfg->env->NearestObstacleCenter(sp);
+    
+    if ((new_r_mag > cfg->manip_r) && (new_obs_r > cfg->manip_r)) {
+        result_rad = GetCurvatureLim(MM_TO_M*sp, MM_TO_M*(sp+(min_mag_r-new_r_mag)*normal_vec), normal_vec, sq, cfg);
+        auto [final_skull_point, final_skull_r] = cfg->env->NearestObstacleCenter(sp+(min_mag_r-new_r_mag)*normal_vec);
+        Vec3 skull_diff = (sp+(min_mag_r-new_r_mag)*normal_vec)-final_skull_point;
+        // std::cout << "\tdesired r: " << rad_desired << " best r: " << result_rad << " ||tau||: " << min_torque << " max skull r: " << min_mag_r << " skull +: " << new_r_mag  << " " << new_obs_r << " final skull: " << final_skull_r << " diff: " << skull_diff.transpose() << std::endl;
+        // result_rad = rad_desired - 0.01; 
+    } else if ((new_r_mag_ > cfg->manip_r) && (new_obs_r_ > cfg->manip_r)) {
+        result_rad = GetCurvatureLim(MM_TO_M*sp, MM_TO_M*(sp-(min_mag_r-new_r_mag_)*normal_vec), normal_vec, sq, cfg);
+        auto [final_skull_point, final_skull_r] = cfg->env->NearestObstacleCenter(sp-(min_mag_r-new_r_mag)*normal_vec);
+        Vec3 skull_diff = (sp-(min_mag_r-new_r_mag)*normal_vec)-final_skull_point;
+        // std::cout << "\tdesired r: " << rad_desired << " best r: " << result_rad << " ||tau||: " << min_torque << " max skull r: " << min_mag_r << " skull -: " << new_r_mag_ << " " << new_obs_r_ << " final skull: " << final_skull_r << " diff: " << skull_diff.transpose() << std::endl;
+    } else {
+        
+        result_rad = GetCurvature(sp, sq, normal_vec, cfg, rad_min);
+        if (result_rad < rad_desired) {
+            // std::cout << "desired r: " << rad_desired << " best r: " << result_rad << " ||tau||: " << min_torque << " max skull r: " << min_mag_r << " skull +: " << new_r_mag  << " " << new_obs_r << " skull -: " << new_r_mag_ << " " << new_obs_r_ << std::endl;
+        }
+        
+    }
+    return result_rad;   
 }
 
 /**
@@ -683,8 +773,12 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
         return false;
     }
 
+    // the radius of curvature for the circle we're moving around 
+    const RealNum r = 0.5 * d / std::sin(theta);
+
     if (cfg->variable_curvature){
-        result_rad = GetCurvature(gp, gq_normalized, normal_vec, cfg, rad_curv);
+        result_rad = DirectCheckCurvatureNormal(gp, gq_normalized, normal_vec, cfg, r, rad_curv);
+        // result_rad = GetCurvature(gp, gq_normalized, normal_vec, cfg, rad_curv);
 
         // PrintStep(-1, 0, result_rad, gp, gq_normalized, normal_vec, cfg, print_);
 
@@ -701,8 +795,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     }
    
 
-    // the radius of curvature for the circle we're moving around 
-    const RealNum r = 0.5 * d / std::sin(theta);
+
 
     // getting the center of the circle to rotate about it
     const Vec3 center_diff = r*(normal_vec.cross(st));
@@ -733,15 +826,15 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
         if (cfg->variable_curvature) {
             result_q = (proceed_quat*sq_normalized).normalized();
-            result_rad = GetCurvature(result_p, result_q, normal_vec, cfg, rad_curv);
-
-            // PrintStep(i, ang, result_rad, result_p, result_q, normal_vec, cfg, print_);
+            result_rad = DirectCheckCurvatureNormal(result_p, result_q, normal_vec, cfg, r, rad_curv);
+            
+            PrintStep(i, ang, result_rad, result_p, result_q, normal_vec, cfg, print_);
 
             // if the "distance to the trumpet boundary" is "nonzero" return false
             if (DistanceToTrumpetBoundary(sp, st, gp, result_rad) > EPS) {
                 if (print_) {
                     PrintStep(i, ang, result_rad, result_p, result_q, normal_vec, cfg, print_);
-                    std::cout << "radius limit!! " << result_p.transpose() << " r: " << r << std::endl;
+                    std::cout << "radius limit!! " << result_p.transpose() << " r: " << r << " rlimit: " << result_rad << std::endl;
                 }
                 if (global_record_samples) {
                     global_sample_stream << to.translation().transpose() << " 4" << std::endl;

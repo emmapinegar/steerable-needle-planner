@@ -20,7 +20,7 @@ colorBank = {
 
 
 def plot_pc_o3d():
-    fileNames = ["../data/input/goal_regions.txt", "../data/output/20240710-12-51-42_ptcloud.txt"] #, "../data/input/obstacles.txt"]
+    fileNames = ["../data/input/remind_003_insertion_stage.txt", "../data/input/remind_003_skull_outline_shuffled.txt"] #, "../data/input/obstacles.txt"]
 
     obstacles_transform = np.array([[0.839844, 0, 0, -177.938],[0, 0.839844, 0, 70.0504],[0, 0, 1, -809.112],[0, 0, 0, 1]]).astype(np.float64)
 
@@ -48,40 +48,40 @@ def plot_pc_o3d():
     goal.translate(goal_p)
     goal.rotate(rot)
 
-    curvature_lims = o3d.geometry.TriangleMesh.create_torus(torus_radius=20, tube_radius=19.5)
-    curvature_lims.translate(start_p)
+    # curvature_lims = o3d.geometry.TriangleMesh.create_torus(torus_radius=20, tube_radius=19.5)
+    # curvature_lims.translate(start_p)
 
-    olive_radius = np.linalg.norm(start_p - goal_p)/2 + 3
-    print(olive_radius)
-    olive_lims = o3d.geometry.TriangleMesh.create_sphere(radius=olive_radius)
-    olive_lims.translate(start_p)
-    olive_lims.paint_uniform_color(colorBank["7"])
-    curvature_lims = o3d.t.geometry.TriangleMesh.from_legacy(curvature_lims)
-    olive_lims = o3d.t.geometry.TriangleMesh.from_legacy(olive_lims)
-    intersection = olive_lims.boolean_union(curvature_lims)
-    o3d.visualization.draw([{'name': 'difference', 'geometry': intersection}])
+    # olive_radius = np.linalg.norm(start_p - goal_p)/2 + 3
+    # print(olive_radius)
+    # olive_lims = o3d.geometry.TriangleMesh.create_sphere(radius=olive_radius)
+    # olive_lims.translate(start_p)
+    # olive_lims.paint_uniform_color(colorBank["7"])
+    # curvature_lims = o3d.t.geometry.TriangleMesh.from_legacy(curvature_lims)
+    # olive_lims = o3d.t.geometry.TriangleMesh.from_legacy(olive_lims)
+    # intersection = olive_lims.boolean_union(curvature_lims)
+    # o3d.visualization.draw([{'name': 'difference', 'geometry': intersection}])
 
-
+    ptcs = [world, start, goal]
     # ptcs = [world, start, goal, curvature_lims, olive_lims]
-    # for i in range(len(fileNames)):
-    #     ptcFile = fileNames[i]
-    #     print(ptcFile)
-    #     ptc = o3d.io.read_point_cloud(ptcFile, format='xyz')
-    #     numpoints = np.shape(ptc.points)
-    #     print(numpoints)
-    #     if numpoints[0] > 100000:
-    #         ptc = ptc.random_down_sample(0.02)
-    #         ptc.transform(obstacles_transform)
+    for i in range(len(fileNames)):
+        ptcFile = fileNames[i]
+        print(ptcFile)
+        ptc = o3d.io.read_point_cloud(ptcFile, format='xyz')
+        numpoints = np.shape(ptc.points)
+        print(numpoints)
+        if numpoints[0] > 100000:
+            ptc = ptc.random_down_sample(0.02)
+            ptc.transform(obstacles_transform)
 
-    #     print("Point cloud {}: ".format(i))
-    #     print(ptc)
+        print("Point cloud {}: ".format(i))
+        print(ptc)
         
-    #     print("Drawing point cloud...")
-    #     print(colorBank[str(i)])
-    #     ptc.paint_uniform_color(colorBank[str(i)])
-    #     ptcs.append(ptc)
+        print("Drawing point cloud...")
+        print(colorBank[str(i)])
+        ptc.paint_uniform_color(colorBank[str(i)])
+        ptcs.append(ptc)
 
-    # o3d.visualization.draw_geometries(ptcs)    
+    o3d.visualization.draw_geometries(ptcs)    
 
 
 
@@ -127,14 +127,14 @@ if __name__=='__main__':
     r_min = 20
     phi_max = np.pi/2
 
-    fileNames = ["../data/input/obstacles.txt", "../data/input/start_and_goal_poses.txt", "../data/output/20240905-11-37-27_interp.txt", "../data/output/20240905-11-40-30_interp.txt", "../data/output/20240905-11-45-04_interp.txt", "../data/output/20240905-12-20-05_interp.txt"]
+    fileNames = ["../data/input/remind_001_skull_outline_shuffled.txt", "../data/input/insertion_stage_shuffled.txt",]
     # fileNames = ["../data/input/goal_regions.txt", "../data/output/20240712-13-31-42_interp.txt", "../data/output/20240712-13-35-44_interp.txt"]
     obstacles_transform = np.array([[0.839844, 0, 0, 0],[0, 0.839844, 0, 0],[0, 0, 1, 0],[0, 0, 0, 1]]).astype(np.float64)
-
-    start_p = np.array([[100], [100], [100]])
+    stage_transform = np.array([[1, 0, 0, -20], [0, 1, 0, -20], [0, 0, 1, -320], [0, 0, 0, 1]])
+    start_p = np.array([[51.66], [65.86], [44.66]])
     start_q = np.array([[1], [0], [0], [0]]) # np.array([[1], [0], [0], [0]]) # w, x, y, z
 
-    goal_p = np.array([[100], [200], [200]])
+    goal_p = np.array([[44.18], [108.43], [-14.11]])
     goal_q = np.array([[1], [0], [0], [0]])
 
 
@@ -146,30 +146,13 @@ if __name__=='__main__':
     start.rotate(rot_s)
     world.translate(start_p)
     
-
-
     goal = o3d.geometry.TriangleMesh.create_coordinate_frame()
     rot = goal.get_rotation_matrix_from_quaternion(goal_q)
     
     goal.translate(goal_p)
     goal.rotate(rot)
 
-    curvature_lims = o3d.geometry.TriangleMesh.create_torus(torus_radius=50, tube_radius=49)
-    curvature_lims.translate(start_p)
-    curvature_lims.rotate(rot_s)
-
-    olive_radius = np.max([50,np.linalg.norm(start_p - goal_p)/2 + 3])
-    print(olive_radius)
-    olive_lims = o3d.geometry.TriangleMesh.create_sphere(radius=olive_radius)
-    olive_lims.translate(start_p + (goal_p - start_p)/2)
-    olive_lims.paint_uniform_color(colorBank["7"])
-    # curvature_lims = o3d.t.geometry.TriangleMesh.from_legacy(curvature_lims)
-    # olive_lims = o3d.t.geometry.TriangleMesh.from_legacy(olive_lims)
-    # intersection = olive_lims.boolean_union(curvature_lims)
-    # o3d.visualization.draw([{'name': 'difference', 'geometry': intersection}])
-
-
-    ptcs = [world, start, goal] #, curvature_lims, olive_lims]
+    ptcs = [world, start, goal] 
     for i in range(len(fileNames)):
         ptcFile = fileNames[i]
         print(ptcFile)
@@ -179,6 +162,11 @@ if __name__=='__main__':
         if numpoints[0] > 100000:
             ptc = ptc.random_down_sample(0.02)
             ptc.transform(obstacles_transform)
+        if fileNames[i].__contains__("insertion_stage"):
+            ptc.transform(stage_transform)
+            ptc.translate(start_p)
+            ptc.rotate(rot_s)
+        
 
         print("Point cloud {}: ".format(i))
         print(ptc)

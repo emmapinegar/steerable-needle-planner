@@ -48,6 +48,7 @@ struct sample_sphere {};
 struct sample_trumpet {};
 struct sample_rugby {};
 struct sample_intersection {};
+struct sample_halton {};
 
 namespace utils {
 
@@ -816,6 +817,158 @@ class NeedleSampler<State, sample_intersection> {
         }
 
         return sample;
+    }
+};
+
+template <typename State>
+class NeedleSampler<State, sample_halton> {
+  public:
+    NeedleSampler(const ConfigPtr cfg, const State& start, const State& goal)
+        : sample_orientation_(cfg->sample_orientation)
+        , constrain_goal_orientation_(cfg->constrain_goal_orientation)
+        , start_p_(start.translation())
+        , start_q_(start.rotation().normalized())
+        , goal_p_(goal.translation())
+        , goal_q_(goal.rotation().normalized())
+        , rad_curv_(cfg->rad_curv)
+        , ins_length_(cfg->ins_length)
+        , cfg_(cfg) {
+
+        sg_ = goal_p_ - start_p_;
+        center_ = start_p_ + sg_/2;
+        rugby_q_ = Quat::FromTwoVectors(Vec3::UnitZ(), sg_).normalized();
+    }
+
+    /**
+     * Gets a random sample based on the configuration of the sampler.
+     * 
+     * @param rng: random number generator
+     * 
+     * @returns State randomly generated state
+     */
+    template <typename RNG>
+    State operator() (RNG& rng) {
+        State sample;
+
+        // sample.translation() = start_p_ + start_q_*this->sampleInHaltonHemisphere(rng);
+
+        sample.translation() = center_ + rugby_q_*this->sampleInHaltonSphere(rng);
+
+        if (sample_orientation_) {
+            sample.rotation() = utils::SampleOrientation(start_p_, sample.translation(), rad_curv_, rng,
+                                uniform_, normal_);
+        }
+        else {
+            sample.rotation() = start_q_;
+        }
+
+        return sample;
+    }
+
+  private:
+    const bool sample_orientation_;
+    const bool constrain_goal_orientation_;
+    const Vec3 start_p_;
+    const Quat start_q_;
+    const Vec3 goal_p_;
+    const Quat goal_q_;
+    const RealNum rad_curv_;
+    const RealNum ins_length_;
+    const int base_x_ = 2;
+    const int base_y_ = 3;
+    const int base_z_ = 5;
+
+    ConfigPtr cfg_;
+    int i_ = 0;
+    Vec3 sg_;
+    Vec3 center_;
+    Quat rugby_q_;
+    RealUniformDist uniform_;
+    RealNormalDist normal_;
+
+    /**
+     * Gets a sample that is within the intersection of the rugby and trumpet shape.
+     * 
+     * @param rng: random number generator
+     * 
+     * @returns Vec3 randomly sampled position
+     */
+    template <typename RNG>
+    Vec3 sampleInHaltonHemisphere(RNG& rng) {
+        Vec3 sample;
+        bool valid = false;
+
+        while(!valid) {
+            {
+                std::lock_guard<std::mutex> lock(cfg_->halton_mutex);
+                sample[0] = 2*this->haltonSequence(rng, base_x_) - 1;
+                sample[1] = 2*this->haltonSequence(rng, base_y_) - 1;
+                sample[2] = this->haltonSequence(rng, base_z_);
+                cfg_->halton_i++;
+            }
+
+            if (sample.norm() <= 1) {
+                valid = true;
+            }
+            
+        }
+        sample = ins_length_*sample;
+
+        return sample;
+    }
+
+    /**
+     * Gets a sample that is within the intersection of the rugby and trumpet shape.
+     * 
+     * @param rng: random number generator
+     * 
+     * @returns Vec3 randomly sampled position
+     */
+    template <typename RNG>
+    Vec3 sampleInHaltonSphere(RNG& rng) {
+        Vec3 sample;
+        bool valid = false;
+
+        while(!valid) {
+            {
+                std::lock_guard<std::mutex> lock(cfg_->halton_mutex);
+                sample[0] = 2*this->haltonSequence(rng, base_x_) - 1;
+                sample[1] = 2*this->haltonSequence(rng, base_y_) - 1;
+                sample[2] = 2*this->haltonSequence(rng, base_z_) - 1;
+                cfg_->halton_i++;
+            }
+            
+            if (sample.norm() <= 1) {
+                valid = true;
+                // MPT_LOG(INFO) << "i: " << cfg_->halton_i << " sample: " << sample.transpose();
+            }
+ 
+        }
+        sample = 1.1*sg_.norm()*sample;
+
+        return sample;
+    }    
+
+    /**
+     * Gets a sample that is within the intersection of the insertion limit sphere and trumpet shape.
+     * 
+     * @param rng: random number generator
+     * 
+     * @returns Vec3 randomly sampled position
+     */
+    template <typename RNG>
+    RealNum haltonSequence(RNG& rng, const int base) {
+        RealNum value = 0;
+        RealNum fraction = 1;
+
+        int i = cfg_->halton_i;
+        while (i > 0) {
+            fraction = fraction/base;
+            value = value + fraction*(i%base);
+            i = std::floor(i/base);
+        }
+
+        return value;
     }
 };
 

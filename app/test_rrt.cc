@@ -110,6 +110,7 @@ int main(int argc, char** argv) {
         if (!scenario.ValidProblem()) {
             throw std::runtime_error("Planning problem is not valid!");
         }
+        cfg->env->UpdateStart(start_p, start_q);
 
         using namespace unc::robotics::mpt;
         using namespace unc::robotics::nigh;

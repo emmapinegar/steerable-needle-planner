@@ -405,257 +405,258 @@ def make_generic_test_figures(data, time_data, figure_function, figure_title, xa
     phis = np.flip(phis)
     varcurvs = np.unique(data[:, stats_indices['varcurv']])
     pairs = np.unique(data[:,stats_indices['sg_index']])
-    min_pair = (np.min(pairs)//max_num_pairs)*max_num_pairs
-    # print(f"{np.max(pairs)} {np.max(pairs)+1} {(np.max(pairs)+1)//max_num_pairs} {((np.max(pairs)+1)//max_num_pairs)*max_num_pairs}")
-    max_pair = ((np.max(pairs)+1)//max_num_pairs)*max_num_pairs
-    if max_pair < min_pair + max_num_pairs:
-        max_pair = min_pair + max_num_pairs
-    # if np.max(pairs)%max_num_pairs > 0:
-    #     max_pair = max_pair + max_num_pairs
-    
-    
-    pair_start_inds = np.arange(min_pair, max_pair, step=max_num_pairs)
-    num_plots = np.shape(pair_start_inds)[0]
-    cols = num_plots
-    rows = 1
-
-    # make figures for each of the kappa values used in experiments
-    # if np.shape(kappas)[0] > 1:
-    plotter.figure(figsize=[17,9])
-    line_offset = 0
-    line_increment = 1
-    if max_pair - min_pair > max_num_pairs:
-        linewidth = 0.25
-    else:
-        linewidth = 1.5
-    plotter.title(f"Planner Successes Planning Problems {round(min_pair)} to {round(max_pair)}", fontsize=viz_params['titlesize'])
-    locations = []
-    yticklabels = []
-    for k in range(np.shape(kappas)[0]):
-        for p in range(np.shape(planners)[0]):
-            locations += [line_offset]
-            yticklabels += [planners[p].label + f" " + r'$r_{min}$' + f"={round(kappas[k])}"]
-            next_data = data[np.where(np.logical_and(data[:,stats_indices['planner']] == planners[p].index, data[:,stats_indices['minrad']] == kappas[k]))[0], :]
-            rgrrt25_pairs = data[np.where(np.logical_and(data[:,stats_indices['success']] == 1 ,np.logical_and(data[:,stats_indices['planner']] == 1, data[:,stats_indices['minrad']] == 25)))[0], stats_indices['sg_index']]
-            # print(np.shape(rgrrt25_pairs)[0])
-            successful_pairs = next_data[np.where(next_data[:,stats_indices['success']] == 1)[0], stats_indices['sg_index']]
-            notrgrrt_pairs =  np.setdiff1d(successful_pairs, rgrrt25_pairs)
-
-            
-
-            plotter.eventplot(notrgrrt_pairs, linelengths=line_increment, linewidths=linewidth, colors=planners[p].color, alpha=1, lineoffsets=line_offset)   #get_kappa_alpha(k,kappas)
-            plotter.eventplot(np.intersect1d(rgrrt25_pairs, successful_pairs), linelengths=line_increment, colors=planners[p].color, alpha=0.5, lineoffsets=line_offset)
-            line_offset += line_increment
-
-    plotter.xlim([min_pair-1, max_pair+1])
-    # plotter.xlim([1499, 2001])
-    plotter.ylim([-0.6*line_increment, line_offset - 0.4*line_increment])
-    plotter.xlabel("Planning Problem", fontsize=viz_params['labelsize'])
-    plotter.ylabel("Planner", fontsize=viz_params['labelsize'])
-    plotter.yticks(locations, yticklabels)
-    plotter.tick_params(labelsize=viz_params['ticksize']) 
-    plotter.subplots_adjust(top=0.95, bottom=0.066, right=0.985, left=0.12, hspace=0.26, wspace=0.2)
-
-
-    # for k in range(np.shape(kappas)[0]):
-    #     plotter.figure(figsize=[16,8])
-    #     line_offset = 0
-    #     line_increment = 1
-    #     plotter.title(f"Planner Successes {min_pair} to {max_pair} with r = {kappas[k]}", fontsize=viz_params['titlesize'])        
-    #     for p in range(np.shape(planners)[0]):
-    #         next_data = data[np.where(np.logical_and(data[:,stats_indices['planner']] == planners[p].index, data[:,stats_indices['minrad']] == kappas[k]))[0], :]
-    #         successful_pairs = next_data[np.where(next_data[:,stats_indices['success']] == 1)[0], stats_indices['sg_index']]
-
-    #         plotter.eventplot(successful_pairs, linelengths=line_increment, linewidths=1, colors=planners[p].color, alpha=0.5, lineoffsets=line_offset)   #get_kappa_alpha(k,kappas)
-    #         line_offset += line_increment
-
-    #     plotter.xlim([min_pair-1, max_pair+1])
-    #     # plotter.xlim([1499, 2001])
-    #     plotter.ylim([-line_increment, line_offset])
-    #     plotter.subplots_adjust(top=0.92, bottom=0.05, right=0.99, left=0.05, hspace=0.26, wspace=0.2)    
-
-
-
-    for k in range(np.shape(pair_start_inds)[0]):
-        # plotter.subplot(rows, cols, k+1)
+    if np.shape(pairs)[0] > 0:
+        min_pair = (np.min(pairs)//max_num_pairs)*max_num_pairs
+        # print(f"{np.max(pairs)} {np.max(pairs)+1} {(np.max(pairs)+1)//max_num_pairs} {((np.max(pairs)+1)//max_num_pairs)*max_num_pairs}")
+        max_pair = ((np.max(pairs)+1)//max_num_pairs)*max_num_pairs
+        if max_pair < min_pair + max_num_pairs:
+            max_pair = min_pair + max_num_pairs
+        # if np.max(pairs)%max_num_pairs > 0:
+        #     max_pair = max_pair + max_num_pairs
         
-        pair_start = pair_start_inds[k]
-        pair_inds = np.where(np.logical_and(data[:,stats_indices['sg_index']] >= pair_start, data[:,stats_indices['sg_index']] < pair_start + max_num_pairs))[0]
-        pair_data = data[pair_inds,:]
-        success_pairs = np.where(pair_data[:,stats_indices['sg_index']])
-        pair_kappas = np.unique(pair_data[:,stats_indices['minrad']])
-        if np.shape(pair_data)[0] > 0:      
-            fig = plotter.figure(figsize=[17, 9])          
-            for i in range(np.shape(kappas)[0]):
-                kappa = kappas[i]
-                kappa_inds = np.where(pair_data[:,stats_indices['minrad']] == kappa)[0]
-                kappa_data = pair_data[kappa_inds,:]
+        
+        pair_start_inds = np.arange(min_pair, max_pair, step=max_num_pairs)
+        num_plots = np.shape(pair_start_inds)[0]
+        cols = num_plots
+        rows = 1
 
-                if np.shape(kappa_data)[0] > 0:
+        # make figures for each of the kappa values used in experiments
+        # if np.shape(kappas)[0] > 1:
+        plotter.figure(figsize=[17,9])
+        line_offset = 0
+        line_increment = 1
+        if max_pair - min_pair > max_num_pairs:
+            linewidth = 0.25
+        else:
+            linewidth = 1.5
+        plotter.title(f"Planner Successes Planning Problems {round(min_pair)} to {round(max_pair)}", fontsize=viz_params['titlesize'])
+        locations = []
+        yticklabels = []
+        for k in range(np.shape(kappas)[0]):
+            for p in range(np.shape(planners)[0]):
+                locations += [line_offset]
+                yticklabels += [planners[p].label + f" " + r'$r_{min}$' + f"={round(kappas[k])}"]
+                next_data = data[np.where(np.logical_and(data[:,stats_indices['planner']] == planners[p].index, data[:,stats_indices['minrad']] == kappas[k]))[0], :]
+                rgrrt25_pairs = data[np.where(np.logical_and(data[:,stats_indices['success']] == 1 ,np.logical_and(data[:,stats_indices['planner']] == 1, data[:,stats_indices['minrad']] == 25)))[0], stats_indices['sg_index']]
+                # print(np.shape(rgrrt25_pairs)[0])
+                successful_pairs = next_data[np.where(next_data[:,stats_indices['success']] == 1)[0], stats_indices['sg_index']]
+                notrgrrt_pairs =  np.setdiff1d(successful_pairs, rgrrt25_pairs)
 
-                    var_str = "dynamic" 
+                
 
-                    for p in range(np.shape(planners)[0]):
-                        planner_inds = np.where(kappa_data[:,stats_indices['planner']] == planners[p].index)[0]
-                        next_time_data = time_data[pair_inds,:][kappa_inds,:][planner_inds,:]
-                        next_data = kappa_data[planner_inds,:]
-                        time = []
-                        angle = []
-                        length = []
-                        success = []
-                        times = []
-                        angles = []
-                        lengths = []
-                        j = 0
+                plotter.eventplot(notrgrrt_pairs, linelengths=line_increment, linewidths=linewidth, colors=planners[p].color, alpha=1, lineoffsets=line_offset)   #get_kappa_alpha(k,kappas)
+                plotter.eventplot(np.intersect1d(rgrrt25_pairs, successful_pairs), linelengths=line_increment, colors=planners[p].color, alpha=0.5, lineoffsets=line_offset)
+                line_offset += line_increment
+
+        plotter.xlim([min_pair-1, max_pair+1])
+        # plotter.xlim([1499, 2001])
+        plotter.ylim([-0.6*line_increment, line_offset - 0.4*line_increment])
+        plotter.xlabel("Planning Problem", fontsize=viz_params['labelsize'])
+        plotter.ylabel("Planner", fontsize=viz_params['labelsize'])
+        plotter.yticks(locations, yticklabels)
+        plotter.tick_params(labelsize=viz_params['ticksize']) 
+        plotter.subplots_adjust(top=0.95, bottom=0.066, right=0.985, left=0.12, hspace=0.26, wspace=0.2)
+
+
+        # for k in range(np.shape(kappas)[0]):
+        #     plotter.figure(figsize=[16,8])
+        #     line_offset = 0
+        #     line_increment = 1
+        #     plotter.title(f"Planner Successes {min_pair} to {max_pair} with r = {kappas[k]}", fontsize=viz_params['titlesize'])        
+        #     for p in range(np.shape(planners)[0]):
+        #         next_data = data[np.where(np.logical_and(data[:,stats_indices['planner']] == planners[p].index, data[:,stats_indices['minrad']] == kappas[k]))[0], :]
+        #         successful_pairs = next_data[np.where(next_data[:,stats_indices['success']] == 1)[0], stats_indices['sg_index']]
+
+        #         plotter.eventplot(successful_pairs, linelengths=line_increment, linewidths=1, colors=planners[p].color, alpha=0.5, lineoffsets=line_offset)   #get_kappa_alpha(k,kappas)
+        #         line_offset += line_increment
+
+        #     plotter.xlim([min_pair-1, max_pair+1])
+        #     # plotter.xlim([1499, 2001])
+        #     plotter.ylim([-line_increment, line_offset])
+        #     plotter.subplots_adjust(top=0.92, bottom=0.05, right=0.99, left=0.05, hspace=0.26, wspace=0.2)    
+
+
+
+        for k in range(np.shape(pair_start_inds)[0]):
+            # plotter.subplot(rows, cols, k+1)
+            
+            pair_start = pair_start_inds[k]
+            pair_inds = np.where(np.logical_and(data[:,stats_indices['sg_index']] >= pair_start, data[:,stats_indices['sg_index']] < pair_start + max_num_pairs))[0]
+            pair_data = data[pair_inds,:]
+            success_pairs = np.where(pair_data[:,stats_indices['sg_index']])
+            pair_kappas = np.unique(pair_data[:,stats_indices['minrad']])
+            if np.shape(pair_data)[0] > 0:      
+                fig = plotter.figure(figsize=[17, 9])          
+                for i in range(np.shape(kappas)[0]):
+                    kappa = kappas[i]
+                    kappa_inds = np.where(pair_data[:,stats_indices['minrad']] == kappa)[0]
+                    kappa_data = pair_data[kappa_inds,:]
+
+                    if np.shape(kappa_data)[0] > 0:
+
+                        var_str = "dynamic" 
+
+                        for p in range(np.shape(planners)[0]):
+                            planner_inds = np.where(kappa_data[:,stats_indices['planner']] == planners[p].index)[0]
+                            next_time_data = time_data[pair_inds,:][kappa_inds,:][planner_inds,:]
+                            next_data = kappa_data[planner_inds,:]
+                            time = []
+                            angle = []
+                            length = []
+                            success = []
+                            times = []
+                            angles = []
+                            lengths = []
+                            j = 0
+        
+                            for x in next_time_data[:, stats_indices['times'] - stats_indices['times']]:
+                                if len(x) > 0:
+                                    time.append(x[0])
+                                    for xi in x:
+                                        times.append(xi)
+                                    j += 1
+                                    next_success = j*100/max_num_pairs
+                                    success.append(next_success) 
+
+                            for x in next_time_data[:, stats_indices['lengths'] - stats_indices['times']]:
+                                if len(x) > 0:
+                                    length.append(x[-1])
+                                    for xi in x:
+                                        lengths.append(xi)                        
+
+                            for x in next_time_data[:, stats_indices['phis'] - stats_indices['times']]:
+                                if len(x) > 0:
+                                    angle.append(x[-1])
+                                    for xi in x:
+                                        angles.append(xi)
+
+                            if len(time) == 1:
+                                time = [time[0] - time[0]/10, time[0] - time[0]/100, time[0]]
+                                success = [0, 0, success[0]]
+                                angle = [angle[0] - angle[0]/10, angle[0] - angle[0]/100, angle[0]]
+                                length = [length[0] - length[0]/10, length[0] - length[0]/100, length[0]]
+
+                            if len(time) > 0:
+                                time = np.array(time)
+                                sortedinds = np.argsort(time)
+                                time = time[sortedinds]
+                                length = np.array(length)
+                                sortedlengthinds = np.argsort(length)
+                                length = length[sortedlengthinds]
+                                angle = np.array(angle)
+                                sortedangleinds = np.argsort(angle)
+                                angle = angle[sortedangleinds]
+
+                                times = np.array(times)
+                                sortedtimeinds = np.argsort(times)
+                                times = times[sortedtimeinds]
+                                lengths = np.array(lengths)
+                                lengths = lengths[sortedtimeinds]
+                                angles = np.array(angles)
+                                angles = angles[sortedtimeinds]
+                                average_time = np.zeros(np.shape(times))
+                                average_length = np.zeros(np.shape(lengths))
+                                average_angle = np.zeros(np.shape(angles))
+
+                                window = 200
+                                n = window//2 #window
+
+                                if np.shape(times)[0] < window:
+                                    
+                                    if np.shape(times)[0] > n//2:
+                                        n =  n//5
+                                    else:
+                                        n = 0
+
+                                for j in range(np.shape(times)[0]):
+                
+                                    min_ind = max(0, j - n)
+                                    max_ind = min(np.shape(times)[0], j + n + 1)
+        
+                                    average_length[j] = np.average(lengths[min_ind:max_ind])
+                                    average_angle[j] = np.average(angles[min_ind:max_ind])
+                                    average_time[j] = np.average(times[min_ind:max_ind])                            
+
+
+                                roc_str = f" " + r'$r_{min}$' + f"={int(kappa)}"
+
+                                phi_str = r'$\phi_{\Sigma}$'
+
     
-                        for x in next_time_data[:, stats_indices['times'] - stats_indices['times']]:
-                            if len(x) > 0:
-                                time.append(x[0])
-                                for xi in x:
-                                    times.append(xi)
-                                j += 1
-                                next_success = j*100/max_num_pairs
-                                success.append(next_success) 
+                                plotter.subplot(2,3,1)
+                                plotter.plot(time, success, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
+                                plotter.title("Success vs. Time", fontsize=viz_params['subtitlesize'])
+                                plotter.xlim([0.0001, 11])
+                                plotter.xscale('log')
+                                plotter.ylim([-1, 101])
+                                plotter.ylabel("Success Percentage", fontsize=viz_params['labelsize'])
+                                plotter.xlabel("Time (seconds)", fontsize=viz_params['labelsize'])
+                                plotter.tick_params(labelsize=viz_params['ticksize'])
 
-                        for x in next_time_data[:, stats_indices['lengths'] - stats_indices['times']]:
-                            if len(x) > 0:
-                                length.append(x[-1])
-                                for xi in x:
-                                    lengths.append(xi)                        
-
-                        for x in next_time_data[:, stats_indices['phis'] - stats_indices['times']]:
-                            if len(x) > 0:
-                                angle.append(x[-1])
-                                for xi in x:
-                                    angles.append(xi)
-
-                        if len(time) == 1:
-                            time = [time[0] - time[0]/10, time[0] - time[0]/100, time[0]]
-                            success = [0, 0, success[0]]
-                            angle = [angle[0] - angle[0]/10, angle[0] - angle[0]/100, angle[0]]
-                            length = [length[0] - length[0]/10, length[0] - length[0]/100, length[0]]
-
-                        if len(time) > 0:
-                            time = np.array(time)
-                            sortedinds = np.argsort(time)
-                            time = time[sortedinds]
-                            length = np.array(length)
-                            sortedlengthinds = np.argsort(length)
-                            length = length[sortedlengthinds]
-                            angle = np.array(angle)
-                            sortedangleinds = np.argsort(angle)
-                            angle = angle[sortedangleinds]
-
-                            times = np.array(times)
-                            sortedtimeinds = np.argsort(times)
-                            times = times[sortedtimeinds]
-                            lengths = np.array(lengths)
-                            lengths = lengths[sortedtimeinds]
-                            angles = np.array(angles)
-                            angles = angles[sortedtimeinds]
-                            average_time = np.zeros(np.shape(times))
-                            average_length = np.zeros(np.shape(lengths))
-                            average_angle = np.zeros(np.shape(angles))
-
-                            window = 200
-                            n = window//2 #window
-
-                            if np.shape(times)[0] < window:
-                                
-                                if np.shape(times)[0] > n//2:
-                                    n =  n//5
+                                if np.shape(pair_kappas)[0] > 1:
+                                    plotter.legend(ncols=8, columnspacing=1.25, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.2, 1.095), loc='lower left', draggable=True, fontsize=viz_params['legendsize'])
                                 else:
-                                    n = 0
+                                    plotter.legend(ncols=8, columnspacing=1.5, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.1, 1.085), loc='lower left', draggable=True, fontsize=viz_params['legendsize'])
 
-                            for j in range(np.shape(times)[0]):
-              
-                                min_ind = max(0, j - n)
-                                max_ind = min(np.shape(times)[0], j + n + 1)
-       
-                                average_length[j] = np.average(lengths[min_ind:max_ind])
-                                average_angle[j] = np.average(angles[min_ind:max_ind])
-                                average_time[j] = np.average(times[min_ind:max_ind])                            
+                                plotter.subplot(2,3,2)
+                                plotter.plot(length, success, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
+                                plotter.title("Success vs. Relative Path Length", fontsize=viz_params['subtitlesize'])
+                                plotter.xlim([0.9995, 1.04])
+                                plotter.ylim([-1, 101])
+                                plotter.ylabel("Success Percentage", fontsize=viz_params['labelsize'])
+                                plotter.xlabel("Relative Path Length", fontsize=viz_params['labelsize'])
+                                plotter.tick_params(labelsize=viz_params['ticksize'])
+
+                                plotter.subplot(2,3,3)
+                                plotter.plot(angle, success, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
+                                plotter.title(f"Success vs. {phi_str}", fontsize=viz_params['subtitlesize'])
+                                plotter.xlim([0, 2])
+                                plotter.ylim([-1, 101])
+                                plotter.ylabel("Success Percentage", fontsize=viz_params['labelsize'])
+                                plotter.xlabel(f"{phi_str} (radians)", fontsize=viz_params['labelsize'])
+                                plotter.tick_params(labelsize=viz_params['ticksize'])
+
+                                plotter.subplot(2,3,4)
+                                plotter.plot(average_time, average_length, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
+                                plotter.title("Relative Path Length vs. Time", fontsize=viz_params['subtitlesize'])
+                                plotter.xlim([0.001, 11])
+                                plotter.xscale('log')
+                                plotter.ylim([0.9995, 1.04])
+                                plotter.ylabel("Relative Path Length", fontsize=viz_params['labelsize'])
+                                plotter.xlabel("Time (seconds)", fontsize=viz_params['labelsize']) 
+                                plotter.tick_params(labelsize=viz_params['ticksize'])
+                                
+                                plotter.subplot(2,3,5)
+                                plotter.plot(average_time, average_angle, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
+                                plotter.title(f"{phi_str} vs. Time", fontsize=viz_params['subtitlesize'])
+                                plotter.xlim([0.001, 11])
+                                plotter.xscale('log')
+                                plotter.ylim([0, 2])
+                                plotter.ylabel(f"{phi_str} (radians)", fontsize=viz_params['labelsize'])
+                                plotter.xlabel("Time (seconds)", fontsize=viz_params['labelsize'])    
+                                plotter.tick_params(labelsize=viz_params['ticksize'])                                                    
+
+                    # plotter.xlim([0.0001, 10])
+                    # plotter.xscale('log')
+                    # plotter.ylim([-1, 100])
+                    # plotter.ylabel(yaxis_label, fontsize=14)
+                    # plotter.xlabel(xaxis_label, fontsize=14)
+                
+
+                # plotter.subplot(2,3,6)
+                # make_success_heat_figure(pair_data, time_data[pair_inds,:], stats_indices['sg_index'], r'Success vs. Pair', r'Goals', r'Starts', 0, 0, 0, 0, False, False)
 
 
-                            roc_str = f" " + r'$r_{min}$' + f"={int(kappa)}"
+                plotter.suptitle(f"Common Set of Planning Problems {round(pair_start)} to {round(pair_start + max_num_pairs)}", fontsize=viz_params['titlesize'])
+                if np.shape(pair_kappas)[0] > 1:
+                    plotter.subplots_adjust(top=0.825, bottom=0.0675, right=0.985, left=0.06, hspace=0.35, wspace=0.21)
+                else:
+                    plotter.subplots_adjust(top=0.85, bottom=0.0675, right=0.985, left=0.06, hspace=0.35, wspace=0.21)
 
-                            phi_str = r'$\phi_{\Sigma}$'
-
-  
-                            plotter.subplot(2,3,1)
-                            plotter.plot(time, success, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
-                            plotter.title("Success vs. Time", fontsize=viz_params['subtitlesize'])
-                            plotter.xlim([0.0001, 11])
-                            plotter.xscale('log')
-                            plotter.ylim([-1, 101])
-                            plotter.ylabel("Success Percentage", fontsize=viz_params['labelsize'])
-                            plotter.xlabel("Time (seconds)", fontsize=viz_params['labelsize'])
-                            plotter.tick_params(labelsize=viz_params['ticksize'])
-
-                            if np.shape(pair_kappas)[0] > 1:
-                                plotter.legend(ncols=8, columnspacing=1.25, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.2, 1.095), loc='lower left', draggable=True, fontsize=viz_params['legendsize'])
-                            else:
-                                plotter.legend(ncols=8, columnspacing=1.5, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.1, 1.085), loc='lower left', draggable=True, fontsize=viz_params['legendsize'])
-
-                            plotter.subplot(2,3,2)
-                            plotter.plot(length, success, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
-                            plotter.title("Success vs. Relative Path Length", fontsize=viz_params['subtitlesize'])
-                            plotter.xlim([0.9995, 1.04])
-                            plotter.ylim([-1, 101])
-                            plotter.ylabel("Success Percentage", fontsize=viz_params['labelsize'])
-                            plotter.xlabel("Relative Path Length", fontsize=viz_params['labelsize'])
-                            plotter.tick_params(labelsize=viz_params['ticksize'])
-
-                            plotter.subplot(2,3,3)
-                            plotter.plot(angle, success, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
-                            plotter.title(f"Success vs. {phi_str}", fontsize=viz_params['subtitlesize'])
-                            plotter.xlim([0, 2])
-                            plotter.ylim([-1, 101])
-                            plotter.ylabel("Success Percentage", fontsize=viz_params['labelsize'])
-                            plotter.xlabel(f"{phi_str} (radians)", fontsize=viz_params['labelsize'])
-                            plotter.tick_params(labelsize=viz_params['ticksize'])
-
-                            plotter.subplot(2,3,4)
-                            plotter.plot(average_time, average_length, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
-                            plotter.title("Relative Path Length vs. Time", fontsize=viz_params['subtitlesize'])
-                            plotter.xlim([0.001, 11])
-                            plotter.xscale('log')
-                            plotter.ylim([0.9995, 1.04])
-                            plotter.ylabel("Relative Path Length", fontsize=viz_params['labelsize'])
-                            plotter.xlabel("Time (seconds)", fontsize=viz_params['labelsize']) 
-                            plotter.tick_params(labelsize=viz_params['ticksize'])
-                             
-                            plotter.subplot(2,3,5)
-                            plotter.plot(average_time, average_angle, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
-                            plotter.title(f"{phi_str} vs. Time", fontsize=viz_params['subtitlesize'])
-                            plotter.xlim([0.001, 11])
-                            plotter.xscale('log')
-                            plotter.ylim([0, 2])
-                            plotter.ylabel(f"{phi_str} (radians)", fontsize=viz_params['labelsize'])
-                            plotter.xlabel("Time (seconds)", fontsize=viz_params['labelsize'])    
-                            plotter.tick_params(labelsize=viz_params['ticksize'])                                                    
-
-                # plotter.xlim([0.0001, 10])
-                # plotter.xscale('log')
-                # plotter.ylim([-1, 100])
-                # plotter.ylabel(yaxis_label, fontsize=14)
-                # plotter.xlabel(xaxis_label, fontsize=14)
+                if np.shape(pair_start_inds)[0] > 1:
+                    get_pairwise_statistics(pair_data, time_data[pair_inds,:], 0.1, 1)
+                    # get_pairwise_statistics(pair_data, time_data[pair_inds,:], 0.75, 15)
             
-
-            # plotter.subplot(2,3,6)
-            # make_success_heat_figure(pair_data, time_data[pair_inds,:], stats_indices['sg_index'], r'Success vs. Pair', r'Goals', r'Starts', 0, 0, 0, 0, False, False)
-
-
-            plotter.suptitle(f"Common Set of Planning Problems {round(pair_start)} to {round(pair_start + max_num_pairs)}", fontsize=viz_params['titlesize'])
-            if np.shape(pair_kappas)[0] > 1:
-                plotter.subplots_adjust(top=0.825, bottom=0.0675, right=0.985, left=0.06, hspace=0.35, wspace=0.21)
-            else:
-                plotter.subplots_adjust(top=0.85, bottom=0.0675, right=0.985, left=0.06, hspace=0.35, wspace=0.21)
-
-            if np.shape(pair_start_inds)[0] > 1:
-                get_pairwise_statistics(pair_data, time_data[pair_inds,:], 0.1, 1)
-                # get_pairwise_statistics(pair_data, time_data[pair_inds,:], 0.75, 15)
-        
 
 
 def make_big_generic_figures(data, time_data, figure_function, figure_title, xaxis_label, yaxis_label, data_index, x_min, x_max, y_min, y_max, x_log, y_log):
@@ -1294,7 +1295,7 @@ def get_data(file):
 if __name__=='__main__':
 
     # data, time_data = get_all_data('./../data/output/', '*_stats*.txt')
-    data, time_data = get_all_data('./../data/output/', '*_debug_longer.txt')
+    data, time_data = get_all_data('./../data/output/', '*_multi_debug.txt')
 
     pairs_mins = get_min_ell(data, time_data)
 

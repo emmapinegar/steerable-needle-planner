@@ -82,9 +82,10 @@ class ImageEnvironment {
 
     void GenerateEmptyImage(const Idx size_x, const Idx size_y, const Idx size_z);
     bool ConstructEnvironmentFromFile(const Str file_name);
+    bool ConstructEnvironmentFromFile(const Str file_name, const Str nn_name);
     bool ConstructCostFromFile(const Str file_name);
 
-    Vec3 IjkToRas(const IdxPoint& p) const;
+    Vec3 IjkToRas(const IdxPoint& p, const Str& image_name="default") const;
     Vec3 IjkToRas(const Idx& i, const Idx& j, const Idx& k) const;
 
     IdxPoint RasToIjk(const Vec3& p) const;
@@ -92,6 +93,7 @@ class ImageEnvironment {
 
     void AddObstacle(const Vec3& p, const Str& image_name="default");
     void AddObstacle(const IdxPoint& p, const Str& image_name="default");
+    void UpdateStart(const Vec3& sp, const Quat& sq);
 
     void AddCost(const IdxPoint& p, const RealNum& cost);
 
@@ -195,6 +197,10 @@ class ImageEnvironment {
     bool use_trilinear_interpolation_{false};
 
     std::map<Str, ImgNNWithMask> all_nns_;
+    std::map<Str, Affine> all_ijk_to_ras_;
+    std::map<Str, Affine> all_ras_to_ijk_;
+    Vec3 start_p{Vec3(0,0,0)};
+    Quat start_q{Quat(0,0,1,0)};
 };
 
 using EnvPtr = std::shared_ptr<ImageEnvironment>;
