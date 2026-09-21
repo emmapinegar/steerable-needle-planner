@@ -384,7 +384,7 @@ def make_generic_figures(data, time_data, figure_function, figure_title, xaxis_l
                                 plotter.ylabel(yaxis_label, fontsize=viz_params['labelsize'])
                                                                 
                             if fig_ind == 1:
-                                plotter.legend(ncols=8, columnspacing=1.1, handlelength=2, handletextpad=0.25, borderpad=0.3, bbox_to_anchor=(-0.1, 1.05), loc='lower left', draggable=True, fontsize=viz_params['legendsize'])
+                                plotter.legend(ncols=8, columnspacing=1.1, handlelength=2, handletextpad=0.25, borderpad=0.3, bbox_to_anchor=(-0.1, 1.05), loc='lower left', fontsize=viz_params['legendsize'])
 
                             if fig_ind > cols:
                                 plotter.xlabel(xaxis_label, fontsize=viz_params['labelsize'])
@@ -441,10 +441,10 @@ def make_generic_test_figures(data, time_data, figure_function, figure_title, xa
             successful_pairs = next_data[np.where(next_data[:,stats_indices['success']] == 1)[0], stats_indices['sg_index']]
             notrgrrt_pairs =  np.setdiff1d(successful_pairs, rgrrt25_pairs)
 
-            
+            plotter.eventplot(successful_pairs, linelengths=line_increment, linewidths=linewidth, colors=planners[p].color, alpha=1, lineoffsets=line_offset)   #get_kappa_alpha(k,kappas)
 
-            plotter.eventplot(notrgrrt_pairs, linelengths=line_increment, linewidths=linewidth, colors=planners[p].color, alpha=1, lineoffsets=line_offset)   #get_kappa_alpha(k,kappas)
-            plotter.eventplot(np.intersect1d(rgrrt25_pairs, successful_pairs), linelengths=line_increment, colors='k', alpha=0.1, lineoffsets=line_offset)
+            # plotter.eventplot(notrgrrt_pairs, linelengths=line_increment, linewidths=linewidth, colors=planners[p].color, alpha=1, lineoffsets=line_offset)   #get_kappa_alpha(k,kappas)
+            # plotter.eventplot(np.intersect1d(rgrrt25_pairs, successful_pairs), linelengths=line_increment, colors='k', alpha=0.1, lineoffsets=line_offset)
             line_offset += line_increment
 
     plotter.xlim([min_pair-1, max_pair+1])
@@ -593,9 +593,9 @@ def make_generic_test_figures(data, time_data, figure_function, figure_title, xa
                             plotter.tick_params(labelsize=viz_params['ticksize'])
 
                             if np.shape(pair_kappas)[0] > 1:
-                                plotter.legend(ncols=8, columnspacing=1.25, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.2, 1.095), loc='lower left', draggable=True, fontsize=viz_params['legendsize'])
+                                plotter.legend(ncols=8, columnspacing=1.25, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.2, 1.095), loc='lower left', fontsize=viz_params['legendsize'])
                             else:
-                                plotter.legend(ncols=8, columnspacing=1.5, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.1, 1.085), loc='lower left', draggable=True, fontsize=viz_params['legendsize'])
+                                plotter.legend(ncols=8, columnspacing=1.5, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.1, 1.085), loc='lower left', fontsize=viz_params['legendsize'])
 
                             plotter.subplot(2,3,2)
                             plotter.plot(length, success, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
@@ -1293,7 +1293,7 @@ def get_data(file):
 
 if __name__=='__main__':
 
-    data, time_data = get_all_data('./../data/output/', '*_stats*.txt')
+    data, time_data = get_all_data('./../data/output/', '*_stats*_debug.txt')
 
     pairs_mins = get_min_ell(data, time_data)
 
