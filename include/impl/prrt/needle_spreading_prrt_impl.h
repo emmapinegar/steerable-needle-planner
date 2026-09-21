@@ -411,6 +411,75 @@ class NeedleSpreadingPRRT : public
     }
 
     /**
+     * Gets the actions of path that leads to the best solution.
+     * 
+     * @returns vector<tuple<RealNum, RealNum, RealNum> the actions composing the solution
+     */
+    std::vector<std::vector<RealNum>> solutionActions() const {
+        auto [cost, size, n] = bestSolution();
+        std::vector<std::vector<RealNum>> actions;
+
+        if (n) {
+            actions.reserve(size);
+
+            do {
+                actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+            }
+            while ((n = n->parent())->parent() != nullptr);
+
+            std::reverse(actions.begin(), actions.end());
+        }
+
+        return actions;
+    }
+
+    void printSolutionActions() const {
+        std::cout << "printing all solution actions.." << std::endl;
+
+        std::vector<std::vector<RealNum>> bestActions = solutionActions();
+        for (std::vector<RealNum> action: bestActions) {
+            std::cout << "l: " << action.at(0) << " r: " << action.at(1) << " theta: " << action.at(2) << std::endl;
+        }
+
+        std::vector<std::vector<std::vector<RealNum>>> allActions = allSolutionsActions();
+        for (std::vector<std::vector<RealNum>> nextSolution: allActions) {
+            std::cout << " " << std::endl;
+            for (std::vector<RealNum> action: nextSolution) {
+                std::cout << "l: " << action.at(0) << " r: " << action.at(1) << " theta: " << action.at(2) << std::endl;
+            } 
+        }
+    }    
+
+    /**
+     * Gets the actions of paths for all solutions.
+     * 
+     * @returns vector<vector<tuple<RealNum, RealNum, RealNum>>> the vectors of actions for all the paths to goal
+     */
+    std::vector<std::vector<std::vector<RealNum>>> allSolutionsActions () const {
+        std::vector<std::vector<std::vector<RealNum>>> all_actions;
+
+        for (const Node* n : goals_) {
+            std::vector<std::vector<RealNum>> actions;
+
+            if (n) {
+                auto [cost, size] = pathCost(n);
+                actions.reserve(size);
+
+                do {
+                    actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+                }
+                while ((n = n->parent())->parent() != nullptr);
+
+                std::reverse(actions.begin(), actions.end());
+            }
+
+            all_actions.push_back(actions);
+        }
+
+        return all_actions;
+    }     
+
+    /**
      * Gets the solution for the best solution. 
      * 
      * @param fn: function to link the solution
@@ -754,7 +823,7 @@ unbiasedSamplingLoop:
         //     }
         // }
 
-        auto propagated = propagator_(nearNode->state(), randState, rng_, nearNode->curve_lim());
+        auto propagated = propagator_(nearNode->state(), randState, rng_);
 
         if (!propagated) {
             return;
@@ -776,6 +845,7 @@ unbiasedSamplingLoop:
             newNode->length() = newLength;
             newNode->cost() = nearNode->cost() + scenario_.CurveCost(nearNode->state(), newState);
             newNode->ang_total() = newAngle;
+            newNode->radius() = RadiusOfCurvature(nearNode->state().translation(), nearNode->state().rotation(), newState.translation());
             planner.nn_.insert(newNode);
 
             if (isGoal) {
@@ -796,6 +866,7 @@ unbiasedSamplingLoop:
                         goalNode->length() = goalLength;
                         goalNode->cost() = goalCost;
                         goalNode->ang_total() = goalAngle;
+                        goalNode->radius() = RadiusOfCurvature(newNode->state().translation(), newNode->state().rotation(), goalNode->state().translation());
                         planner.foundGoal(goalNode);
                     }
                 }

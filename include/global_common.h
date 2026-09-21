@@ -118,6 +118,8 @@ Str start_and_goal_file = "../data/input/remind_" + padded_scan_num + "_start_an
 Str sg_pairs_file = "../data/input/remind_" + padded_scan_num + "_sg_pairs.txt";
 Str goal_file = "../data/input/remind_" + padded_scan_num + "_goal_regions.txt";
 Str stats_file = "../data/output/planner_stats.txt";
+Str actions_file = "../data/output/planner_actions.txt";
+Str best_actions_file = "../data/output/planner_best_actions.txt";
 
 
 

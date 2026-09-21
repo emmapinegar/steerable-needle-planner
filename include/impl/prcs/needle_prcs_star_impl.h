@@ -488,6 +488,75 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
     }
 
     /**
+     * Gets the actions of path that leads to the best solution.
+     * 
+     * @returns vector<tuple<RealNum, RealNum, RealNum> the actions composing the solution
+     */
+    std::vector<std::vector<RealNum>> solutionActions() const {
+        auto [cost, size, n] = bestSolution();
+        std::vector<std::vector<RealNum>> actions;
+
+        if (n) {
+            actions.reserve(size);
+
+            do {
+                actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+            }
+            while ((n = n->parent())->parent() != nullptr);
+
+            std::reverse(actions.begin(), actions.end());
+        }
+
+        return actions;
+    }
+
+    void printSolutionActions() const {
+        std::cout << "printing all solution actions.." << std::endl;
+
+        std::vector<std::vector<RealNum>> bestActions = solutionActions();
+        for (std::vector<RealNum> action: bestActions) {
+            std::cout << "l: " << action.at(0) << " r: " << action.at(1) << " theta: " << action.at(2) << std::endl;
+        }
+
+        std::vector<std::vector<std::vector<RealNum>>> allActions = allSolutionsActions();
+        for (std::vector<std::vector<RealNum>> nextSolution: allActions) {
+            std::cout << " " << std::endl;
+            for (std::vector<RealNum> action: nextSolution) {
+                std::cout << "l: " << action.at(0) << " r: " << action.at(1) << " theta: " << action.at(2) << std::endl;
+            } 
+        }
+    }    
+
+    /**
+     * Gets the actions of paths for all solutions.
+     * 
+     * @returns vector<vector<tuple<RealNum, RealNum, RealNum>>> the vectors of actions for all the paths to goal
+     */
+    std::vector<std::vector<std::vector<RealNum>>> allSolutionsActions () const {
+        std::vector<std::vector<std::vector<RealNum>>> all_actions;
+
+        for (const Node* n : goals_) {
+            std::vector<std::vector<RealNum>> actions;
+
+            if (n) {
+                auto [cost, size] = pathCost(n);
+                actions.reserve(size);
+
+                do {
+                    actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+                }
+                while ((n = n->parent())->parent() != nullptr);
+
+                std::reverse(actions.begin(), actions.end());
+            }
+
+            all_actions.push_back(actions);
+        }
+
+        return all_actions;
+    }    
+
+    /**
      * Gets the solution for the best solution. 
      * 
      * @param fn: function to link the solution
@@ -759,17 +828,22 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                 auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
-                    auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
-                                        + scenario_.FinalStateCost(goalState);
-                    if (goalCost < planner.bestCost_) {
-                        Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
-                        goalNode->length() = goalLength;
-                        goalNode->cost() = goalCost;
-                        goalNode->ang_total() = goalAngle;
-                        planner.foundGoal(goalNode);
-                    }
+                    if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
+                        auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
+                                            + scenario_.FinalStateCost(goalState);
+                        if (goalCost < planner.bestCost_) {
+                            
+                            Node* goalNode = nodePool_.allocate(linkTrajectory(true), node, goalState);
+                            goalNode->valid() = true;
+                            goalNode->length() = goalLength;
+                            goalNode->cost() = goalCost;
+                            goalNode->ang_total() = goalAngle;
+                            goalNode->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                            planner.foundGoal(goalNode);
+                        }
 
-                    return true;
+                        return true;
+                    }
                 }
             
             }
@@ -789,11 +863,14 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         transNode->length() = goalLength0;
                         transNode->cost() = goalCost0;
                         transNode->ang_total() = goalAngle0;
+                        transNode->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[0].translation());
+
 
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), transNode, goalStates[1]);
                         goalNode->length() = goalLength1;
                         goalNode->cost() = goalCost1;
                         goalNode->ang_total() = goalAngle1;
+                        goalNode->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[1].translation());
                         planner.foundGoal(goalNode);
                     }
 
@@ -812,6 +889,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                           + scenario_.FinalStateCost(goalState);
                     (*goalNode)->ang_total() = goalAngle;
+                    (*goalNode)->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
                 }
             }
         }
@@ -839,6 +917,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             from = planner.propagator_.ComputeStartPose(node->parent()->state(), node->angleIndex());
 
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
+            node->radius () = RadiusOfCurvature(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
         }
 
         const bool inheritValidation = node->valid();
@@ -1176,6 +1255,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         node->cost() = parent->cost() + scenario_.CurveCost(pState, endState);
         node->costToGo() = scenario_.validator().CostToGo(endState);
         node->ang_total() = node->parent()->ang_total() + DirectionDifference(pState.rotation(), endState.rotation());
+        // node->radius () = RadiusOfCurvature(parent->state().translation(), parent->state().rotation(), endState.translation());
         planner.queue_.push(node);
         return node;
     }

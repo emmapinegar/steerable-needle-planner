@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
     auto [min_curve_rad_, needle_diameter, insertion_length_, angle_constraint_degree_] = utils::ReadNeedleParameters(needle_parameter_file, false);
 
-    auto suffix_ = "_aorrt";
+    auto suffix_ = "_aorrt_improved";
 
     auto [constrain_goal_orientation, suffix, min_curve_rad, insertion_length, angle_constraint_degree] = ParseArgs(argc, argv, min_curve_rad_, insertion_length_, angle_constraint_degree_, suffix_);
 
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
         // cfg->env->AddToWhiteList(start_p, 3);
         // cfg->env->SetWhiteList(true);
 
-        using Scenario = PAORRTRandomPoint2PointScenario<RealNum>::Type;
+        using Scenario = PAORRTPoint2PointScenario<RealNum>::Type;
         using State = typename Scenario::State;
         using Space = typename Scenario::Space;
 

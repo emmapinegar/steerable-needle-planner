@@ -75,7 +75,7 @@ class Node {
     Scalar cost_to_come_{0};
     Scalar cost_to_go_{0};
     Scalar ang_total_{0};
-    Scalar curve_lim_{global::needle_min_curve_rad};
+    Scalar radius_{0};
     bool valid_{false};
 
     unsigned rank_{0};
@@ -204,27 +204,25 @@ class Node {
      */
     const Scalar& ang_total() const {
         return ang_total_;
-    }  
-
-
+    } 
+    
     /**
-     * Gets the curvature limit (minimum possible radius in mm) at this node.
+     * Gets the radius of curvature used to arrive at this node.
      * 
      * @returns Scalar curvature limit
      */
-    Scalar& curve_lim() {
-        return curve_lim_;
+    Scalar& radius() {
+        return radius_;
     }
 
     /**
-     * Gets the curvature limit (minimum possible radius in mm) at this node.
+     * Gets the radius of curvature used to arrive at this node.
      * 
      * @returns const Scalar curvature limit
      */
-    const Scalar& curve_lim() const {
-        return curve_lim_;
-    }
-
+    const Scalar& radius() const {
+        return radius_;
+    }    
 
     /**
      * Calculates the cost to come to the current state and the estimated cost to reach the goal. 

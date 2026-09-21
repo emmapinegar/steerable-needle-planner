@@ -50,7 +50,7 @@ class Node {
     Scalar traj_length_{0};
     Scalar cost_{0};
     Scalar ang_total_{0};
-    Scalar curve_lim_{global::needle_min_curve_rad};
+    Scalar radius_{0};
 
   public:
     /**
@@ -124,21 +124,21 @@ class Node {
     }    
 
     /**
-     * Gets the curvature limit (minimum possible radius in mm) at this node.
+     * Gets the radius of curvature used to arrive at this node.
      * 
      * @returns Scalar curvature limit
      */
-    Scalar& curve_lim() {
-        return curve_lim_;
+    Scalar& radius() {
+        return radius_;
     }
 
     /**
-     * Gets the curvature limit (minimum possible radius in mm) at this node.
+     * Gets the radius of curvature used to arrive at this node.
      * 
      * @returns const Scalar curvature limit
      */
-    const Scalar& curve_lim() const {
-        return curve_lim_;
+    const Scalar& radius() const {
+        return radius_;
     }
 
 

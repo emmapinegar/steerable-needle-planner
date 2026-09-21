@@ -1614,6 +1614,19 @@ class MotionPrimitiveValidator : public ValidatorBase<State> {
     }
 
     /**
+     * Checks that the motion is collision free and feasible based on curvature limits.
+     * 
+     * @param from: State starting state
+     * @param to: State target state
+     * @param cfg: ConfigPtr configuration for the planning problem
+     * 
+     * @returns bool true if the motion is collision free, false otherwise
+     */
+    bool ValidMotion(const State& from, const State& to, const ConfigPtr cfg) const {
+        return utils::ValidMotion(from, to, base::env_, rad_curv_, validity_res_, cfg);
+    }    
+
+    /**
      * Checks if the motion is valid, collision free, and feasible with curvature limits. 
      * 
      * @param motion: vector<State> motion from starting state, composed of other states
@@ -1838,6 +1851,19 @@ class MotionPrimitiveSpreadingValidator : public ValidatorBase<State> {
     bool ValidMotion(const State& from, const std::vector<State>& motion, const ConfigPtr cfg, const RealNum motion_rad, const unsigned& offset) const {
         return utils::ValidMotion(from, motion, base::env_, cfg, motion_rad, offset);
     }
+
+    /**
+     * Checks that the motion is collision free and feasible based on curvature limits.
+     * 
+     * @param from: State starting state
+     * @param to: State target state
+     * @param cfg: ConfigPtr configuration for the planning problem
+     * 
+     * @returns bool true if the motion is collision free, false otherwise
+     */
+    bool ValidMotion(const State& from, const State& to, const ConfigPtr cfg) const {
+        return utils::ValidMotion(from, to, base::env_, rad_curv_, validity_res_, cfg);
+    }     
 
     /**
      * Gets the configuration tolerance used to add a buffer on ...

@@ -345,6 +345,8 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
 
     planner.printStats();
 
+    
+
     if (planner.solved() || planner.approxSolved()) {
         if (planner.solved()) {
             MPT_LOG(INFO) << "exact solution";
@@ -352,6 +354,8 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
         else {
             MPT_LOG(INFO) << "approximate solution";
         }
+
+        planner.printSolutionActions();
 
         path = planner.solution();
         cost = planner.cost();
@@ -381,8 +385,12 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
             
 
             auto [bestCost, bestSize, bestGoal, bestLength, bestPhi, spreading, planner_type] = planner.stats();
+            std::vector<std::vector<std::vector<RealNum>>> allActions = planner.allSolutionsActions();
+            std::vector<std::vector<RealNum>> actions = planner.solutionActions();
 
             WriteStatsToFile(cfg->rad_curv, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, cfg->output_file_root, snp::stats_file, planner.resultWithTime());
+            WriteAllActionsToFile(allActions, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, cfg->output_file_root, snp::actions_file);
+            WriteBestActionsToFile(actions, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, cfg->output_file_root, snp::best_actions_file);
             if (save_interp) {
                 auto const& interpolated = InterpolatePath(path, cfg->rad_curv, cfg->result_res);
                 WritePathToFile(interpolated, cfg->output_file_root + "_interp.txt");

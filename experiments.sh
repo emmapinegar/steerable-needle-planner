@@ -7,7 +7,7 @@ cd ./build
 seed_array=(8965)
 scan_array=(1)                  # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
 phi_arr=(180)
-rads=(25)
+rads=(15)
 sgs=(1500)
 seed=8965
 scan=1
@@ -17,7 +17,7 @@ multi_timeout=10000
 bias=0.05
 num_sg=1
 stats_file="./../data/output/planner_stats.txt"
-multi_stats_file="./../data/output/planner_stats_multi_test.txt"
+multi_stats_file="./../data/output/planner_stats_multi_test_new.txt"
 test_file="./../data/output/planner_stats_multi_debug.txt"
 i=0
 
@@ -74,6 +74,7 @@ do
 
             ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
             ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+            ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
             ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
             ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
 

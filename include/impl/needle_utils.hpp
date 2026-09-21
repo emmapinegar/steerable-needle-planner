@@ -987,6 +987,112 @@ bool WritePathToFile(const std::vector<State>& path, const Str& file_name,
     return true;
 }
 
+/**
+ * Prints action information for a node to a stream.
+ * Prints l r theta of the action.
+ * 
+ * @param s: state to print information of 
+ * @param out: stream to print information to
+ */
+void PrintAction(const std::vector<RealNum> action, std::ostream& out) {
+    out << "[" << action[0] << "," << action[1] << "," << action[2] << "]" << std::endl;
+}
+
+/**
+ * Prints action information for a node to a stream.
+ * Prints l r theta of the action.
+ * 
+ * @param s: state to print information of 
+ * @param out: stream to print information to
+ */
+void PrintActions(const std::vector<std::vector<RealNum>> actions, std::ostream& out) {
+    for (std::vector<RealNum> action: actions) {
+        out << "\"[" << action[0] << "," << action[1] << "," << action[2] << "]\",";
+    }
+    out << std::endl;
+}
+
+/**
+ * Prints action information for a node to a stream.
+ * Prints l r theta of the action.
+ * 
+ * @param s: state to print information of 
+ * @param out: stream to print information to
+ */
+void WriteAllActionsToFile(const std::vector<std::vector<std::vector<RealNum>>> allActions, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
+                      const bool spreading, const bool variable_curvature, const Str& planner_type, const Str& file_root, const Str& file_name) {
+    std::ofstream fout;
+    fout.open(file_name, std::ios::app); //https://www.w3resource.com/cpp-exercises/file-handling/cpp-file-handling-exercise-7.php#:~:text=Use%20the%20std%3A%3Aofstream,using%20the%20is_open()%20function.
+
+    if (!fout.is_open()) {
+        throw std::runtime_error("Failed to open " + file_name);
+    }
+
+    // for (std::vector<std::vector<RealNum&>> actions: allActions) {
+    std::vector<std::vector<RealNum>> actions = allActions.at(0);
+    for (std::vector<std::vector<RealNum>> actions: allActions) {
+        Str lengths = "";
+        Str radii = "";
+        Str angles = "";
+        RealNum selected_length = 0;
+        RealNum selected_angle = 0;
+        for (std::vector<RealNum> action: actions) {
+            selected_length += action[0];
+            selected_angle += action[0]/action[1];
+            lengths += std::to_string(action[0]);
+            lengths += ",";
+            radii += std::to_string(action[1]);
+            radii += ",";
+            angles += std::to_string(action[2]);
+            angles += ",";
+            
+        }
+        fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << selected_length << "," << selected_angle << "," << elapsed << "," << success << "," << approx_success;
+        fout << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",";
+        fout << "\"[" << lengths << "]\",\"[" << radii << "]\",\"[" << angles << "]\"" << std::endl;
+    }
+}
+
+
+/**
+ * Prints action information for a node to a stream.
+ * Prints l r theta of the action.
+ * 
+ * @param s: state to print information of 
+ * @param out: stream to print information to
+ */
+void WriteBestActionsToFile(const std::vector<std::vector<RealNum>> actions, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
+                      const bool spreading, const bool variable_curvature, const Str& planner_type, const Str& file_root, const Str& file_name) {
+    std::ofstream fout;
+    fout.open(file_name, std::ios::app); //https://www.w3resource.com/cpp-exercises/file-handling/cpp-file-handling-exercise-7.php#:~:text=Use%20the%20std%3A%3Aofstream,using%20the%20is_open()%20function.
+
+    if (!fout.is_open()) {
+        throw std::runtime_error("Failed to open " + file_name);
+    }
+
+    Str lengths = "";
+    Str radii = "";
+    Str angles = "";
+    RealNum selected_length = 0;
+    RealNum selected_angle = 0;
+    for (std::vector<RealNum> action: actions) {
+        selected_length += action[0];
+        selected_angle += action[0]/action[1];
+        lengths += std::to_string(action[0]);
+        lengths += ",";
+        radii += std::to_string(action[1]);
+        radii += ",";
+        angles += std::to_string(action[2]);
+        angles += ",";
+        
+    }
+    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << selected_length << "," << selected_angle << "," << elapsed << "," << success << "," << approx_success;
+    fout << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",";
+    fout << "\"[" << lengths << "]\",\"[" << radii << "]\",\"[" << angles << "]\"" << std::endl;
+    
+}
+
+
 
 /**
  * Writes the stats of the planner to the provided file.
