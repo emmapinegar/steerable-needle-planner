@@ -51,6 +51,7 @@ class Node {
     Scalar cost_{0};
     Scalar ang_total_{0};
     Scalar radius_{0};
+    Scalar theta_{0};
 
   public:
     /**
@@ -139,6 +140,14 @@ class Node {
      */
     const Scalar& radius() const {
         return radius_;
+    }
+
+    Scalar& theta() {
+        return theta_;
+    }
+
+    const Scalar& theta() const {
+        return theta_;
     }
 
 

@@ -392,9 +392,14 @@ def get_data(file):
     for i in range(np.shape(next_data)[0]):
         # print(np.shape(next_data[i,:]))
         # print(np.shape(next_action_data[i,0]))
-        if (next_data[i,3] < 3) and (next_data[i,3] > 1):
+        if (next_data[i,3] < 3) and (next_data[i,3] > 0):
             for j in range(np.shape(next_action_data[i,0])[0]):
                 # print(next_action_data[i,1][j])
+                # if next_action_data[i,1][j] < 100000:
+                #     radius_data += [1/(next_action_data[i,1][j]/1000)]
+                # else:
+                #     radius_data += [0]
+
                 for k in range(round(10*next_action_data[i,0][j]/next_data[i,4])):
                     if next_action_data[i,1][j] < 100000:
                         radius_data += [1/(next_action_data[i,1][j]/1000)]
@@ -406,29 +411,55 @@ def get_data(file):
 
     return data, action_data, radius_data  
 
-def max_mean_discrepancy(particles, radius_data, gamma=0.5):
+def max_mean_discrepancy(particles, radius_data, gamma=0.2):
     kparticleparticle = 0
     kparticledata = 0
     kdatadata = 0
-    for i in range(len(particles)):
-        for j in range(len(particles)):
-            if not (j == i):
-                kparticleparticle += np.exp(-gamma*np.linalg.norm(particles[i] - particles[j]))
 
-        for j in range(len(radius_data)):
-            kparticledata += np.exp(-gamma*np.linalg.norm(particles[i] - radius_data[j]))                
+    kparticleparticlegrad = np.zeros((len(particles),))
+    kparticledatagrad = np.zeros((len(particles),))
+    for i in range(len(particles)):
+        ppsub = np.subtract(particles[i], particles)
+        next_kpp = np.exp(-gamma*np.power(ppsub, 2))
+        kparticleparticle += np.sum(next_kpp)
+        kparticleparticlegrad[i] = np.sum(next_kpp*(2*ppsub))
+
+        pradsub = np.subtract(particles[i], radius_data)
+        next_kprad = np.exp(-gamma*np.power(pradsub, 2))
+        kparticledata += np.sum(next_kprad)        
+        kparticledatagrad[i] = np.sum(next_kprad*(2*pradsub))    
 
     for i in range(len(radius_data)):
-        for j in range(len(radius_data)):
-            if not (radius_data[j] == radius_data[i]):
-                # print(f"{radius_data[i]} {radius_data[j]}")
-                kdatadata += np.exp(-gamma*np.linalg.norm(radius_data[i] - radius_data[j]))
+        kdatadata += np.sum(np.exp(-gamma*np.power(np.subtract(radius_data[i],radius_data), 2)))
 
     kparticleparticle = kparticleparticle/((len(particles) - 1)*len(particles))
     kparticledata = 2*kparticledata/(len(particles)*len(radius_data))
     kdatadata = kdatadata/(len(radius_data)*(len(radius_data) - 1))
 
+    kparticleparticlegrad = kparticleparticlegrad/(len(particles)-1)
+    kparticledatagrad = 2*kparticledatagrad/len(radius_data)
+
     mmd = kparticleparticle - kparticledata + kdatadata
+    mmd_grads = np.array(- kparticledatagrad)
+    return mmd, mmd_grads
+
+def max_mean_discrepancy_grad(particles, radius_data, gamma=0.5):
+    kparticleparticle = np.zeros((len(particles),))
+    kparticledata = np.zeros((len(particles),))
+    kdatadata = 0
+    for i in range(len(particles)):
+        kparticleparticle[i] = np.sum(np.exp(-gamma*np.power(np.subtract(particles[i], particles), 2))*(2*np.subtract(particles[i], particles)))
+
+        kparticledata[i] = np.sum(np.exp(-gamma*np.power(np.subtract(particles[i], radius_data), 2))*(2*np.subtract(particles[i], radius_data)))          
+
+    # for i in range(len(radius_data)):
+    #     kdatadata += np.sum(np.exp(-gamma*np.power(np.subtract(radius_data[i],radius_data), 2)))
+
+    kparticleparticle = kparticleparticle/(len(particles) - 1)
+    kparticledata = 2*kparticledata/len(radius_data)
+    # kdatadata = kdatadata/(len(radius_data)*(len(radius_data) - 1))
+
+    mmd = kparticleparticle - kparticledata #+ kdatadata
     return mmd
 
 
@@ -439,10 +470,16 @@ if __name__=='__main__':
     plotter.figure()
     plotter.hist(radius_data, bins='doane', density=True)
     
-    num_particles = [5, 4, 3, 2]
+    num_particles = [3] #, 4, 3, 2]
     colors = ['r', 'darkorange', 'g', 'b', 'blueviolet', 'indigo']
 
-    print(f"primitives: {[0, 15]} mmd: {max_mean_discrepancy([0, 67], radius_data)}")
+    a = np.array([15, 10]).reshape((-1,1))
+    b = np.array([0, 15, 30]).reshape((-1,1)).transpose()
+    print(np.shape(b))
+    print(f"a - b: {np.subtract(a, b)} ||a - b||: {np.power(np.subtract(a, b), 2)}")
+
+    print(f"primitives: {[0, 15]} mmd: {max_mean_discrepancy([0, 20, 67], radius_data)} ")
+
 
     print(f"radius data: {len(radius_data)}")
     for i in range(len(num_particles)):
@@ -451,15 +488,33 @@ if __name__=='__main__':
         codebook.sort()
         print(codebook)
         # print(distortion)
-        plotter.scatter(codebook, 0*codebook + 0.2 + i*0.01, c=colors[i])
-        kmeans_mmd = max_mean_discrepancy(codebook, radius_data)
+        
+        kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(codebook, radius_data)
+        # kmeans_mmd_grad = max_mean_discrepancy_grad(codebook, radius_data)
+        kmeans_clusters = codebook
+        plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=0.1)
 
         bkmeans = BisectingKMeans(n_clusters=num_particles[i]).fit(np.array(radius_data).reshape((-1,1)))
-        plotter.scatter(bkmeans.cluster_centers_, 0*bkmeans.cluster_centers_ + 0.3 + i*0.01, c=colors[i])
-        bkmeans_mmd = max_mean_discrepancy(bkmeans.cluster_centers_, radius_data)
+        plotter.scatter(bkmeans.cluster_centers_, 0*bkmeans.cluster_centers_ + 0.3 + i*0.01, c=colors[i], alpha=0.1)
+        
         bkmeans.cluster_centers_.sort()
-        print(bkmeans.cluster_centers_)
-        print(f"n: {num_particles[i]} kmeans mmd: {kmeans_mmd} bkmeans mmd: {bkmeans_mmd}")
+        bkmeans_centers = np.array(bkmeans.cluster_centers_).reshape((-1,))
+        print(bkmeans_centers)
+        bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, radius_data)
+        # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
+        print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
+
+        
+        for j in range(5):
+            kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
+            plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
+            kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, radius_data)
+
+            bkmeans_centers = bkmeans_centers + bkmeans_mmd_grad
+            plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.3 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
+            bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, radius_data)
+            # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
+            print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans {bkmeans_centers} mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")            
 
     plotter.show()
 

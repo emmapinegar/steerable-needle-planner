@@ -156,6 +156,17 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp,
     return RadiusOfCurvature(sp, sq.normalized() * Vec3::UnitZ(), gp, goal_tolerance);
 }
 
+
+RealNum Theta(const Vec3& sp, const Quat& sq, const Vec3& gp) {
+    Vec3 relative_pos = gp - sp;
+    Quat inv_q = sq.inverse();
+
+    Vec3 p = inv_q*relative_pos;
+    RealNum theta = atan2(p[1], p[0]);
+    return theta;
+}
+
+
 /**
  * Calculates the distance to the center of the center of one of the circles comprising the trumpet boundary.
  * currently limited to checking segments of 180 degrees or less

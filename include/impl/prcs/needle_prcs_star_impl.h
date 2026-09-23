@@ -500,7 +500,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
             actions.reserve(size);
 
             do {
-                actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+                actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
             }
             while ((n = n->parent())->parent() != nullptr);
 
@@ -543,7 +543,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
                 actions.reserve(size);
 
                 do {
-                    actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+                    actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
                 }
                 while ((n = n->parent())->parent() != nullptr);
 
@@ -838,7 +838,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                             goalNode->length() = goalLength;
                             goalNode->cost() = goalCost;
                             goalNode->ang_total() = goalAngle;
-                            goalNode->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                            goalNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                            goalNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
                             planner.foundGoal(goalNode);
                         }
 
@@ -863,14 +864,16 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         transNode->length() = goalLength0;
                         transNode->cost() = goalCost0;
                         transNode->ang_total() = goalAngle0;
-                        transNode->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[0].translation());
+                        transNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[0].translation());
+                        transNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalStates[0].translation());
 
 
                         Node* goalNode = nodePool_.allocate(linkTrajectory(true), transNode, goalStates[1]);
                         goalNode->length() = goalLength1;
                         goalNode->cost() = goalCost1;
                         goalNode->ang_total() = goalAngle1;
-                        goalNode->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[1].translation());
+                        goalNode->radius() = RadiusOfCurvature(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
+                        goalNode->theta() = Theta(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
                         planner.foundGoal(goalNode);
                     }
 
@@ -889,7 +892,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                           + scenario_.FinalStateCost(goalState);
                     (*goalNode)->ang_total() = goalAngle;
-                    (*goalNode)->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                    (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                    (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
                 }
             }
         }
@@ -917,7 +921,8 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             from = planner.propagator_.ComputeStartPose(node->parent()->state(), node->angleIndex());
 
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
-            node->radius () = RadiusOfCurvature(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
+            node->radius() = RadiusOfCurvature(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
+            node->theta() = Theta(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
         }
 
         const bool inheritValidation = node->valid();

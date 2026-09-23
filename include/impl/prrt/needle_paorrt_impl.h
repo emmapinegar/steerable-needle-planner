@@ -448,7 +448,7 @@ class NeedlePAORRT : public PlannerBase<NeedlePAORRT<Scenario, maxThreads, repor
             actions.reserve(size);
 
             do {
-                actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+                actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
             }
             while ((n = n->parent())->parent() != nullptr);
 
@@ -491,7 +491,7 @@ class NeedlePAORRT : public PlannerBase<NeedlePAORRT<Scenario, maxThreads, repor
                 actions.reserve(size);
 
                 do {
-                    actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+                    actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
                 }
                 while ((n = n->parent())->parent() != nullptr);
 
@@ -828,6 +828,7 @@ unbiasedSamplingLoop:
             newNode->cost() = newCost;
             newNode->ang_total() = newAngle;
             newNode->radius() = RadiusOfCurvature(nearNode->state().translation(), nearNode->state().rotation(), newState.translation());
+            newNode->theta() = Theta(nearNode->state().translation(), nearNode->state().rotation(), newState.translation());
             planner.nn_.insert(newNode);
             planner.updateMaxCost(newCost);
 
@@ -853,6 +854,7 @@ unbiasedSamplingLoop:
                                         + scenario_.FinalStateCost(goalState);
                         goalNode->ang_total() = goalAngle;
                         goalNode->radius() = RadiusOfCurvature(newNode->state().translation(), newNode->state().rotation(), goalNode->state().translation());
+                        goalNode->theta() = Theta(newNode->state().translation(), newNode->state().rotation(), goalNode->state().translation());
                         planner.foundGoal(goalNode);
                     }                    
                 }

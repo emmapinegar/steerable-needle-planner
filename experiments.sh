@@ -7,7 +7,7 @@ cd ./build
 seed_array=(8965)
 scan_array=(1)                  # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
 phi_arr=(180)
-rads=(25)
+rads=(50)
 sgs=(1500)
 seed=8965
 scan=1
@@ -72,10 +72,10 @@ do
         # https://www.geeksforgeeks.org/linux-unix/array-basics-shell-scripting-set-2-using-loops/
 
 
-            ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+            # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
             # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            # ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+            # ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+            ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
             # ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
 
             # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi

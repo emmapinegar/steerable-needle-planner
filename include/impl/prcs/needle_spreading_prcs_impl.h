@@ -493,7 +493,7 @@ class NeedleSpreadingPRCS : public
             actions.reserve(size);
 
             do {
-                actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+                actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
             }
             while ((n = n->parent())->parent() != nullptr);
 
@@ -536,7 +536,7 @@ class NeedleSpreadingPRCS : public
                 actions.reserve(size);
 
                 do {
-                    actions.push_back({n->length() - n->parent()->length(), n->radius(), 0.0});
+                    actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
                 }
                 while ((n = n->parent())->parent() != nullptr);
 
@@ -871,6 +871,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
             node->radius () = RadiusOfCurvature(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
+            node->theta() = Theta(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
         }
 
         const bool inheritValidation = node->valid();
@@ -893,7 +894,8 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                             goalNode->length() = goalLength;
                             goalNode->cost() = goalCost;
                             goalNode->ang_total() = goalAngle;
-                            goalNode->radius () = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                            goalNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                            goalNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
                             planner.foundGoal(goalNode);
                         }
                     }
@@ -911,6 +913,8 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                             (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                                 + scenario_.FinalStateCost(goalState);
                             (*goalNode)->ang_total() = goalAngle;
+                            (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                            (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
                         }
                     }
                 }

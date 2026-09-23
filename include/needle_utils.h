@@ -52,6 +52,7 @@ RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp);
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp);
 RealNum RadiusOfCurvature(const Vec3& sp, const Vec3& st, const Vec3& gp, const RealNum& region_radius);
 RealNum RadiusOfCurvature(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& region_radius);
+RealNum Theta(const Vec3& sp, const Quat& sq, const Vec3& gp);
 RealNum DistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
         const RealNum& rad, const RealNum& orientation_tolerance=0);
 RealNum MaxDistanceToTrumpetBoundary(const Vec3& sp, const Vec3& st, const Vec3& gp,
