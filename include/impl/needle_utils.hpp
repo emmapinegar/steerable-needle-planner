@@ -163,9 +163,27 @@ RealNum Theta(const Vec3& sp, const Quat& sq, const Vec3& gp) {
 
     Vec3 p = inv_q*relative_pos;
     RealNum theta = atan2(p[1], p[0]);
+    if (theta < 0) {
+        theta += 2*M_PI;
+    }
     return theta;
 }
 
+void VerifyAction(const Vec3& sp, const Quat& sq, const Vec3& gp, const RealNum& ell, const RealNum& radius, const RealNum& theta) {
+    Quat zq(AngleAxis(theta, (sq*Vec3::UnitZ()).normalized()));
+    Quat iq = (zq*sq).normalized();
+
+    Vec3 center = sp + radius*(iq*Vec3::UnitX()).normalized();
+    Quat moveq(AngleAxis(ell/radius, (iq*Vec3::UnitY()).normalized()));
+    Vec3 result_p = moveq*(sp - center) + center;
+    Vec3 diff = gp - result_p;
+    if (diff.norm() > 0.0001) {
+        std::cout << "l: " << ell << " r: " << radius << " theta: " << theta << std::endl;
+        std::cout << "center: " << center.transpose() << " parent x: " << (sq*Vec3::UnitX()).transpose() << " x: " << (iq*Vec3::UnitX()).transpose() << std::endl;
+        std::cout<< "parent: " << sp.transpose() << "\tn: " << gp.transpose() << "\ttest: " << result_p.transpose() << std::endl;
+        throw std::runtime_error("Action does not result in desired location ");
+    }   
+}
 
 /**
  * Calculates the distance to the center of the center of one of the circles comprising the trumpet boundary.
@@ -1154,7 +1172,7 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
     }
 
 
-    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
+    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
     fout.close();
 
     std::cout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << std::endl;

@@ -494,6 +494,7 @@ class NeedleSpreadingPRCS : public
 
             do {
                 actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
             }
             while ((n = n->parent())->parent() != nullptr);
 
@@ -537,6 +538,7 @@ class NeedleSpreadingPRCS : public
 
                 do {
                     actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                    VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
                 }
                 while ((n = n->parent())->parent() != nullptr);
 
@@ -862,6 +864,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex());
 
             if (!propagated) {
+                Stats::countInvalidNode();
                 recycle(node);
                 return;
             }
@@ -871,12 +874,13 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
             node->radius () = RadiusOfCurvature(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
-            node->theta() = Theta(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
+            node->theta() = planner.propagator_.AngleDiff(node->angleIndex()); //Theta(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
         }
 
         const bool inheritValidation = node->valid();
         if (validNode(planner, node)) {
             if (auto traj = validMotion(planner, node, from)) {
+                Stats::countValidNode();
                 auto [isGoal, goalDist, goalState] = scenario_goal<Scenario>::check(scenario_, node->state());
 
                 if (isGoal) {
@@ -886,6 +890,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
                     if (scenario_.valid(goalState, goalLength, goalAngle)) {
                         if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
+                            Stats::countValidNode();
                             auto const& goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                                 + scenario_.FinalStateCost(goalState);
                                                 
@@ -897,7 +902,11 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                             goalNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
                             goalNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
                             planner.foundGoal(goalNode);
+                        } else {
+                            Stats::countInvalidNode();
                         }
+                    } else {
+                        Stats::countInvalidNode();
                     }
                 }
                 else if (!planner.solved() && goalDist < bestDist_) {
@@ -905,23 +914,34 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
 
                     if (scenario_.valid(goalState, goalLength, goalAngle)) {
-                        bestDist_ = goalDist;
-                        auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
+                        if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
+                            Stats::countValidNode();
+                            bestDist_ = goalDist;
+                            auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
 
-                        if (goalNode) {
-                            (*goalNode)->length() = goalLength;
-                            (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
-                                                + scenario_.FinalStateCost(goalState);
-                            (*goalNode)->ang_total() = goalAngle;
-                            (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
-                            (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
+                            if (goalNode) {
+                                (*goalNode)->length() = goalLength;
+                                (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
+                                                    + scenario_.FinalStateCost(goalState);
+                                (*goalNode)->ang_total() = goalAngle;
+                                (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                                (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
+                            }
+                        } else {
+                            Stats::countInvalidNode();
                         }
+                    } else {
+                        Stats::countInvalidNode();
                     }
                 }
 
                 expand(planner, node);
                 closed_.push_back(node);
+            } else {
+                Stats::countInvalidNode();
             }
+        } else {
+            Stats::countInvalidNode();
         }
 
         if (node->parent()) {

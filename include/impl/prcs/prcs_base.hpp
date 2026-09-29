@@ -71,11 +71,15 @@ struct WorkerStats<false> {
 
 template <>
 struct WorkerStats<true> {
+    mutable std::size_t invalidNodes_{0};
+    mutable std::size_t validNodes_{0};
     mutable std::size_t iterations_{0};
     mutable std::size_t addedStart_{0};
     mutable TimerStat<> validMotion_;
     mutable TimerStat<> nearest_;
 
+    void countInvalidNode() const { ++invalidNodes_; }
+    void countValidNode() const { ++validNodes_; }
     void countIteration() const { ++iterations_; }
     void countAddedStart() const { ++addedStart_; }
 
@@ -88,6 +92,8 @@ struct WorkerStats<true> {
      * @param other: the worker with stats to add to this worker
      */
     WorkerStats& operator += (const WorkerStats& other) {
+        invalidNodes_ += other.invalidNodes_;
+        validNodes_ += other.validNodes_;
         iterations_ += other.iterations_;
         addedStart_ += other.addedStart_;
         validMotion_ += other.validMotion_;
@@ -100,6 +106,7 @@ struct WorkerStats<true> {
      */
     void print() const {
         MPT_LOG(INFO) << "iterations: " << iterations_;
+        MPT_LOG(INFO) << "valid nodes: " << validNodes_ << " invalid nodes: " << invalidNodes_;
         MPT_LOG(INFO) << "added start states: " << addedStart_;
         MPT_LOG(INFO) << "valid motion: " << validMotion_;
         MPT_LOG(INFO) << "nearest: " << nearest_;

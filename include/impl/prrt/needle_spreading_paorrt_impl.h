@@ -114,19 +114,21 @@ class NeedleSpreadingPAORRT : public
      * @param node: the node that approximately reached the goal
      * @param dist: the distance between the node state and the goal state
      */
-    void foundApproxGoal(Node* node, Distance* dist) {
+    std::optional<Node*> foundApproxGoal(Node* node, const State& goalState, ObjectPool<Node>& nodePool, Distance* dist) {
         {
             std::lock_guard<std::mutex> lock(mutex_);
 
             if (*dist < bestDist_) {
                 MPT_LOG(INFO) << "update approximate solution with dist " << *dist;
                 bestDist_ = *dist;
-                approxRes_ = node;
+                approxRes_ = nodePool.allocate(linkTrajectory(true), node, goalState);
+                return approxRes_;
             }
             else if (*dist > bestDist_) {
                 *dist = bestDist_;
             }
         }
+        return {};
     }
 
     /**
@@ -444,6 +446,7 @@ class NeedleSpreadingPAORRT : public
 
             do {
                 actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
             }
             while ((n = n->parent())->parent() != nullptr);
 
@@ -487,6 +490,7 @@ class NeedleSpreadingPAORRT : public
 
                 do {
                     actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                    VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
                 }
                 while ((n = n->parent())->parent() != nullptr);
 
@@ -826,6 +830,7 @@ unbiasedSamplingLoop:
      */
     void addSample(Planner& planner, State& randState) {
         if (scenario_.collision(randState)) {
+            Stats::countInvalidNode();
             return;
         }
 
@@ -851,6 +856,7 @@ unbiasedSamplingLoop:
         auto propagated = propagator_(nearNode->state(), randState, rng_);
 
         if (!propagated) {
+            Stats::countInvalidNode();
             return;
         }
 
@@ -860,6 +866,7 @@ unbiasedSamplingLoop:
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
         if (!scenario_.valid(newState, newLength, newAngle)) {
+            Stats::countInvalidNode();
             return;
         }
 
@@ -867,6 +874,7 @@ unbiasedSamplingLoop:
         newState.cost() = newCost;
 
         if (auto traj = validMotion(nearNode->state(), newState)) {
+            Stats::countValidNode();
             auto [isGoal, goalDist, goalState] = scenario_goal<Scenario>::check(scenario_, newState);
 
             Node* newNode = nodePool_.allocate(linkTrajectory(traj), nearNode, newState);
@@ -883,38 +891,59 @@ unbiasedSamplingLoop:
                     auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                     auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 
-                    if (!scenario_.valid(goalLength)) {
+                    if (scenario_.valid(goalState, goalLength, goalAngle)) {
+                        auto const& goalCost = newNode->cost()
+                                            + scenario_.CurveCost(newState, goalState)
+                                            + scenario_.FinalStateCost(goalState);
+
+                        if (snp::IsTheSameState(goalState, newState)) {
+                            planner.foundGoal(newNode);
+                        }
+                        else {
+                            Stats::countValidNode();
+                            Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
+                            goalNode->length() = goalLength;
+                            goalNode->cost() = goalCost;
+                            goalNode->ang_total() = goalAngle;
+                            goalNode->radius() = RadiusOfCurvature(newNode->state().translation(), newNode->state().rotation(), goalNode->state().translation());
+                            goalNode->theta() = Theta(newNode->state().translation(), newNode->state().rotation(), goalNode->state().translation());
+                            planner.foundGoal(goalNode);
+                        }
+                    } else {
+                        Stats::countInvalidNode();
                         return;
                     }
-
-                    auto const& goalCost = newNode->cost()
-                                        + scenario_.CurveCost(newState, goalState)
-                                        + scenario_.FinalStateCost(goalState);
-
-                    if (snp::IsTheSameState(goalState, newState)) {
-                        planner.foundGoal(newNode);
-                    }
-                    else {
-                        Node* goalNode = nodePool_.allocate(linkTrajectory(traj), newNode, goalState);
-                        goalNode->length() = goalLength;
-                        goalNode->cost() = goalCost;
-                        goalNode->ang_total() = goalAngle;
-                        goalNode->radius() = RadiusOfCurvature(newNode->state().translation(), newNode->state().rotation(), goalNode->state().translation());
-                        goalNode->theta() = Theta(newNode->state().translation(), newNode->state().rotation(), goalNode->state().translation());
-                        planner.foundGoal(goalNode);
-                    }
+                } else {
+                    Stats::countInvalidNode();
                 }
             }
             else if (!planner.solved() && goalDist < bestDist_) {
-                auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
+                if (auto traj = validMotion(newNode->state(), goalState)) {
+                    auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
+                    auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
 
-                if (!scenario_.valid(goalLength)) {
-                    return;
+                    if (scenario_.valid(goalState, goalLength, goalAngle)) {
+                        Stats::countValidNode();
+                        bestDist_ = goalDist;
+                        auto goalNode = planner.foundApproxGoal(newNode, goalState, nodePool_, &bestDist_);
+                        if (goalNode) {
+                            (*goalNode)->length() = goalLength;
+                            (*goalNode)->cost() = newNode->cost() + scenario_.CurveCost(newNode->state(), goalState)
+                                                + scenario_.FinalStateCost(goalState);
+                            (*goalNode)->ang_total() = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                            (*goalNode)->radius() = RadiusOfCurvature(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
+                            (*goalNode)->theta() = Theta(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
+                        }
+                    } else {
+                        Stats::countInvalidNode();
+                        return;
+                    }
+                } else {
+                    Stats::countInvalidNode();
                 }
-
-                bestDist_ = goalDist;
-                planner.foundApproxGoal(newNode, &bestDist_);
             }
+        } else {
+            Stats::countInvalidNode();
         }
     }
 

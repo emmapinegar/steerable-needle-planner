@@ -501,6 +501,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
             do {
                 actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
             }
             while ((n = n->parent())->parent() != nullptr);
 
@@ -544,6 +545,7 @@ class NeedlePRCSStar : public PlannerBase<NeedlePRCSStar<Scenario, maxThreads, r
 
                 do {
                     actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                    VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
                 }
                 while ((n = n->parent())->parent() != nullptr);
 
@@ -829,6 +831,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
+                        Stats::countValidNode();
                         auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                             + scenario_.FinalStateCost(goalState);
                         if (goalCost < planner.bestCost_) {
@@ -844,7 +847,11 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         }
 
                         return true;
+                    } else {
+                        Stats::countInvalidNode();
                     }
+                } else {
+                    Stats::countInvalidNode();
                 }
             
             }
@@ -855,28 +862,39 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto const goalAngle0 = node->ang_total() + DirectionDifference(node->state().rotation(), goalStates[0].rotation());
                 auto const goalAngle1 = goalAngle0 + DirectionDifference(goalStates[0].rotation(), goalStates[1].rotation());
                 if (scenario_.valid(goalStates[1], goalLength1, goalAngle1)) {
-                    auto const goalCost0 = node->cost() + scenario_.CurveCost(node->state(), goalStates[0]);
-                    auto const goalCost1 = goalCost0 + scenario_.CurveCost(goalStates[0], goalStates[1])
-                                         + scenario_.FinalStateCost(goalStates[1]);
+                    if (scenario_.validator().ValidMotion(node->state(), goalStates[0], scenario_.Config())) {
+                        Stats::countValidNode();
+                        if (scenario_.validator().ValidMotion(goalStates[0], goalStates[1], scenario_.Config())) {
+                            Stats::countValidNode();
+                            auto const goalCost0 = node->cost() + scenario_.CurveCost(node->state(), goalStates[0]);
+                            auto const goalCost1 = goalCost0 + scenario_.CurveCost(goalStates[0], goalStates[1])
+                                                + scenario_.FinalStateCost(goalStates[1]);
 
-                    if (goalCost1 < planner.bestCost_) {
-                        Node* transNode = nodePool_.allocate(linkTrajectory(true), node, goalStates[0]);
-                        transNode->length() = goalLength0;
-                        transNode->cost() = goalCost0;
-                        transNode->ang_total() = goalAngle0;
-                        transNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[0].translation());
-                        transNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalStates[0].translation());
+                            if (goalCost1 < planner.bestCost_) {
+                                Node* transNode = nodePool_.allocate(linkTrajectory(true), node, goalStates[0]);
+                                transNode->length() = goalLength0;
+                                transNode->cost() = goalCost0;
+                                transNode->ang_total() = goalAngle0;
+                                transNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[0].translation());
+                                transNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalStates[0].translation());
 
 
-                        Node* goalNode = nodePool_.allocate(linkTrajectory(true), transNode, goalStates[1]);
-                        goalNode->length() = goalLength1;
-                        goalNode->cost() = goalCost1;
-                        goalNode->ang_total() = goalAngle1;
-                        goalNode->radius() = RadiusOfCurvature(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
-                        goalNode->theta() = Theta(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
-                        planner.foundGoal(goalNode);
+                                Node* goalNode = nodePool_.allocate(linkTrajectory(true), transNode, goalStates[1]);
+                                goalNode->length() = goalLength1;
+                                goalNode->cost() = goalCost1;
+                                goalNode->ang_total() = goalAngle1;
+                                goalNode->radius() = RadiusOfCurvature(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
+                                goalNode->theta() = Theta(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
+                                planner.foundGoal(goalNode);
+                            }
+                        } else {
+                            Stats::countInvalidNode();
+                        }
+                    } else {
+                        Stats::countInvalidNode();
                     }
-
+                } else {
+                    Stats::countInvalidNode();
                 }
             }
         }
@@ -885,16 +903,23 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
             auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
             if (scenario_.valid(goalState, goalLength, goalAngle)) {
-                bestDist_ = goalDist;
-                auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
-                if (goalNode) {
-                    (*goalNode)->length() = goalLength;
-                    (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
-                                          + scenario_.FinalStateCost(goalState);
-                    (*goalNode)->ang_total() = goalAngle;
-                    (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
-                    (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
+                if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
+                    Stats::countValidNode();
+                    bestDist_ = goalDist;
+                    auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
+                    if (goalNode) {
+                        (*goalNode)->length() = goalLength;
+                        (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
+                                            + scenario_.FinalStateCost(goalState);
+                        (*goalNode)->ang_total() = goalAngle;
+                        (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                        (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
+                    }
+                } else {
+                    Stats::countInvalidNode();
                 }
+            } else {
+                Stats::countInvalidNode();
             }
         }
 
@@ -922,7 +947,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
             node->radius() = RadiusOfCurvature(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
-            node->theta() = Theta(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
+            node->theta() = planner.propagator_.AngleDiff(node->angleIndex());//Theta(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
         }
 
         const bool inheritValidation = node->valid();
@@ -930,6 +955,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
         if (!inevitableCollision && validNode(planner, node)) {
             if (auto traj = validMotion(planner, node, from)) {
+                Stats::countValidNode();
                 auto const validResult = checkTerminateCondition(planner, node);
 
                 if (done()) {
@@ -952,7 +978,11 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     expand(planner, node);
                     closed_.push_back(node);
                 }
+            } else {
+                Stats::countInvalidNode();
             }
+        } else {
+            Stats::countInvalidNode();
         }
 
         if (!node->parent()) {

@@ -430,6 +430,7 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
             do {
                 actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
             }
             while ((n = n->parent())->parent() != nullptr);
 
@@ -473,6 +474,8 @@ class NeedlePRRT : public PlannerBase<NeedlePRRT<Scenario, maxThreads, reportSta
 
                 do {
                     actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                    VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
+                    
                 }
                 while ((n = n->parent())->parent() != nullptr);
 
@@ -764,6 +767,7 @@ unbiasedSamplingLoop:
      */
     void addSample(Planner& planner, State& randState) {
         if (scenario_.collision(randState)) {
+            Stats::countInvalidNode();
             return;
         }
 
@@ -778,6 +782,7 @@ unbiasedSamplingLoop:
         auto propagated = propagator_(nearNode->state(), randState, rng_);
 
         if (!propagated) {
+            Stats::countInvalidNode();
             return;
         }
 
@@ -788,10 +793,12 @@ unbiasedSamplingLoop:
         auto const& newAngle  = nearNode->ang_total() + DirectionDifference(nearNode->state().rotation(), newState.rotation());
 
         if (!scenario_.valid(newState, newLength, newAngle)) {
+            Stats::countInvalidNode();
             return;
         }
 
         if (auto traj = validMotion(nearNode->state(), newState)) {
+            Stats::countValidNode();
             // std::cout << "p: " << newState.translation().transpose() << " ell: " << newLength << " old: " << nearNode->length() << std::endl;
             auto [isGoal, goalDist, goalStates] = scenario_goal<Scenario>::check(scenario_, newState);
             auto const& goalState = goalStates[0];
@@ -805,13 +812,12 @@ unbiasedSamplingLoop:
             planner.nn_.insert(newNode);
 
             if (isGoal) {
-                if (auto traj = validMotion(newState, goalState))
-                {
-                    // auto const& goalCurvature = scenario_.curvature(goalState);
-                    auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
-
-                    auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
-                    if (scenario_.valid(goalState, goalLength, goalAngle)) {
+                // auto const& goalCurvature = scenario_.curvature(goalState);
+                auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
+                auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                if (scenario_.valid(goalState, goalLength, goalAngle)) {
+                    if (auto traj = validMotion(newState, goalState)) {
+                        Stats::countValidNode();
                         auto const& goalCost = newNode->cost() + scenario_.CurveCost(newState, goalState)
                                                 + scenario_.FinalStateCost(goalState);
 
@@ -824,7 +830,11 @@ unbiasedSamplingLoop:
                             goalNode->theta() = Theta(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
                             planner.foundGoal(goalNode);
                         }
+                    } else {
+                        Stats::countInvalidNode();
                     }
+                } else {
+                    Stats::countInvalidNode();
                 }
             }
             else if (!planner.solved() && goalDist < bestDist_) {
@@ -832,18 +842,27 @@ unbiasedSamplingLoop:
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 auto const goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
-
-                    bestDist_ = goalDist;
-                    auto goalNode = planner.foundApproxGoal(newNode, goalState, nodePool_, &bestDist_);
-                    if (goalNode) {
-                        (*goalNode)->length() = goalLength;
-                        (*goalNode)->cost() = newNode->cost() + scenario_.CurveCost(newNode->state(), goalState)
-                                              + scenario_.FinalStateCost(goalState);
-                        (*goalNode)->ang_total() = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
-                        (*goalNode)->radius() = RadiusOfCurvature(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
+                    if (auto traj = validMotion(newState, goalState)) {
+                        Stats::countValidNode();
+                        bestDist_ = goalDist;
+                        auto goalNode = planner.foundApproxGoal(newNode, goalState, nodePool_, &bestDist_);
+                        if (goalNode) {
+                            (*goalNode)->length() = goalLength;
+                            (*goalNode)->cost() = newNode->cost() + scenario_.CurveCost(newNode->state(), goalState)
+                                                + scenario_.FinalStateCost(goalState);
+                            (*goalNode)->ang_total() = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
+                            (*goalNode)->radius() = RadiusOfCurvature(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
+                            (*goalNode)->theta() = Theta(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
+                        }
+                    } else {
+                        Stats::countInvalidNode();
                     }
+                } else {
+                    Stats::countInvalidNode();
                 }
             }
+        } else {
+            Stats::countInvalidNode();
         }
     }
 

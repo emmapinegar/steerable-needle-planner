@@ -399,7 +399,7 @@ RealNum GetCurvatureLim(const Vec3& p, const Vec3& skull_point, const Vec3& norm
 
     auto r_outer = r_hat * r_hat.transpose();                                                               // from https://stackoverflow.com/questions/74199536/computing-the-outer-product-of-two-vectors-in-eigen-c
     Vec3 needle_mag = sq.normalized() * Vec3::UnitZ();
-    Vec3 manip_mag = normal_vec.cross(needle_mag);
+    Vec3 manip_mag = -normal_vec.cross(needle_mag);
 
     auto r_mat = 3 * r_outer - Eigen::Matrix3d::Identity();
 

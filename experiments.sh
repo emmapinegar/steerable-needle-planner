@@ -7,82 +7,87 @@ cd ./build
 seed_array=(8965)
 scan_array=(1)                  # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
 phi_arr=(180)
-rads=(50)
-sgs=(1500)
+rads=(15 25 50 100)
+sgs=(1500 1550 1600 1650 1700 1750 1800 1850 1900 1950)
 seed=8965
 scan=1
 ell=100
 timeout=100000
-multi_timeout=1000
+multi_timeout=10000
 bias=0.05
-num_sg=500
+num_sg=50
 stats_file="./../data/output/planner_stats.txt"
-multi_stats_file="./../data/output/planner_stats_multi_test_new.txt"
-test_file="./../data/output/planner_stats_multi_debug.txt"
+multi_file="./../data/output/planner_stats_multi.txt"
+test_file="./../data/output/planner_stats_multi_test.txt"
 i=0
+test_sg_pairs=false
 
-# for j in ${scan_array[@]}
-# do
+# run tests to check that all sg pairs work with planner checks
+if [$test_sg_pairs]; then
+    for j in ${scan_array[@]}
+    do
 
-#     for i in {1500..2000..500}
-#     do
-#         echo ""
-#         echo "seed $i scan $j start $k"
-#         echo ""
- 
-#         # ./app/rrt -seed 8965 -scan $j -r 250 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index $i -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-#         # ./app/rrt -seed 8965 -scan $j -r 100 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 1500 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-#         # ./app/rrt -seed 8965 -scan $j -r 50 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 1000 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-#         # ./app/rrt -seed 8965 -scan $j -r 25 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 500 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-#         # ./app/rrt -seed 8965 -scan $j -r 15 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 0 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-        
-#     done
-# done
+        for i in {1500..2000..500}
+        do
+            echo ""
+            echo "seed $i scan $j start $k"
+            echo ""
+    
+            # ./app/rrt -seed 8965 -scan $j -r 250 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index $i -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            # ./app/rrt -seed 8965 -scan $j -r 100 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 1500 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            # ./app/rrt -seed 8965 -scan $j -r 50 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 1000 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            # ./app/rrt -seed 8965 -scan $j -r 25 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 500 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            # ./app/rrt -seed 8965 -scan $j -r 15 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 0 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            
+        done
+    done
 
 
 
-# for j in ${scan_array[@]}
-# do
+    for j in ${scan_array[@]}
+    do
 
-#     for i in ${seed_array[@]}
-#     do
-#         echo ""
-#         echo "seed $i scan $j start $k"
-#         echo ""
- 
-#         ./app/rrt -seed 8965 -scan $j -r 250 -l 100 -phi 90 -timeout 100000 -bias 0.05 -sg_index 2341 -num_sg 1 -stats_file "./../data/output/planner_stats.txt"
-#         # ./app/rrt -seed 8965 -scan $j -r 100 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 1500 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-#         # ./app/rrt -seed 8965 -scan $j -r 50 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 1000 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-#         # ./app/rrt -seed 8965 -scan $j -r 25 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 500 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-#         # ./app/rrt -seed 8965 -scan $j -r 15 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 0 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
-        
-#     done
-# done
-
+        for i in ${seed_array[@]}
+        do
+            echo ""
+            echo "seed $i scan $j start $k"
+            echo ""
+    
+            ./app/rrt -seed 8965 -scan $j -r 250 -l 100 -phi 90 -timeout 100000 -bias 0.05 -sg_index 2341 -num_sg 1 -stats_file "./../data/output/planner_stats.txt"
+            # ./app/rrt -seed 8965 -scan $j -r 100 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 1500 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            # ./app/rrt -seed 8965 -scan $j -r 50 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 1000 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            # ./app/rrt -seed 8965 -scan $j -r 25 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 500 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            # ./app/rrt -seed 8965 -scan $j -r 15 -l 100 -phi 90 -timeout 10 -bias 0.05 -sg_index 0 -num_sg 500 -stats_file "./../data/output/planner_stats.txt"
+            
+        done
+    done
+fi
 
 for j in ${scan_array[@]}
 do
 
     for ((i=0;i<${#rads[@]};i++));  
     do
-        echo ""
-        echo "seed $i scan $j radius ${rads[$i]}"
-        echo ""
- 
-        # https://www.geeksforgeeks.org/linux-unix/array-basics-shell-scripting-set-2-using-loops/
+        for ((k=0;k<${#sgs[@]};k++));
+        do
+            echo ""
+            echo "seed $i scan $j radius ${rads[$i]}"
+            echo ""
+    
+            # https://www.geeksforgeeks.org/linux-unix/array-basics-shell-scripting-set-2-using-loops/
 
 
-            # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            # ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-            # ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+                ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+                ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+                ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+                ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+                ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
 
-            # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi
-            # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi
-            # ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi
-            # ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi
-
+                # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi
+                # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi
+                # ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi
+                # ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -multi
+        done
 
     done  
 

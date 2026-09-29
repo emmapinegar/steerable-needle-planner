@@ -355,7 +355,7 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
             MPT_LOG(INFO) << "approximate solution";
         }
 
-        planner.printSolutionActions();
+        // planner.printSolutionActions();
 
         path = planner.solution();
         cost = planner.cost();

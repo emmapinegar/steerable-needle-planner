@@ -496,16 +496,17 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
         if (n) {
             
-            std::cout << propagator_.AngleDiff(0) << " " << propagator_.AngleDiff(1) << " " << propagator_.AngleDiff(2) << " " << propagator_.AngleDiff(3) << std::endl;
-            std::cout << propagator_.AngleDiff(4) << " " << propagator_.AngleDiff(5) << " " << propagator_.AngleDiff(6) << " " << propagator_.AngleDiff(7) << std::endl;
-            std::cout << propagator_.AngleDiff(8) << " " << propagator_.AngleDiff(9) << " " << propagator_.AngleDiff(10) << " " << propagator_.AngleDiff(11) << " " << propagator_.AngleDiff(12) << " " << propagator_.AngleDiff(13) << " " << propagator_.AngleDiff(14) << " " << propagator_.AngleDiff(15) << std::endl;
-            std::cout << propagator_.AngleDiff(16) << " " << propagator_.AngleDiff(17) << " " << propagator_.AngleDiff(18) << " " << propagator_.AngleDiff(19) << " " << propagator_.AngleDiff(20) << " " << propagator_.AngleDiff(21) << " " << propagator_.AngleDiff(22) << " " << propagator_.AngleDiff(23) << " " << propagator_.AngleDiff(24) << " " << propagator_.AngleDiff(25) << " " << propagator_.AngleDiff(26) << " " << propagator_.AngleDiff(27) << " " << propagator_.AngleDiff(28) << " " << propagator_.AngleDiff(29) << " " << propagator_.AngleDiff(30) << " " << propagator_.AngleDiff(31) << std::endl;
-            std::cout << propagator_.AngleDiff(32) << " " << propagator_.AngleDiff(33) << " " << propagator_.AngleDiff(34) << " " << propagator_.AngleDiff(35) << " " << propagator_.AngleDiff(36) << " " << propagator_.AngleDiff(37) << " " << propagator_.AngleDiff(38) << " " << propagator_.AngleDiff(39) << " " << propagator_.AngleDiff(40) << " " << propagator_.AngleDiff(41) << " " << propagator_.AngleDiff(42) << " " << propagator_.AngleDiff(43) << " " << propagator_.AngleDiff(44) << " " << propagator_.AngleDiff(45) << " " << propagator_.AngleDiff(46) << " " << propagator_.AngleDiff(47) << " " << propagator_.AngleDiff(48) << " " << propagator_.AngleDiff(49) << " " << propagator_.AngleDiff(50) << " " << propagator_.AngleDiff(51) << " " << propagator_.AngleDiff(52) << " " << propagator_.AngleDiff(53) << " " << propagator_.AngleDiff(54) << " " << propagator_.AngleDiff(55) << " " << propagator_.AngleDiff(56) << " " << propagator_.AngleDiff(57) << " " << propagator_.AngleDiff(58) << " " << propagator_.AngleDiff(59) << " " << propagator_.AngleDiff(60) << " " << propagator_.AngleDiff(61) << " " << propagator_.AngleDiff(62) << " " << propagator_.AngleDiff(63) << std::endl; 
+            // std::cout << propagator_.AngleDiff(0) << " " << propagator_.AngleDiff(1) << " " << propagator_.AngleDiff(2) << " " << propagator_.AngleDiff(3) << std::endl;
+            // std::cout << propagator_.AngleDiff(4) << " " << propagator_.AngleDiff(5) << " " << propagator_.AngleDiff(6) << " " << propagator_.AngleDiff(7) << std::endl;
+            // std::cout << propagator_.AngleDiff(8) << " " << propagator_.AngleDiff(9) << " " << propagator_.AngleDiff(10) << " " << propagator_.AngleDiff(11) << " " << propagator_.AngleDiff(12) << " " << propagator_.AngleDiff(13) << " " << propagator_.AngleDiff(14) << " " << propagator_.AngleDiff(15) << std::endl;
+            // std::cout << propagator_.AngleDiff(16) << " " << propagator_.AngleDiff(17) << " " << propagator_.AngleDiff(18) << " " << propagator_.AngleDiff(19) << " " << propagator_.AngleDiff(20) << " " << propagator_.AngleDiff(21) << " " << propagator_.AngleDiff(22) << " " << propagator_.AngleDiff(23) << " " << propagator_.AngleDiff(24) << " " << propagator_.AngleDiff(25) << " " << propagator_.AngleDiff(26) << " " << propagator_.AngleDiff(27) << " " << propagator_.AngleDiff(28) << " " << propagator_.AngleDiff(29) << " " << propagator_.AngleDiff(30) << " " << propagator_.AngleDiff(31) << std::endl;
+            // std::cout << propagator_.AngleDiff(32) << " " << propagator_.AngleDiff(33) << " " << propagator_.AngleDiff(34) << " " << propagator_.AngleDiff(35) << " " << propagator_.AngleDiff(36) << " " << propagator_.AngleDiff(37) << " " << propagator_.AngleDiff(38) << " " << propagator_.AngleDiff(39) << " " << propagator_.AngleDiff(40) << " " << propagator_.AngleDiff(41) << " " << propagator_.AngleDiff(42) << " " << propagator_.AngleDiff(43) << " " << propagator_.AngleDiff(44) << " " << propagator_.AngleDiff(45) << " " << propagator_.AngleDiff(46) << " " << propagator_.AngleDiff(47) << " " << propagator_.AngleDiff(48) << " " << propagator_.AngleDiff(49) << " " << propagator_.AngleDiff(50) << " " << propagator_.AngleDiff(51) << " " << propagator_.AngleDiff(52) << " " << propagator_.AngleDiff(53) << " " << propagator_.AngleDiff(54) << " " << propagator_.AngleDiff(55) << " " << propagator_.AngleDiff(56) << " " << propagator_.AngleDiff(57) << " " << propagator_.AngleDiff(58) << " " << propagator_.AngleDiff(59) << " " << propagator_.AngleDiff(60) << " " << propagator_.AngleDiff(61) << " " << propagator_.AngleDiff(62) << " " << propagator_.AngleDiff(63) << std::endl; 
             actions.reserve(size);
 
             do {
                 actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
-                std::cout << "l: " << n->length() - n->parent()->length() << " r: " << n->radius() << " theta: " << n->theta() << " " << n->angleIndex() << " " << propagator_.AngleDiff(n->angleIndex()) << std::endl;
+                VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
+                // std::cout << "l: " << n->length() - n->parent()->length() << " r: " << n->radius() << " theta: " << n->theta() << " " << n->angleIndex() << " " << propagator_.AngleDiff(n->angleIndex()) << std::endl;
             }
             while ((n = n->parent())->parent() != nullptr);
 
@@ -525,13 +526,13 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
             std::cout << "l: " << action.at(0) << " r: " << action.at(1) << " theta: " << action.at(2) << std::endl;
         }
 
-        std::vector<std::vector<std::vector<RealNum>>> allActions = allSolutionsActions();
-        for (std::vector<std::vector<RealNum>> nextSolution: allActions) {
-            std::cout << " " << std::endl;
-            for (std::vector<RealNum> action: nextSolution) {
-                std::cout << "l: " << action.at(0) << " r: " << action.at(1) << " theta: " << action.at(2) << std::endl;
-            } 
-        }
+        // std::vector<std::vector<std::vector<RealNum>>> allActions = allSolutionsActions();
+        // for (std::vector<std::vector<RealNum>> nextSolution: allActions) {
+        //     std::cout << " " << std::endl;
+        //     for (std::vector<RealNum> action: nextSolution) {
+        //         std::cout << "l: " << action.at(0) << " r: " << action.at(1) << " theta: " << action.at(2) << std::endl;
+        //     } 
+        // }
     }    
 
     /**
@@ -551,6 +552,7 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
 
                 do {
                     actions.push_back({n->length() - n->parent()->length(), n->radius(), n->theta()});
+                    VerifyAction(n->parent()->state().translation(), n->parent()->state().rotation(), n->state().translation(), n->length() - n->parent()->length(), n->radius(), n->theta());
                 }
                 while ((n = n->parent())->parent() != nullptr);
 
@@ -837,7 +839,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
-                        
+                        Stats::countValidNode();
                         auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                             + scenario_.FinalStateCost(goalState);
                         if (goalCost < planner.bestCost_) {
@@ -851,12 +853,13 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                             planner.foundGoal(goalNode);
                         }                        
                         return true;
+                    } else {
+                        Stats::countInvalidNode();
                     }
-
-
                     return true;
-                }
-                
+                } else {
+                    Stats::countInvalidNode();
+                } 
             }
             else {
                 auto const goalLength0 = node->length() + snp::CurveLength(node->state(), goalStates[0]);
@@ -865,27 +868,38 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto const goalAngle0 = node->ang_total() + DirectionDifference(node->state().rotation(), goalStates[0].rotation());
                 auto const goalAngle1 = goalAngle0 + DirectionDifference(goalStates[0].rotation(), goalStates[1].rotation());
                 if (scenario_.valid(goalStates[1], goalLength1, goalAngle1)) {
-                    auto const goalCost0 = node->cost() + scenario_.CurveCost(node->state(), goalStates[0]);
-                    auto const goalCost1 = goalCost0 + scenario_.CurveCost(goalStates[0], goalStates[1])
-                                         + scenario_.FinalStateCost(goalStates[1]);
+                    if (scenario_.validator().ValidMotion(node->state(), goalStates[0], scenario_.Config())) {
+                        Stats::countValidNode();
+                        if (scenario_.validator().ValidMotion(goalStates[0], goalStates[1], scenario_.Config())) {
+                            Stats::countValidNode();
+                            auto const goalCost0 = node->cost() + scenario_.CurveCost(node->state(), goalStates[0]);
+                            auto const goalCost1 = goalCost0 + scenario_.CurveCost(goalStates[0], goalStates[1])
+                                                + scenario_.FinalStateCost(goalStates[1]);
 
-                    if (goalCost1 < planner.bestCost_) {
-                        Node* transNode = nodePool_.allocate(linkTrajectory(true), node, goalStates[0]);
-                        transNode->length() = goalLength0;
-                        transNode->cost() = goalCost0;
-                        transNode->ang_total() = goalAngle0;
-                        transNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[0].translation());
-                        transNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalStates[0].translation());
+                            if (goalCost1 < planner.bestCost_) {
+                                Node* transNode = nodePool_.allocate(linkTrajectory(true), node, goalStates[0]);
+                                transNode->length() = goalLength0;
+                                transNode->cost() = goalCost0;
+                                transNode->ang_total() = goalAngle0;
+                                transNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalStates[0].translation());
+                                transNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalStates[0].translation());
 
-                        Node* goalNode = nodePool_.allocate(linkTrajectory(true), transNode, goalStates[1]);
-                        goalNode->length() = goalLength1;
-                        goalNode->cost() = goalCost1;
-                        goalNode->ang_total() = goalAngle1;
-                        goalNode->radius() = RadiusOfCurvature(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
-                        goalNode->theta() = Theta(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
-                        planner.foundGoal(goalNode);
+                                Node* goalNode = nodePool_.allocate(linkTrajectory(true), transNode, goalStates[1]);
+                                goalNode->length() = goalLength1;
+                                goalNode->cost() = goalCost1;
+                                goalNode->ang_total() = goalAngle1;
+                                goalNode->radius() = RadiusOfCurvature(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
+                                goalNode->theta() = Theta(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
+                                planner.foundGoal(goalNode);
+                            }
+                        } else {
+                            Stats::countInvalidNode();
+                        }
+                    } else {
+                        Stats::countInvalidNode();
                     }
-
+                } else {
+                    Stats::countInvalidNode();
                 }
             }
         }
@@ -894,16 +908,23 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
             auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
             if (scenario_.valid(goalState, goalLength, goalAngle)) {
-                bestDist_ = goalDist;
-                auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
-                if (goalNode) {
-                    (*goalNode)->length() = goalLength;
-                    (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
-                                          + scenario_.FinalStateCost(goalState);
-                    (*goalNode)->ang_total() = goalAngle;
-                    (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
-                    (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());                    
+                if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
+                    Stats::countValidNode();
+                    bestDist_ = goalDist;
+                    auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
+                    if (goalNode) {
+                        (*goalNode)->length() = goalLength;
+                        (*goalNode)->cost() = node->cost() + scenario_.CurveCost(node->state(), goalState)
+                                            + scenario_.FinalStateCost(goalState);
+                        (*goalNode)->ang_total() = goalAngle;
+                        (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
+                        (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());                    
+                    }
+                } else {
+                    Stats::countInvalidNode();
                 }
+            } else {
+                Stats::countInvalidNode();
             }
         }
 
@@ -933,6 +954,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             auto propagated = planner.propagator_(from, node->radIndex(), node->lengthIndex());
 
             if (!propagated) {
+                Stats::countInvalidNode();
                 recycle(node);
                 return;
             }
@@ -942,7 +964,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             node->cost() = node->parent()->cost() + scenario_.CurveCost(node->parent()->state(), node->state());
             node->ang_total() = node->parent()->ang_total() + DirectionDifference(node->parent()->state().rotation(), node->state().rotation());
             node->radius() = RadiusOfCurvature(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
-            node->theta() = Theta(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
+            node->theta() = planner.propagator_.AngleDiff(node->angleIndex());//Theta(node->parent()->state().translation(), node->parent()->state().rotation(), node->state().translation());
         }
 
         const bool inheritValidation = node->valid();
@@ -951,6 +973,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
         if (!inevitableCollision && validNode(planner, node)) {
 
             if (auto traj = validMotion(planner, node, from)) {
+                Stats::countValidNode();
                 auto const validResult = checkTerminateCondition(planner, node);
 
                 if (done()) {
@@ -973,8 +996,12 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                     expand(planner, node);
                     closed_.push_back(node);
                 }
+            } else {
+                Stats::countInvalidNode();
             }
 
+        } else {
+            Stats::countInvalidNode();
         }
 
         if (!node->parent()) {
