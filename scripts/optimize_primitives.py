@@ -393,19 +393,26 @@ def get_data(file):
         # print(np.shape(next_data[i,:]))
         # print(np.shape(next_action_data[i,0]))
         if (next_data[i,3] < 3) and (next_data[i,3] > 0):
-            if (next_data[i,12] > 25 and next_data[i,1] < 1505):
-                for j in range(np.shape(next_action_data[i,0])[0]):
-                    # print(next_action_data[i,1][j])
-                    # if next_action_data[i,1][j] < 100000:
-                    #     radius_data += [1/(next_action_data[i,1][j]/1000)]
-                    # else:
-                    #     radius_data += [0]
 
-                    for k in range(round(100*next_action_data[i,0][j]/next_data[i,4])):
-                        if next_action_data[i,1][j] < 100000:
-                            radius_data += [1/(next_action_data[i,1][j]/1000)]
-                        else:
-                            radius_data += [0]
+            for j in range(np.shape(next_action_data[i,0])[0]):
+                # print(next_action_data[i,1][j])
+                # if next_action_data[i,1][j] < 100000:
+                #     radius_data += [1/(next_action_data[i,1][j]/1000)]
+                # else:
+                #     radius_data += [0]
+
+                # for k in range(round(10*next_action_data[i,0][j]/next_data[i,4])):
+                #     if next_action_data[i,1][j] < 100000:
+                #         radius_data += [1/(next_action_data[i,1][j]/1000)]
+                #     else:
+                #         radius_data += [0]
+
+                for k in range(round(next_action_data[i,0][j]/5)):
+                    if next_action_data[i,1][j] < 100000:
+                        radius_data += [1/(next_action_data[i,1][j]/1000)]
+                    else:
+                        radius_data += [0]
+
             # plotter.scatter(next_action_data[i,1], )
     data = np.vstack((data, next_data))
     action_data = np.vstack((action_data, next_action_data))
@@ -479,7 +486,7 @@ if __name__=='__main__':
     print(np.shape(b))
     print(f"a - b: {np.subtract(a, b)} ||a - b||: {np.power(np.subtract(a, b), 2)}")
 
-    print(f"primitives: {[0, 15]} mmd: {max_mean_discrepancy([0, 20, 67], radius_data)} ")
+    print(f"primitives: {[0, 15]} mmd: {max_mean_discrepancy([0, 33, 67], radius_data)} ")
 
 
     print(f"radius data: {len(radius_data)}")
@@ -506,7 +513,7 @@ if __name__=='__main__':
         print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
 
         
-        for j in range(10):
+        for j in range(4):
             kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
             plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
             kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, radius_data)
