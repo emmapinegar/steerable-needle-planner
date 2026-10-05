@@ -353,25 +353,28 @@ def get_all_data(directory, file_spec):
     files = fnmatch.filter(os.listdir(directory), file_spec)
 
     data = np.empty((0,15))
+    file_data = np.empty((0,1))
     action_data = np.empty((0,3))
     radius_data = []
     for file in files:
 
-        next_data, next_action_data, next_radius_data = get_data(directory + file)
+        next_data, next_file_data, next_action_data, next_radius_data = get_data(directory + file)
 
         data = np.vstack((data, next_data))
+        file_data = np.vstack((file_data, next_file_data))
         action_data = np.vstack((action_data, next_action_data))
         radius_data += next_radius_data
 
         # make_success_brain_figure(data)
         # make_success_brain_figures(data)  
         
-    return data, action_data, radius_data
+    return data, file_data, action_data, radius_data
 
 
 def get_data(file):
 
     data = np.empty((0,15))
+    file_data = np.empty((0,1))
     action_data = np.empty((0,3))
     radius_data = []
     
@@ -387,12 +390,15 @@ def get_data(file):
     convs = {0: lambda x: conv(x), 1: lambda x: conv(x), 2: lambda x: conv(x), 3: lambda x: conv(x)}
 
     next_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14))
-    # next_file_root = #column 15
+    next_file_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(15), dtype=str)
+    next_file_data = np.reshape(next_file_data, (-1,1))
     next_action_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(16,17,18), converters=conv, dtype=object, quotechar='"')
+    next_file_matches = np.char.rfind(next_file_data[:,0], "aorrt_improved")
     for i in range(np.shape(next_data)[0]):
         # print(np.shape(next_data[i,:]))
         # print(np.shape(next_action_data[i,0]))
-        if (next_data[i,3] < 3) and (next_data[i,3] > 0):
+        if ((next_data[i,3] < 2) and (next_data[i,3] > 0) and next_data[i,13] == 1):
+        # if (((next_data[i,3] < 3) and (next_data[i,3] > 0) and next_data[i,13] == 1) and next_file_matches[i] > -1):
 
             for j in range(np.shape(next_action_data[i,0])[0]):
                 # print(next_action_data[i,1][j])
@@ -415,9 +421,10 @@ def get_data(file):
 
             # plotter.scatter(next_action_data[i,1], )
     data = np.vstack((data, next_data))
+    file_data = np.vstack((file_data, next_file_data))
     action_data = np.vstack((action_data, next_action_data))
 
-    return data, action_data, radius_data  
+    return data, file_data, action_data, radius_data  
 
 def max_mean_discrepancy(particles, radius_data, gamma=0.2):
     kparticleparticle = 0
@@ -473,7 +480,7 @@ def max_mean_discrepancy_grad(particles, radius_data, gamma=0.5):
 
 if __name__=='__main__':
 
-    data, action_data, radius_data = get_all_data('./../data/output/', '*planner_best_actions*.txt')
+    data, file_data, action_data, radius_data = get_all_data('./../data/output/', '*planner_best_actions*.txt')
 
     plotter.figure()
     plotter.hist(radius_data, bins='doane', density=True)
