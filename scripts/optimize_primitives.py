@@ -394,31 +394,21 @@ def get_data(file):
     next_file_data = np.reshape(next_file_data, (-1,1))
     next_action_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(16,17,18), converters=conv, dtype=object, quotechar='"')
     next_file_matches = np.char.rfind(next_file_data[:,0], "aorrt_improved")
+
+    
+
     for i in range(np.shape(next_data)[0]):
         # print(np.shape(next_data[i,:]))
         # print(np.shape(next_action_data[i,0]))
-        if ((next_data[i,3] < 2) and (next_data[i,3] > 0) and next_data[i,13] == 1):
-        # if (((next_data[i,3] < 3) and (next_data[i,3] > 0) and next_data[i,13] == 1) and next_file_matches[i] > -1):
-
-            for j in range(np.shape(next_action_data[i,0])[0]):
-                # print(next_action_data[i,1][j])
-                # if next_action_data[i,1][j] < 100000:
-                #     radius_data += [1/(next_action_data[i,1][j]/1000)]
-                # else:
-                #     radius_data += [0]
-
-                # for k in range(round(10*next_action_data[i,0][j]/next_data[i,4])):
-                #     if next_action_data[i,1][j] < 100000:
-                #         radius_data += [1/(next_action_data[i,1][j]/1000)]
-                #     else:
-                #         radius_data += [0]
-
-                for k in range(round(next_action_data[i,0][j]/5)):
-                    if next_action_data[i,1][j] < 100000:
-                        radius_data += [1/(next_action_data[i,1][j]/1000)]
-                    else:
-                        radius_data += [0]
-
+        ith_radius_data = []
+        for j in range(np.shape(next_action_data[i,0])[0]):
+            for k in range(round(next_action_data[i,0][j]/5)):
+                if next_action_data[i,1][j] < 100000:
+                    ith_radius_data += [1/(next_action_data[i,1][j]/1000)]
+                else:
+                    ith_radius_data += [0]
+        # print(ith_radius_data)
+        radius_data += [np.array(ith_radius_data)]
             # plotter.scatter(next_action_data[i,1], )
     data = np.vstack((data, next_data))
     file_data = np.vstack((file_data, next_file_data))
@@ -478,58 +468,90 @@ def max_mean_discrepancy_grad(particles, radius_data, gamma=0.5):
     return mmd
 
 
+def get_radius_data(radius_data, inds):
+    ind_data = radius_data[inds]
+    ind_radius_data = np.empty((0,))
+    for next_data in ind_data:
+        ind_radius_data = np.hstack((ind_radius_data, next_data))
+    print(np.shape(ind_radius_data))
+    return ind_radius_data
+
 if __name__=='__main__':
 
     data, file_data, action_data, radius_data = get_all_data('./../data/output/', '*planner_best_actions*.txt')
+    file_matches = np.char.rfind(file_data[:,0], "aorrt_improved")
+    radius_data = np.array(radius_data, dtype=object)
 
     plotter.figure()
-    plotter.hist(radius_data, bins='doane', density=True)
+    rrt_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+
+    aorrt_imp_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+
+    rrt_radius_data = get_radius_data(radius_data, rrt_inds)
+    aorrt_imp_radius_data = get_radius_data(radius_data, aorrt_imp_inds)
+
+
+    rrt_25_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(data[:,stats_indices['planner']] == 1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+
+    aorrt_imp_25_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+
+    rrt_25_radius_data = get_radius_data(radius_data, rrt_25_inds)
+    aorrt_imp_25_radius_data = get_radius_data(radius_data, aorrt_imp_25_inds)
+
+
+    # print(np.shape(test))
+    # print(test)
+    plotter.subplot(2,1,1)
+    plotter.hist([rrt_radius_data, rrt_25_radius_data, aorrt_imp_radius_data, aorrt_imp_25_radius_data], bins='doane', density=True)
+
+    plotter.subplot(2,1,2)
+    plotter.hist([aorrt_imp_radius_data, aorrt_imp_25_radius_data], bins='doane', density=True)
     
-    num_particles = [3] #, 4, 3, 2]
-    colors = ['r', 'darkorange', 'g', 'b', 'blueviolet', 'indigo']
+    # num_particles = [3] #, 4, 3, 2]
+    # colors = ['r', 'darkorange', 'g', 'b', 'blueviolet', 'indigo']
 
-    a = np.array([15, 10]).reshape((-1,1))
-    b = np.array([0, 15, 30]).reshape((-1,1)).transpose()
-    print(np.shape(b))
-    print(f"a - b: {np.subtract(a, b)} ||a - b||: {np.power(np.subtract(a, b), 2)}")
+    # a = np.array([15, 10]).reshape((-1,1))
+    # b = np.array([0, 15, 30]).reshape((-1,1)).transpose()
+    # print(np.shape(b))
+    # print(f"a - b: {np.subtract(a, b)} ||a - b||: {np.power(np.subtract(a, b), 2)}")
 
-    print(f"primitives: {[0, 15]} mmd: {max_mean_discrepancy([0, 33, 67], radius_data)} ")
+    # print(f"primitives: {[0, 15]} mmd: {max_mean_discrepancy([0, 33, 67], radius_data[aorrt_imp_inds,:])} ")
 
 
-    print(f"radius data: {len(radius_data)}")
-    for i in range(len(num_particles)):
+    # print(f"radius data: {len(radius_data[aorrt_imp_inds,:])}")
+    # for i in range(len(num_particles)):
 
-        codebook, distortion = kmeans(radius_data, num_particles[i])
-        codebook.sort()
-        print(codebook)
-        # print(distortion)
+    #     codebook, distortion = kmeans(radius_data[aorrt_imp_inds,:], num_particles[i])
+    #     codebook.sort()
+    #     print(codebook)
+    #     # print(distortion)
         
-        kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(codebook, radius_data)
-        # kmeans_mmd_grad = max_mean_discrepancy_grad(codebook, radius_data)
-        kmeans_clusters = codebook
-        plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=0.1)
+    #     kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(codebook, radius_data[aorrt_imp_inds,:])
+    #     # kmeans_mmd_grad = max_mean_discrepancy_grad(codebook, radius_data)
+    #     kmeans_clusters = codebook
+    #     plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=0.1)
 
-        bkmeans = BisectingKMeans(n_clusters=num_particles[i]).fit(np.array(radius_data).reshape((-1,1)))
-        plotter.scatter(bkmeans.cluster_centers_, 0*bkmeans.cluster_centers_ + 0.3 + i*0.01, c=colors[i], alpha=0.1)
+    #     bkmeans = BisectingKMeans(n_clusters=num_particles[i]).fit(np.array(radius_data[aorrt_imp_inds,:]).reshape((-1,1)))
+    #     plotter.scatter(bkmeans.cluster_centers_, 0*bkmeans.cluster_centers_ + 0.3 + i*0.01, c=colors[i], alpha=0.1)
         
-        bkmeans.cluster_centers_.sort()
-        bkmeans_centers = np.array(bkmeans.cluster_centers_).reshape((-1,))
-        print(bkmeans_centers)
-        bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, radius_data)
-        # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
-        print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
+    #     bkmeans.cluster_centers_.sort()
+    #     bkmeans_centers = np.array(bkmeans.cluster_centers_).reshape((-1,))
+    #     print(bkmeans_centers)
+    #     bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, radius_data[aorrt_imp_inds,:])
+    #     # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
+    #     print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
 
         
-        for j in range(4):
-            kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
-            plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
-            kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, radius_data)
+    #     for j in range(4):
+    #         kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
+    #         plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
+    #         kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, radius_data[aorrt_imp_inds,:])
 
-            bkmeans_centers = bkmeans_centers + bkmeans_mmd_grad
-            plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.3 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
-            bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, radius_data)
-            # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
-            print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans {bkmeans_centers} mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")            
+    #         bkmeans_centers = bkmeans_centers + bkmeans_mmd_grad
+    #         plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.3 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
+    #         bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, radius_data[aorrt_imp_inds,:])
+    #         # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
+    #         print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans {bkmeans_centers} mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")            
 
     plotter.show()
 

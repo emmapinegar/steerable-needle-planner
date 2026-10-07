@@ -1319,8 +1319,9 @@ if __name__=='__main__':
 
     get_statistics(data[mutli_inds,:], time_data[mutli_inds,:])
 
-    get_statistics(data[file_matches > -1, :], time_data[file_matches > -1, :])
-    make_generic_test_figures(data[file_matches > -1, :], time_data[file_matches > -1, :], make_success_time_figure, r'Success vs. Time', r'Time (seconds)', r'Success Percentage', stats_indices['lengths'], 0.0001, 100, -1, 100, True, False)
+    aorrt_imp_inds = np.where(np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
+    get_statistics(data[aorrt_imp_inds, :], time_data[aorrt_imp_inds, :])
+    make_generic_test_figures(data[aorrt_imp_inds, :], time_data[aorrt_imp_inds, :], make_success_time_figure, r'Success vs. Time', r'Time (seconds)', r'Success Percentage', stats_indices['lengths'], 0.0001, 100, -1, 100, True, False)
 
     # files = fnmatch.filter(os.listdir('./../data/output/'), '*_stats*.txt')
     # for file in files:

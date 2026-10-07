@@ -7,8 +7,8 @@ cd ./build
 seed_array=(8965)
 scan_array=(1)                  # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
 phi_arr=(180)
-rads=(15) # 50 100)
-sgs=(0 50 100 150 200 250 300 350 400 450) #(1500 1550 1600 1650 1700 1750 1800 1850 1900 1950)
+rads=(25) # 50 100)
+sgs=(500 550 600 650 700 750 800 850 900 950) #(1500 1550 1600 1650 1700 1750 1800 1850 1900 1950)
 seed=8965
 scan=1
 ell=100
