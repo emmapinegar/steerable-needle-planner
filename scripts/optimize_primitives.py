@@ -402,8 +402,8 @@ def get_data(file):
         # print(np.shape(next_action_data[i,0]))
         ith_radius_data = []
         for j in range(np.shape(next_action_data[i,0])[0]):
-            for k in range(round(next_action_data[i,0][j]/5)):
-                if next_action_data[i,1][j] < 100000:
+            for k in range(round(next_action_data[i,0][j])):
+                if next_action_data[i,1][j] < 100000000:
                     ith_radius_data += [1/(next_action_data[i,1][j]/1000)]
                 else:
                     ith_radius_data += [0]
@@ -471,87 +471,204 @@ def max_mean_discrepancy_grad(particles, radius_data, gamma=0.5):
 def get_radius_data(radius_data, inds):
     ind_data = radius_data[inds]
     ind_radius_data = np.empty((0,))
+    minrad = 0
     for next_data in ind_data:
+        minrad = max(minrad, np.max(next_data))
         ind_radius_data = np.hstack((ind_radius_data, next_data))
     print(np.shape(ind_radius_data))
+    print(f"min: {1000/minrad}")
     return ind_radius_data
 
 if __name__=='__main__':
 
-    data, file_data, action_data, radius_data = get_all_data('./../data/output/', '*planner_best_actions*.txt')
+    data, file_data, action_data, radius_data = get_all_data('./../data/output/', '*planner_actions*.txt')
     file_matches = np.char.rfind(file_data[:,0], "aorrt_improved")
     radius_data = np.array(radius_data, dtype=object)
 
-    plotter.figure()
-    rrt_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
-
-    aorrt_imp_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
-
-    rrt_radius_data = get_radius_data(radius_data, rrt_inds)
-    aorrt_imp_radius_data = get_radius_data(radius_data, aorrt_imp_inds)
+    
+    rrt_15_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 0,data[:,stats_indices['sg_index']] < 500), np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    aorrt_imp_15_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 0,data[:,stats_indices['sg_index']] < 500), np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcs_15_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 0,data[:,stats_indices['sg_index']] < 500), np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 3 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcss_15_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 0,data[:,stats_indices['sg_index']] < 500), np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 4 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
 
 
-    rrt_25_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(data[:,stats_indices['planner']] == 1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+    rrt_15_radius_data = get_radius_data(radius_data, rrt_15_inds)
+    aorrt_imp_15_radius_data = get_radius_data(radius_data, aorrt_imp_15_inds)
+    rcs_15_radius_data = get_radius_data(radius_data, rcs_15_inds)
+    rcss_15_radius_data = get_radius_data(radius_data, rcss_15_inds)
 
-    aorrt_imp_25_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+
+    rrt_15_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    aorrt_imp_15_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcs_15_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcss_15_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+
+
+    rrt_15_common_radius_data = get_radius_data(radius_data, rrt_15_common_inds)
+    aorrt_imp_15_common_radius_data = get_radius_data(radius_data, aorrt_imp_15_common_inds)
+    rcs_15_common_radius_data = get_radius_data(radius_data, rcs_15_common_inds)
+    rcss_15_common_radius_data = get_radius_data(radius_data, rcss_15_common_inds)
+
+
+
+    rrt_25_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 500,data[:,stats_indices['sg_index']] < 1000), np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(data[:,stats_indices['planner']] == 1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    aorrt_imp_25_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 500,data[:,stats_indices['sg_index']] < 1000), np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcs_25_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 500,data[:,stats_indices['sg_index']] < 1000), np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcss_25_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 500,data[:,stats_indices['sg_index']] < 1000), np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+
 
     rrt_25_radius_data = get_radius_data(radius_data, rrt_25_inds)
     aorrt_imp_25_radius_data = get_radius_data(radius_data, aorrt_imp_25_inds)
+    rcs_25_radius_data = get_radius_data(radius_data, rcs_25_inds)
+    rcss_25_radius_data = get_radius_data(radius_data, rcss_25_inds)
 
 
-    # print(np.shape(test))
-    # print(test)
-    plotter.subplot(2,1,1)
-    plotter.hist([rrt_radius_data, rrt_25_radius_data, aorrt_imp_radius_data, aorrt_imp_25_radius_data], bins='doane', density=True)
+    rrt_25_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(data[:,stats_indices['planner']] == 1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    aorrt_imp_25_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcs_25_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcss_25_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 25, np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
 
-    plotter.subplot(2,1,2)
-    plotter.hist([aorrt_imp_radius_data, aorrt_imp_25_radius_data], bins='doane', density=True)
+
+    rrt_25_common_radius_data = get_radius_data(radius_data, rrt_25_common_inds)
+    aorrt_imp_25_common_radius_data = get_radius_data(radius_data, aorrt_imp_25_common_inds)
+    rcs_25_common_radius_data = get_radius_data(radius_data, rcs_25_common_inds)
+    rcss_25_common_radius_data = get_radius_data(radius_data, rcss_25_common_inds)
+
+
+    rrt_50_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 50, np.logical_and(data[:,stats_indices['planner']] == 1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    aorrt_imp_50_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 50, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcs_50_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 50, np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcss_50_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 50, np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+
+
+    rrt_50_common_radius_data = get_radius_data(radius_data, rrt_50_common_inds)
+    aorrt_imp_50_common_radius_data = get_radius_data(radius_data, aorrt_imp_50_common_inds)
+    rcs_50_common_radius_data = get_radius_data(radius_data, rcs_50_common_inds)
+    rcss_50_common_radius_data = get_radius_data(radius_data, rcss_50_common_inds)
+
+
+    rrt_100_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 2000,data[:,stats_indices['sg_index']] < 2500), np.logical_and(data[:,stats_indices['minrad']] == 100, np.logical_and(data[:,stats_indices['planner']] == 1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    aorrt_imp_100_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 2000,data[:,stats_indices['sg_index']] < 2500), np.logical_and(data[:,stats_indices['minrad']] == 100, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcs_100_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 2000,data[:,stats_indices['sg_index']] < 2500), np.logical_and(data[:,stats_indices['minrad']] == 100, np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcss_100_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 2000,data[:,stats_indices['sg_index']] < 2500), np.logical_and(data[:,stats_indices['minrad']] == 100, np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+
+
+
+    rrt_100_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 100, np.logical_and(data[:,stats_indices['planner']] == 1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    aorrt_imp_100_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 100, np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcs_100_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 100, np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+    rcss_100_common_inds = np.where(np.logical_and(np.logical_and(data[:,stats_indices['sg_index']] >= 1500,data[:,stats_indices['sg_index']] < 2000), np.logical_and(data[:,stats_indices['minrad']] == 100, np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))))[0]
+
+
+    # rrt_100_radius_data = get_radius_data(radius_data, rrt_100_inds)
+    # aorrt_imp_100_radius_data = get_radius_data(radius_data, aorrt_imp_100_inds)
+    # rcs_100_radius_data = get_radius_data(radius_data, rcs_100_inds)
+    # rcss_100_radius_data = get_radius_data(radius_data, rcss_100_inds)
+
+
+    rrt_100_common_radius_data = get_radius_data(radius_data, rrt_100_common_inds)
+    aorrt_imp_100_common_radius_data = get_radius_data(radius_data, aorrt_imp_100_common_inds)
+    rcs_100_common_radius_data = get_radius_data(radius_data, rcs_100_common_inds)
+    rcss_100_common_radius_data = get_radius_data(radius_data, rcss_100_common_inds)
+
+
+    rrt_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+    aorrt_imp_inds = np.where(np.logical_and(file_matches > -1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
+    rcs_inds = np.where(np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
+    rcss_inds = np.where(np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
+
+    rrt_radius_data = get_radius_data(radius_data, rrt_inds)
+    aorrt_radius_data = get_radius_data(radius_data, aorrt_imp_inds)
+    rcs_radius_data = get_radius_data(radius_data, rcs_inds)
+    rcss_radius_data = get_radius_data(radius_data, rcss_inds)
+
+    # plotter.figure()
+    # plotter.hist([rrt_radius_data, aorrt_radius_data, rcs_radius_data, rcss_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])
+    # plotter.title("All Individual Data")
+
+    # plotter.figure()
+    # plotter.subplot(2,2,1)
+    # plotter.hist([rrt_15_radius_data, aorrt_imp_15_radius_data, rcs_15_radius_data, rcss_15_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])
+    # plotter.title("15 mm Individual Data")
+
+    # plotter.subplot(2,2,2)
+    # plotter.hist([rrt_25_radius_data, aorrt_imp_25_radius_data, rcs_25_radius_data, rcss_25_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])
+    # plotter.title("25 mm Individual Data")
+
+    # plotter.subplot(2,2,3)
+    # plotter.hist([rrt_50_common_radius_data, aorrt_imp_50_common_radius_data, rcs_50_common_radius_data, rcss_50_common_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])
+    # plotter.title("50 mm Individual Data")
+
+    # # plotter.subplot(2,2,4)
+    # # plotter.hist([rrt_100_radius_data, aorrt_imp_100_radius_data, rcs_100_radius_data, rcss_100_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])
+    # # plotter.title("100 mm Individual Data")
+
+    # plotter.figure()
+    # plotter.subplot(2,2,1)
+    # plotter.hist([rrt_15_common_radius_data, aorrt_imp_15_common_radius_data, rcs_15_common_radius_data, rcss_15_common_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])   
+    # plotter.title("15 mm common")
+
+    # plotter.subplot(2,2,2)
+    # plotter.hist([rrt_25_common_radius_data, aorrt_imp_25_common_radius_data, rcs_25_common_radius_data, rcss_25_common_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])    
+    # plotter.title("25 mm common")
     
-    # num_particles = [3] #, 4, 3, 2]
-    # colors = ['r', 'darkorange', 'g', 'b', 'blueviolet', 'indigo']
+    # plotter.subplot(2,2,3)
+    # plotter.hist([rrt_50_common_radius_data, aorrt_imp_50_common_radius_data, rcs_50_common_radius_data, rcss_50_common_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])     
+    # plotter.title("50 mm common")
 
-    # a = np.array([15, 10]).reshape((-1,1))
-    # b = np.array([0, 15, 30]).reshape((-1,1)).transpose()
-    # print(np.shape(b))
-    # print(f"a - b: {np.subtract(a, b)} ||a - b||: {np.power(np.subtract(a, b), 2)}")
+    # plotter.subplot(2,2,4)
+    # plotter.hist([rrt_100_common_radius_data, aorrt_imp_100_common_radius_data, rcs_100_common_radius_data, rcss_100_common_radius_data], bins='doane', density=False, range=(0,50), color=[planners[0].color, planners[1].color, planners[2].color, planners[3].color])         
+    # plotter.title("100 mm common")
+    num_particles = [3] #, 4, 3, 2]
+    colors = ['r', 'darkorange', 'g', 'b', 'blueviolet', 'indigo']
 
-    # print(f"primitives: {[0, 15]} mmd: {max_mean_discrepancy([0, 33, 67], radius_data[aorrt_imp_inds,:])} ")
+    a = np.array([15, 10]).reshape((-1,1))
+    b = np.array([0, 15, 30]).reshape((-1,1)).transpose()
+    print(np.shape(b))
+    print(f"a - b: {np.subtract(a, b)} ||a - b||: {np.power(np.subtract(a, b), 2)}")
+
+    particle_rad_data = rrt_radius_data
+    mmd_init, mmd_grad_init = max_mean_discrepancy([0, 67], particle_rad_data)
+    print(f"primitives: {[15, 88]} mmd: {mmd_init} mmd grad: {mmd_grad_init}")
+
+    plotter.figure()
+    plotter.hist([particle_rad_data], bins='doane', density=False, range=(0,50), color=[planners[1].color])
 
 
-    # print(f"radius data: {len(radius_data[aorrt_imp_inds,:])}")
-    # for i in range(len(num_particles)):
+    print(f"radius data: {len(particle_rad_data)}")
+    for i in range(len(num_particles)):
 
-    #     codebook, distortion = kmeans(radius_data[aorrt_imp_inds,:], num_particles[i])
-    #     codebook.sort()
-    #     print(codebook)
-    #     # print(distortion)
+        codebook, distortion = kmeans(particle_rad_data, num_particles[i])
+        codebook.sort()
+        print(codebook)
+        # print(distortion)
         
-    #     kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(codebook, radius_data[aorrt_imp_inds,:])
-    #     # kmeans_mmd_grad = max_mean_discrepancy_grad(codebook, radius_data)
-    #     kmeans_clusters = codebook
-    #     plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=0.1)
+        kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(codebook, particle_rad_data)
+        # kmeans_mmd_grad = max_mean_discrepancy_grad(codebook, radius_data)
+        kmeans_clusters = codebook
+        plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=0.1)
 
-    #     bkmeans = BisectingKMeans(n_clusters=num_particles[i]).fit(np.array(radius_data[aorrt_imp_inds,:]).reshape((-1,1)))
-    #     plotter.scatter(bkmeans.cluster_centers_, 0*bkmeans.cluster_centers_ + 0.3 + i*0.01, c=colors[i], alpha=0.1)
+        bkmeans = BisectingKMeans(n_clusters=num_particles[i]).fit(np.array(particle_rad_data).reshape((-1,1)))
+        plotter.scatter(bkmeans.cluster_centers_, 0*bkmeans.cluster_centers_ + 0.3 + i*0.01, c=colors[i], alpha=0.1)
         
-    #     bkmeans.cluster_centers_.sort()
-    #     bkmeans_centers = np.array(bkmeans.cluster_centers_).reshape((-1,))
-    #     print(bkmeans_centers)
-    #     bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, radius_data[aorrt_imp_inds,:])
-    #     # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
-    #     print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
+        bkmeans.cluster_centers_.sort()
+        bkmeans_centers = np.array(bkmeans.cluster_centers_).reshape((-1,))
+        print(bkmeans_centers)
+        bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, particle_rad_data)
+        # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
+        print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
 
         
-    #     for j in range(4):
-    #         kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
-    #         plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
-    #         kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, radius_data[aorrt_imp_inds,:])
+        for j in range(4):
+            kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
+            plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.2 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
+            kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, particle_rad_data)
 
-    #         bkmeans_centers = bkmeans_centers + bkmeans_mmd_grad
-    #         plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.3 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
-    #         bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, radius_data[aorrt_imp_inds,:])
-    #         # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
-    #         print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans {bkmeans_centers} mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")            
+            bkmeans_centers = bkmeans_centers + bkmeans_mmd_grad
+            plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.3 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
+            bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, particle_rad_data)
+            # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
+            print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans {bkmeans_centers} mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")            
 
     plotter.show()
 

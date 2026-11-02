@@ -813,11 +813,12 @@ unbiasedSamplingLoop:
 
             if (isGoal) {
                 // auto const& goalCurvature = scenario_.curvature(goalState);
+                Stats::countGoalAttempts(); 
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 auto const& goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     if (auto traj = validMotion(newState, goalState)) {
-                        Stats::countValidNode();
+                        // Stats::countValidNode();
                         auto const& goalCost = newNode->cost() + scenario_.CurveCost(newState, goalState)
                                                 + scenario_.FinalStateCost(goalState);
 
@@ -830,20 +831,17 @@ unbiasedSamplingLoop:
                             goalNode->theta() = Theta(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
                             planner.foundGoal(goalNode);
                         }
-                    } else {
-                        Stats::countInvalidNode();
                     }
-                } else {
-                    Stats::countInvalidNode();
                 }
             }
             else if (!planner.solved() && goalDist < bestDist_) {
                 // auto const& goalCurvature = scenario_.curvature(goalState);
+                Stats::countGoalAttempts(); 
                 auto const& goalLength = newLength + snp::CurveLength(newState, goalState);
                 auto const goalAngle  = newNode->ang_total() + DirectionDifference(newNode->state().rotation(), goalState.rotation());
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     if (auto traj = validMotion(newState, goalState)) {
-                        Stats::countValidNode();
+                        // Stats::countValidNode();
                         bestDist_ = goalDist;
                         auto goalNode = planner.foundApproxGoal(newNode, goalState, nodePool_, &bestDist_);
                         if (goalNode) {
@@ -854,11 +852,7 @@ unbiasedSamplingLoop:
                             (*goalNode)->radius() = RadiusOfCurvature(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
                             (*goalNode)->theta() = Theta(newNode->state().translation(), newNode->state().rotation(), goalState.translation());
                         }
-                    } else {
-                        Stats::countInvalidNode();
                     }
-                } else {
-                    Stats::countInvalidNode();
                 }
             }
         } else {

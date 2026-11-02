@@ -825,13 +825,14 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
 
         if (isGoal) {
             if (goalStates.size() < 2) {
+                Stats::countGoalAttempts();
                 auto const& goalState = goalStates[0];
 
                 auto const goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                 auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
                 if (scenario_.valid(goalState, goalLength, goalAngle)) {
                     if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
-                        Stats::countValidNode();
+                        // Stats::countValidNode();
                         auto const goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                             + scenario_.FinalStateCost(goalState);
                         if (goalCost < planner.bestCost_) {
@@ -847,25 +848,22 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         }
 
                         return true;
-                    } else {
-                        Stats::countInvalidNode();
                     }
-                } else {
-                    Stats::countInvalidNode();
                 }
-            
             }
             else {
                 auto const goalLength0 = node->length() + snp::CurveLength(node->state(), goalStates[0]);
                 auto const goalLength1 = goalLength0 + snp::CurveLength(goalStates[0], goalStates[1]);
-
+                Stats::countGoalAttempts();
                 auto const goalAngle0 = node->ang_total() + DirectionDifference(node->state().rotation(), goalStates[0].rotation());
                 auto const goalAngle1 = goalAngle0 + DirectionDifference(goalStates[0].rotation(), goalStates[1].rotation());
                 if (scenario_.valid(goalStates[1], goalLength1, goalAngle1)) {
                     if (scenario_.validator().ValidMotion(node->state(), goalStates[0], scenario_.Config())) {
-                        Stats::countValidNode();
+                        // Stats::countValidNode();
+                        
                         if (scenario_.validator().ValidMotion(goalStates[0], goalStates[1], scenario_.Config())) {
-                            Stats::countValidNode();
+                            Stats::countGoalAttempts();
+                            // Stats::countValidNode();
                             auto const goalCost0 = node->cost() + scenario_.CurveCost(node->state(), goalStates[0]);
                             auto const goalCost1 = goalCost0 + scenario_.CurveCost(goalStates[0], goalStates[1])
                                                 + scenario_.FinalStateCost(goalStates[1]);
@@ -887,24 +885,19 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                                 goalNode->theta() = Theta(transNode->state().translation(), transNode->state().rotation(), goalStates[1].translation());
                                 planner.foundGoal(goalNode);
                             }
-                        } else {
-                            Stats::countInvalidNode();
                         }
-                    } else {
-                        Stats::countInvalidNode();
                     }
-                } else {
-                    Stats::countInvalidNode();
                 }
             }
         }
         else if (!planner.solved() && goalDist < bestDist_) {
+            Stats::countGoalAttempts();
             auto goalState = goalStates[0];
             auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
             auto const goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
             if (scenario_.valid(goalState, goalLength, goalAngle)) {
                 if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
-                    Stats::countValidNode();
+                    // Stats::countValidNode();
                     bestDist_ = goalDist;
                     auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
                     if (goalNode) {
@@ -915,11 +908,7 @@ class NeedlePRCSStar<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                         (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
                         (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
                     }
-                } else {
-                    Stats::countInvalidNode();
                 }
-            } else {
-                Stats::countInvalidNode();
             }
         }
 
