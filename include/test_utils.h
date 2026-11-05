@@ -383,14 +383,13 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
         if (!path.empty()) {
             WritePathToFile(path, cfg->output_file_root + "_org.txt");
             
-
-            auto [bestCost, bestSize, bestGoal, bestLength, bestPhi, spreading, planner_type] = planner.stats();
+            auto [bestCost, bestSize, bestGoal, bestLength, bestPhi, spreading, planner_type, misc_str, iterations, invalid_nodes, valid_nodes, goal_attempts] = planner.stats();
             std::vector<std::vector<std::vector<RealNum>>> allActions = planner.allSolutionsActions();
             std::vector<std::vector<RealNum>> actions = planner.solutionActions();
-
-            WriteStatsToFile(cfg->rad_curv, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, cfg->output_file_root, snp::stats_file, planner.resultWithTime());
-            WriteAllActionsToFile(allActions, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, cfg->output_file_root, snp::actions_file);
-            WriteBestActionsToFile(actions, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, cfg->output_file_root, snp::best_actions_file);
+            MPT_LOG(INFO) << "writing files";
+            WriteStatsToFile(cfg->rad_curv, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, iterations, planner.size(), invalid_nodes, valid_nodes, goal_attempts, misc_str, cfg->output_file_root, snp::stats_file, planner.resultWithTime());
+            WriteAllActionsToFile(allActions, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, iterations, planner.size(), invalid_nodes, valid_nodes, goal_attempts, misc_str, cfg->output_file_root, snp::actions_file);
+            WriteBestActionsToFile(actions, bestLength, bestPhi, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, iterations, planner.size(), invalid_nodes, valid_nodes, goal_attempts, misc_str, cfg->output_file_root, snp::best_actions_file);
             if (save_interp) {
                 auto const& interpolated = InterpolatePath(path, cfg->rad_curv, cfg->result_res);
                 WritePathToFile(interpolated, cfg->output_file_root + "_interp.txt");
@@ -419,9 +418,9 @@ void Run(Planner& planner, ConfigPtr cfg, const bool save_only_best_plan=true, c
         } 
         else {
             std::cout << "trying to write stats with no plan found" << std::endl;
-            auto [spreading, planner_type] = planner.failed_stats();
+            auto [spreading, planner_type, misc_str, iterations, invalid_nodes, valid_nodes, goal_attempts] = planner.failed_stats();
             std::cout << "got stats for unsolved planner" << std::endl;
-            WriteStatsToFile(cfg->rad_curv, 1000, 10, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, cfg->output_file_root, snp::stats_file, planner.resultWithTime());
+            WriteStatsToFile(cfg->rad_curv, 1000, 10, TimeDuration(elapsed), planner.solved(), planner.approxSolved(), spreading, cfg->variable_curvature, planner_type, iterations, planner.size(), invalid_nodes, valid_nodes, goal_attempts, misc_str, cfg->output_file_root, snp::stats_file, planner.resultWithTime());
         }
     }
     else {

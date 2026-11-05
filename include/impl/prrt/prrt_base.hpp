@@ -72,12 +72,12 @@ struct WorkerStats<false> {
 
 template <>
 struct WorkerStats<true> {
-    mutable std::size_t invalidNodes_{0};
-    mutable std::size_t validNodes_{0};
-    mutable std::size_t goalAttempts_{0};
-    mutable std::size_t iterations_{0};
-    mutable std::size_t biasedSamples_{0};
-    mutable std::size_t addedStart_{0};
+    mutable std::double_t invalidNodes_{0};
+    mutable std::double_t validNodes_{0};
+    mutable std::double_t goalAttempts_{0};
+    mutable std::double_t iterations_{0};
+    mutable std::double_t biasedSamples_{0};
+    mutable std::double_t addedStart_{0};
     mutable TimerStat<> validMotion_;
     mutable TimerStat<> nearest_;
 
@@ -88,6 +88,12 @@ struct WorkerStats<true> {
     void countBiasedSample() const { ++biasedSamples_; }
     void countAddedStart() const {++addedStart_; }
 
+    std::double_t& invalidNodes() const { return invalidNodes_; }
+    std::double_t& validNodes() const { return validNodes_; }
+    std::double_t& goalAttempts() const { return goalAttempts_; }
+    std::double_t& iterations() const { return iterations_; }
+    std::double_t& baisedSamples() const { return biasedSamples_; }
+    std::double_t& addedStart() const { return addedStart_; }
     TimerStat<>& validMotion() const { return validMotion_; }
     TimerStat<>& nearest() const { return nearest_; }
 

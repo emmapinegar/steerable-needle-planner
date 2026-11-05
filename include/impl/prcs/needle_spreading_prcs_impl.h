@@ -600,12 +600,23 @@ class NeedleSpreadingPRCS : public
      * 
      * @returns cost, size, goal node, path arc length, path total phi, spreading, planner type
      */
-    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&> stats() const {
+    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&, Str&, RealNum&, RealNum&, RealNum&, RealNum&> stats() const {
         auto [cost, size, n] = bestSolution();
         RealNum length = n->length();
         RealNum ang_total = n->ang_total();
         Str planner_type = "7";
-        return {cost, size, n, length, ang_total, true, planner_type};
+
+        WorkerStats<true> stats;
+
+        for (unsigned i=0 ; i<workers_.size() ; ++i) {
+            stats += workers_[i];
+        }
+        RealNum iterations = stats.iterations();
+        RealNum invalidNodes = stats.invalidNodes(); 
+        RealNum validNodes = stats.validNodes();
+        RealNum goalAttempts = stats.goalAttempts();
+        Str misc_str = propagator_.RadCurvStr(); 
+        return {cost, size, n, length, ang_total, true, planner_type, misc_str, iterations, invalidNodes, validNodes, goalAttempts};
     }
 
     /**
@@ -613,9 +624,20 @@ class NeedleSpreadingPRCS : public
      * 
      * @returns spreading, planner type
      */
-    std::tuple<bool, Str&> failed_stats() const {
+    std::tuple<bool, Str&, Str&, RealNum&, RealNum&, RealNum&, RealNum&> failed_stats() const {
         Str planner_type = "7";
-        return {true, planner_type};
+
+        WorkerStats<true> stats;
+
+        for (unsigned i=0 ; i<workers_.size() ; ++i) {
+            stats += workers_[i];
+        }        
+        RealNum iterations = stats.iterations();
+        RealNum invalidNodes = stats.invalidNodes(); 
+        RealNum validNodes = stats.validNodes();
+        RealNum goalAttempts = stats.goalAttempts();
+        Str misc_str = propagator_.RadCurvStr(); 
+        return {true, planner_type, misc_str, iterations, invalidNodes, validNodes, goalAttempts};
     } 
 
     /**
@@ -857,6 +879,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             auto duplicatedStart = similarStart(planner, node->parent(), from);
 
             if (duplicatedStart) {
+                Stats::countInvalidNode();
                 recycle(node);
                 return;
             }
@@ -884,13 +907,14 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                 auto [isGoal, goalDist, goalState] = scenario_goal<Scenario>::check(scenario_, node->state());
 
                 if (isGoal) {
+                    Stats::countGoalAttempts();
                     // TODO actually get it to add the goal to the tree and check it
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation()); 
 
                     if (scenario_.valid(goalState, goalLength, goalAngle)) {
                         if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
-                            Stats::countValidNode();
+                            // Stats::countValidNode();
                             auto const& goalCost = node->cost() + scenario_.CurveCost(node->state(), goalState)
                                                 + scenario_.FinalStateCost(goalState);
                                                 
@@ -902,20 +926,17 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                             goalNode->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
                             goalNode->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
                             planner.foundGoal(goalNode);
-                        } else {
-                            Stats::countInvalidNode();
                         }
-                    } else {
-                        Stats::countInvalidNode();
                     }
                 }
                 else if (!planner.solved() && goalDist < bestDist_) {
+                    Stats::countGoalAttempts();
                     auto const& goalLength = node->length() + snp::CurveLength(node->state(), goalState);
                     auto const& goalAngle  = node->ang_total() + DirectionDifference(node->state().rotation(), goalState.rotation());
 
                     if (scenario_.valid(goalState, goalLength, goalAngle)) {
                         if (scenario_.validator().ValidMotion(node->state(), goalState, scenario_.Config())) {
-                            Stats::countValidNode();
+                            // Stats::countValidNode();
                             bestDist_ = goalDist;
                             auto goalNode = planner.foundApproxGoal(node, goalState, nodePool_, &bestDist_);
 
@@ -927,11 +948,7 @@ class NeedleSpreadingPRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
                                 (*goalNode)->radius() = RadiusOfCurvature(node->state().translation(), node->state().rotation(), goalState.translation());
                                 (*goalNode)->theta() = Theta(node->state().translation(), node->state().rotation(), goalState.translation());
                             }
-                        } else {
-                            Stats::countInvalidNode();
                         }
-                    } else {
-                        Stats::countInvalidNode();
                     }
                 }
 

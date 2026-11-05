@@ -532,13 +532,26 @@ class NeedleSpreadingPRRT : public
      * 
      * @returns cost, size, goal node, path arc length, path total phi
      */
-    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&> stats() const {
+    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&, Str&, RealNum&, RealNum&, RealNum&, RealNum&> stats() const {
         Str planner_type = "5";
-
+        Str misc_info = "";
         auto [cost, size, n] = bestSolution();
         RealNum length = n->length();
         RealNum ang_total = n->ang_total();
-        return {cost, size, n, length, ang_total, true, planner_type};
+
+
+        WorkerStats<true> stats;
+
+        for (unsigned i=0 ; i<workers_.size() ; ++i) {
+            stats += workers_[i];
+        }
+
+        RealNum iterations = stats.iterations();
+        RealNum invalidNodes = stats.invalidNodes(); 
+        RealNum validNodes = stats.validNodes();
+        RealNum goalAttempts = stats.goalAttempts();
+
+        return {cost, size, n, length, ang_total, true, planner_type, misc_info, iterations, invalidNodes, validNodes, goalAttempts};
 
     }
 
@@ -548,9 +561,22 @@ class NeedleSpreadingPRRT : public
      * 
      * @returns cost, size, goal node, path arc length, path total phi
      */
-    std::tuple<bool, Str&> failed_stats() const {
+    std::tuple<bool, Str&, Str&, RealNum&, RealNum&, RealNum&, RealNum&> failed_stats() const {
         Str planner_type = "5";
-        return {true, planner_type};
+        Str misc_info = "";
+
+        WorkerStats<true> stats;
+
+        for (unsigned i=0 ; i<workers_.size() ; ++i) {
+            stats += workers_[i];
+        }
+
+        RealNum iterations = stats.iterations();
+        RealNum invalidNodes = stats.invalidNodes(); 
+        RealNum validNodes = stats.validNodes();
+        RealNum goalAttempts = stats.goalAttempts();
+
+        return {true, planner_type, misc_info, iterations, invalidNodes, validNodes, goalAttempts};
     }  
 
     /**

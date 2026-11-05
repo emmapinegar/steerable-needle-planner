@@ -7,8 +7,8 @@ cd ./build
 seed_array=(8965)
 scan_array=(1)                  # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
 phi_arr=(180)
-rads=(25) # 50 100)
-sgs=(1500) # 550 600 650 700 750 800 850 900 950) #(1500 1550 1600 1650 1700 1750 1800 1850 1900 1950)
+rads=(15 25 50 100 15 25 50 100 250)
+sgs=(1500 1500 1500 1500 0 500 1000 1500 2000)
 seed=8965
 scan=1
 ell=100
@@ -16,7 +16,7 @@ timeout=100000
 multi_timeout=10000
 test_timeout=1000
 bias=0.05
-num_sg=10
+num_sg=500
 stats_file="./../data/output/planner_stats.txt"
 multi_file="./../data/output/planner_stats_multi.txt"
 test_file="./../data/output/planner_stats_multi_test.txt"
@@ -65,31 +65,31 @@ if [$test_sg_pairs]; then
 fi
 
 
-# saving to test file to not mess up existing data
-for j in ${scan_array[@]}
-do
+# # saving to test file to not mess up existing data
+# for j in ${scan_array[@]}
+# do
 
-    for ((i=0;i<${#rads[@]};i++));  
-    do
-        for ((k=0;k<${#sgs[@]};k++));
-        do
-            echo ""
-            echo "seed $i scan $j radius ${rads[$i]}"
-            echo ""
+#     for ((i=0;i<${#rads[@]};i++));  
+#     do
+#         for ((k=0;k<${#sgs[@]};k++));
+#         do
+#             echo ""
+#             echo "seed $i scan $j radius ${rads[$i]}"
+#             echo ""
     
-            # https://www.geeksforgeeks.org/linux-unix/array-basics-shell-scripting-set-2-using-loops/
+#             # https://www.geeksforgeeks.org/linux-unix/array-basics-shell-scripting-set-2-using-loops/
 
 
-                ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-                ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-                ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-                ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-                ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
-        done
+#                 ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+#                 ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+#                 ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+#                 ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+#                 ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi 180 -timeout $test_timeout -bias $bias -sg_index ${sgs[$k]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+#         done
 
-    done  
+#     done  
 
-done
+# done
 
 
 # # standard experiments with and without variable curvature
@@ -141,14 +141,14 @@ done
 #         do
 
 #             ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file -var_curve
-#             # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file -var_curve
-#             # ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file -var_curve
-#             # ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file -var_curve
+#             ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file -var_curve
+#             ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file -var_curve
+#             ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file -var_curve
 
-#             # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file
-#             # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file
-#             # ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file
-#             # ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file
+#             ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file
+#             ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file
+#             ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file
+#             ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $stats_file
 
 #         done
         
@@ -158,37 +158,38 @@ done
 
 
 
-# for j in ${scan_array[@]}
-# do
+for j in ${scan_array[@]}
+do
 
-#     for p in ${phi_arr[@]}
-#     do
+    for p in ${phi_arr[@]}
+    do
 
-#         for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
-#         do
-#             echo ""
-#             echo "seed $i scan $j radius ${rads[$i]}"
-#             echo ""
+        for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
+        do
+            echo ""
+            echo "seed $i scan $j radius ${rads[$i]}"
+            echo ""
  
-#             ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_stats_file -var_curve -multi
-#             ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_stats_file -var_curve -multi
-#             ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_stats_file -var_curve -multi
-#             ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_stats_file -var_curve -multi
-#         done
+            ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+            ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+            ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+            ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+            ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+        done
 
 
-#         # for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
-#         # do
-#         #     echo ""
-#         #     echo "seed $i scan $j radius ${rads[$i]}"
-#         #     echo ""
+        # for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
+        # do
+        #     echo ""
+        #     echo "seed $i scan $j radius ${rads[$i]}"
+        #     echo ""
 
-#         #     ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_stats_file -multi
-#         #     ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_stats_file -multi
-#         #     ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_stats_file -multi
-#         #     ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_stats_file -multi
-#         # done
+        #     ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        #     ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        #     ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        #     ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        # done
         
-#     done
+    done
 
-# done
+done

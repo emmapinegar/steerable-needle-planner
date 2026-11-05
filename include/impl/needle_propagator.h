@@ -301,6 +301,12 @@ class MotionPrimitivePropagator {
                 motion_primitives_[r].emplace_back(length_sequence_[i], rad, cfg->validity_res);
             }
         }
+
+        rad_str_ = "";
+        for (unsigned i = 0; i < rad_sequence_.size(); i++) {
+            rad_str_ += std::to_string(rad_sequence_[i]);
+            rad_str_ += ";";
+        }
     }
 
     /**
@@ -380,6 +386,10 @@ class MotionPrimitivePropagator {
      */
     const std::vector<RealNum>& RadCurvList() const {
         return rad_sequence_;
+    }
+
+    const Str& RadCurvStr() const {
+        return rad_str_;
     }
 
     /**
@@ -466,6 +476,8 @@ class MotionPrimitivePropagator {
     std::vector<RealNum> rad_sequence_;
     std::vector<RealNum> length_sequence_;
     std::vector<RealNum> angle_sequence_;
+
+    Str rad_str_;
 
     std::vector<std::vector<MotionPrimitive<State>>> motion_primitives_;
 };

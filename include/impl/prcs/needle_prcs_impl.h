@@ -614,12 +614,23 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
      * 
      * @returns cost, size, goal node, path arc length, path total phi, spreading, planner type
      */
-    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&> stats() const {
+    std::tuple<Distance, std::size_t, const Node*, RealNum&, RealNum&, bool, Str&, Str&, RealNum&, RealNum&, RealNum&, RealNum&> stats() const {
         auto [cost, size, n] = bestSolution();
         RealNum length = n->length();
         RealNum ang_total = n->ang_total();
         Str planner_type = "3";
-        return {cost, size, n, length, ang_total, false, planner_type};
+
+        WorkerStats<true> stats;
+
+        for (unsigned i=0 ; i<workers_.size() ; ++i) {
+            stats += workers_[i];
+        }
+        RealNum iterations = stats.iterations();
+        RealNum invalidNodes = stats.invalidNodes(); 
+        RealNum validNodes = stats.validNodes();
+        RealNum goalAttempts = stats.goalAttempts();
+        Str misc_str = propagator_.RadCurvStr();
+        return {cost, size, n, length, ang_total, false, planner_type, misc_str, iterations, invalidNodes, validNodes, goalAttempts};
     }
 
     /**
@@ -627,9 +638,20 @@ class NeedlePRCS : public PlannerBase<NeedlePRCS<Scenario, maxThreads, reportSta
      * 
      * @returns spreading, planner type
      */
-    std::tuple<bool, Str&> failed_stats() const {
+    std::tuple<bool, Str&, Str&, RealNum&, RealNum&, RealNum&, RealNum&> failed_stats() const {
         Str planner_type = "3";
-        return {false, planner_type};
+
+        WorkerStats<true> stats;
+
+        for (unsigned i=0 ; i<workers_.size() ; ++i) {
+            stats += workers_[i];
+        }
+        RealNum iterations = stats.iterations();
+        RealNum invalidNodes = stats.invalidNodes(); 
+        RealNum validNodes = stats.validNodes();
+        RealNum goalAttempts = stats.goalAttempts();
+        Str misc_str = propagator_.RadCurvStr();
+        return {false, planner_type, misc_str, iterations, invalidNodes, validNodes, goalAttempts};
     }    
 
     /**
@@ -936,6 +958,7 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             auto duplicatedStart = similarState(planner, node->parent(), from);
 
             if (duplicatedStart) {
+                Stats::countInvalidNode();
                 recycle(node);
                 return;
             }
@@ -988,7 +1011,6 @@ class NeedlePRCS<Scenario, maxThreads, reportStats, NNStrategy>::Worker
             } else {
                 Stats::countInvalidNode();
             }
-
         } else {
             Stats::countInvalidNode();
         }

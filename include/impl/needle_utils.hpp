@@ -1049,7 +1049,7 @@ void PrintActions(const std::vector<std::vector<RealNum>> actions, std::ostream&
  * @param out: stream to print information to
  */
 void WriteAllActionsToFile(const std::vector<std::vector<std::vector<RealNum>>> allActions, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
-                      const bool spreading, const bool variable_curvature, const Str& planner_type, const Str& file_root, const Str& file_name) {
+                      const bool spreading, const bool variable_curvature, const Str& planner_type, const RealNum& iterations, const RealNum& nodes, const RealNum& invalid_nodes, const RealNum& valid_nodes, const RealNum& goal_attempts, const Str& misc_info, const Str& file_root, const Str& file_name) {
     std::ofstream fout;
     fout.open(file_name, std::ios::app); //https://www.w3resource.com/cpp-exercises/file-handling/cpp-file-handling-exercise-7.php#:~:text=Use%20the%20std%3A%3Aofstream,using%20the%20is_open()%20function.
 
@@ -1077,6 +1077,7 @@ void WriteAllActionsToFile(const std::vector<std::vector<std::vector<RealNum>>> 
             
         }
         fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << selected_length << "," << selected_angle << "," << elapsed << "," << success << "," << approx_success;
+        fout << "," << iterations << "," << nodes << "," << invalid_nodes << "," << valid_nodes << "," << goal_attempts;
         fout << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",";
         fout << "\"[" << lengths << "]\",\"[" << radii << "]\",\"[" << angles << "]\"" << std::endl;
     }
@@ -1091,7 +1092,7 @@ void WriteAllActionsToFile(const std::vector<std::vector<std::vector<RealNum>>> 
  * @param out: stream to print information to
  */
 void WriteBestActionsToFile(const std::vector<std::vector<RealNum>> actions, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
-                      const bool spreading, const bool variable_curvature, const Str& planner_type, const Str& file_root, const Str& file_name) {
+                      const bool spreading, const bool variable_curvature, const Str& planner_type, const RealNum& iterations, const RealNum& nodes, const RealNum& invalid_nodes, const RealNum& valid_nodes, const RealNum& goal_attempts, const Str& misc_info, const Str& file_root, const Str& file_name) {
     std::ofstream fout;
     fout.open(file_name, std::ios::app); //https://www.w3resource.com/cpp-exercises/file-handling/cpp-file-handling-exercise-7.php#:~:text=Use%20the%20std%3A%3Aofstream,using%20the%20is_open()%20function.
 
@@ -1116,6 +1117,7 @@ void WriteBestActionsToFile(const std::vector<std::vector<RealNum>> actions, con
         
     }
     fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << selected_length << "," << selected_angle << "," << elapsed << "," << success << "," << approx_success;
+    fout << "," << iterations << "," << nodes << "," << invalid_nodes << "," << valid_nodes << "," << goal_attempts;
     fout << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",";
     fout << "\"[" << lengths << "]\",\"[" << radii << "]\",\"[" << angles << "]\"" << std::endl;
     
@@ -1142,7 +1144,7 @@ void WriteBestActionsToFile(const std::vector<std::vector<RealNum>> actions, con
  * @returns bool true if stats were written to file, false otherwise
  */
 bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, const RealNum& ang_total, const double elapsed, const bool success, const bool approx_success, 
-                      const bool spreading, const bool variable_curvature, const Str& planner_type, const Str& file_root, const Str& file_name, const std::vector<std::tuple<float, RealNum, RealNum, RealNum>>& results, const bool show_log)
+                      const bool spreading, const bool variable_curvature, const Str& planner_type, const RealNum& iterations, const RealNum& nodes, const RealNum& invalid_nodes, const RealNum& valid_nodes, const RealNum& goal_attempts, const Str& misc_info, const Str& file_root, const Str& file_name, const std::vector<std::tuple<float, RealNum, RealNum, RealNum>>& results, const bool show_log)
 {
     std::ofstream fout;
     fout.open(file_name, std::ios::app); //https://www.w3resource.com/cpp-exercises/file-handling/cpp-file-handling-exercise-7.php#:~:text=Use%20the%20std%3A%3Aofstream,using%20the%20is_open()%20function.
@@ -1171,11 +1173,12 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
         angles += ",";
     }
 
-
-    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
+    MPT_LOG(INFO) << "writing stats to file";
+    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << iterations << "," << nodes << "," << invalid_nodes << "," << valid_nodes << "," << goal_attempts << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
     fout.close();
 
-    std::cout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << std::endl;
+    MPT_LOG(INFO) << "printing stats";
+    std::cout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << iterations << "," << nodes << "," << invalid_nodes << "," << valid_nodes << "," << goal_attempts << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << std::endl;
     if (show_log) {
         std::cout << "Result with " << path_length << " mm long path and " << ang_total << " radians with to " << file_name << std::endl;
     }
