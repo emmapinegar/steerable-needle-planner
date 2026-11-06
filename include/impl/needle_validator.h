@@ -431,11 +431,11 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
     if (cfg->variable_curvature) {
         Vec3 sz = sq*Vec3::UnitZ();
         Vec3 sb = normal_vec.cross(sz);
-        // auto [new_skull_point, new_r_mag] = cfg->new_bounds->NearestBoundaryCenter(sp, normal_vec, cfg->needle_mag*sz, sb);
-        // // std::cout << "\nnew skull: " << new_skull_point.transpose() << " r: " << new_r_mag << " sp: " << sp.transpose() << " normal: " << normal_vec.transpose() << " r: " << (sp-new_skull_point).normalized().transpose()  << " ||r||: " << (sp-new_skull_point).norm() << std::endl;
-        // auto [new_skull_point_, new_r_mag_] = cfg->new_bounds->NearestBoundaryCenter(sp + (new_skull_point - sp).norm()*normal_vec, normal_vec, cfg->needle_mag*sz, sb);
-        // RealNum skull_pos_rad = GetCurvatureLim(MM_TO_M*sp, MM_TO_M*new_skull_point_, normal_vec, sq, cfg);
-        // // std::cout << " new skull: " << new_skull_point_.transpose() << " r limit: " << skull_pos_rad << " r: " << new_r_mag_ << " sp: " << sp.transpose() << " normal: " << normal_vec.transpose() << " r: " << (sp-new_skull_point_).normalized().transpose()  << " ||r||: " << (sp-new_skull_point_).norm() << std::endl;
+        auto [new_skull_point, new_r_mag] = cfg->new_bounds->NearestBoundaryCenter(sp, normal_vec, cfg->needle_mag*sz, sb);
+        std::cout << "\nnew skull: " << new_skull_point.transpose() << "\tr: " << new_r_mag << "\tsp: " << sp.transpose() << "\tnormal: " << normal_vec.transpose() << "\tr: " << (sp-new_skull_point).normalized().transpose()  << "\t||r||: " << (sp-new_skull_point).norm() << std::endl;
+        auto [new_skull_point_, new_r_mag_] = cfg->new_bounds->NearestBoundaryCenter(sp + (new_skull_point - sp).norm()*normal_vec, normal_vec, cfg->needle_mag*sz, sb);
+        RealNum skull_pos_rad = GetCurvatureLim(MM_TO_M*sp, MM_TO_M*new_skull_point_, normal_vec, sq, cfg);
+        std::cout << "new skull: " << new_skull_point_.transpose() << "\tr: " << new_r_mag_ << "\tsp: " << sp.transpose() << "\tnormal: " << normal_vec.transpose() << "\tr: " << (sp-new_skull_point_).normalized().transpose()  << "\t||r||: " << (sp-new_skull_point_).norm() <<  "\tr limit: " << skull_pos_rad << std::endl;
 
 
         // auto [new_skull_point__, new_r_mag__] = cfg->new_bounds->NearestBoundaryCenter(sp - (new_skull_point - sp).norm()*normal_vec, normal_vec, cfg->needle_mag*sz, sb);
@@ -513,6 +513,10 @@ RealNum GetCurvatureNormal(const Vec3& sp, const Quat& sq, const Vec3& normal_ve
 
         RealNum curvature_lim_pos = GetCurvatureLim(p, MM_TO_M*skull_point_pos, normal_vec, sq, cfg);
         RealNum curvature_lim_neg = GetCurvatureLim(p, MM_TO_M*skull_point_neg, normal_vec, sq, cfg);
+
+        std::cout << " skull+: " << skull_point_pos.transpose() << " lim: " << curvature_lim_pos << " r: " << (sp-skull_point_pos).normalized().transpose() <<  std::endl;
+        std::cout << " skull-: " << skull_point_neg.transpose() << " lim: " << curvature_lim_neg << " r: " << (sp-skull_point_neg).normalized().transpose() <<  std::endl;
+
 
         RealNum curvature_lim = std::fmin(curvature_lim_neg, curvature_lim_pos);
 
@@ -716,6 +720,8 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
     //     std::cout << "\n\tverifying p: " << gp.transpose() << std::endl;
     // }
     
+    std::cout << "desired radius: " << RadiusOfCurvature(sp, st, gp) << std::endl;
+
 
     // checking that there aren't collisions along the path, if the path is relatively straight
     if (cos_theta > 1 - EPS) {
@@ -737,6 +743,7 @@ bool ValidMotion(const State& from, const State& to, EnvPtr env, const RealNum& 
 
             if (cfg->variable_curvature) {
                 // get the default radius of curvature limit since it's a straight motion, not a super necessary check
+                
                 result_rad = GetCurvature(result_p, sq_normalized, cfg, rad_curv); 
 
                 // if the "distance to the trumpet boundary" is "nonzero" return false
@@ -890,6 +897,8 @@ bool ValidMotion(const State& new_base, const std::vector<State>& motion, EnvPtr
 
     result_p = base_q * motion[motion.size()-1].translation() + base_p;
     Vec3 goal_p = base_q * motion[motion.size()-1].translation() + base_p;
+
+    std::cout << "desired radius: " << RadiusOfCurvature(base_p, base_t, goal_p) << " primitive: " << motion_rad << std::endl;
     if (!env->CollisionFree(result_p)) {
         if (global_record_samples) {
             global_sample_stream << goal_p.transpose() << " 1" << std::endl;

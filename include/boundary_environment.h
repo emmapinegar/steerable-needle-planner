@@ -106,16 +106,15 @@ namespace unc::robotics::nigh::metric {
                     Vec3 tau = torque(bound, query);
                     Vec3 f = force(bound, query);
                     if (f.norm() > 1.5e-3) {
-                        dist = 100*tau.normalized().cross(query.direction).norm();
+                        dist = 0.1/std::abs(tau.normalized().dot(query.direction)) + 100*tau.normalized().cross(query.direction).norm() + 1000*f.norm();
                     } else {
-                        dist = 100*tau.normalized().cross(query.direction).norm();
+                        dist = 0.1/std::abs(tau.normalized().dot(query.direction)) + 100*tau.normalized().cross(query.direction).norm() + 1000*f.norm();
                     }
                     
                     // std::cout << "\n\tquery p: " << query.point.transpose() <<  " bound p: " << bound.point.transpose()  << " n: " << query.direction.transpose() << " b: " << query.b.transpose() << std::endl;
-                    // std::cout << "\t dist: " << dist << " ||tau||: " << tau.norm() << " tau: " << tau.transpose() << " tau hat: " << tau.normalized().transpose() << std::endl;
+                    // std::cout << "\t dist: " << dist << " ||tau||: " << tau.norm() << " tau: " << tau.transpose() << " tau hat: " << tau.normalized().transpose() << " tau dot: " << tau.normalized().dot(query.direction) << " tau cross: " << tau.normalized().cross(query.direction).norm() << std::endl;
                     // std::cout << "\t force: " << f.transpose() << " ||f||: " << f.norm() <<  " rhat: " << r_hat.transpose() << " ||r||: " << r.norm() << std::endl;
                 }
-                
             }
             else {
                 dist = r.norm();
