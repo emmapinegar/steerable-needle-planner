@@ -1078,7 +1078,7 @@ void WriteAllActionsToFile(const std::vector<std::vector<std::vector<RealNum>>> 
         }
         fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << selected_length << "," << selected_angle << "," << elapsed << "," << success << "," << approx_success;
         fout << "," << iterations << "," << nodes << "," << invalid_nodes << "," << valid_nodes << "," << goal_attempts;
-        fout << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",";
+        fout << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << misc_info << "," << file_root << ",";
         fout << "\"[" << lengths << "]\",\"[" << radii << "]\",\"[" << angles << "]\"" << std::endl;
     }
 }
@@ -1118,7 +1118,7 @@ void WriteBestActionsToFile(const std::vector<std::vector<RealNum>> actions, con
     }
     fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << selected_length << "," << selected_angle << "," << elapsed << "," << success << "," << approx_success;
     fout << "," << iterations << "," << nodes << "," << invalid_nodes << "," << valid_nodes << "," << goal_attempts;
-    fout << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",";
+    fout << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << misc_info << "," << file_root << ",";
     fout << "\"[" << lengths << "]\",\"[" << radii << "]\",\"[" << angles << "]\"" << std::endl;
     
 }
@@ -1174,7 +1174,7 @@ bool WriteStatsToFile(const RealNum& curvature, const RealNum& path_length, cons
     }
 
     MPT_LOG(INFO) << "writing stats to file";
-    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << iterations << "," << nodes << "," << invalid_nodes << "," << valid_nodes << "," << goal_attempts << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << file_root << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
+    fout << scan_number << "," << global_sg_index << "," << global_sg_mag << "," << planner_type << "," << path_length << "," << ang_total << "," << elapsed << "," << success << "," << approx_success << "," << iterations << "," << nodes << "," << invalid_nodes << "," << valid_nodes << "," << goal_attempts << "," << spreading << "," << global::angle_constraint_degree << "," << global::needle_max_insertion << "," << global::needle_min_curve_rad << "," << variable_curvature << "," << global_multi_threading << "," << misc_info << "," << file_root << ",\"[" << times << "]\",\"[" << costs << "]\",\"[" << lengths << "]\",\"[" << angles << "]\"" <<  std::endl; //"," << file_root <<
     fout.close();
 
     MPT_LOG(INFO) << "printing stats";
