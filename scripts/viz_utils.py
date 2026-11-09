@@ -15,7 +15,7 @@ _PINK = '#C33AAC'
 _RED = '#BF0F67'
 
 
-stats_indices = {'env': 0, 'sg_index': 1, 'sg_mag': 2, 'planner': 3, 'ell': 4, 'phi': 5, 'time': 6, 'success': 7, 'approx_success': 8, 'spreading': 9, 'maxphi': 10, 'maxell': 11, 'minrad': 12, 'varcurv':13, 'multi':14, 'root': 15,'times': 16, 'costs': 17, 'lengths': 18, 'phis': 19}
+stats_indices = {'env': 0, 'sg_index': 1, 'sg_mag': 2, 'planner': 3, 'ell': 4, 'phi': 5, 'time': 6, 'success': 7, 'approx_success': 8, 'iterations': 9, 'nodes': 10, 'invalid_nodes': 11, 'valid_nodes': 12, 'goal_attempts': 13, 'spreading': 14, 'maxphi': 15, 'maxell': 16, 'minrad': 17, 'varcurv':18, 'multi':19, 'misc_info': 20, 'root': 21,'times': 22, 'costs': 23, 'lengths': 24, 'phis': 25}
 viz_params = {'alpha': 0.25, 'rotation': 10, 'width': 0.2, 'textsize': 10, 'titlesize': 34, 'subtitlesize': 22, 'labelsize': 22, 'ticksize': 15, 'legendsize': 15, 'capstyle': "round", 'dashjoinstyle': "round"}
 
 
@@ -35,13 +35,15 @@ class Planner:
 rrt_info = Planner(1, _PINK, r'RGRRT', '-', 'o')
 aorrt_info = Planner(2, _ORANGE, r'AORRT', (0,(2,2)), 'v')
 rcs_info = Planner(3, _BLUE, r'RCS', (0,(1,2)), 'x') #
-rcsstar_info = Planner(4, _INDIGO, r'RCS*', (0,(0.25,2)), 'P') #
+rcsstar_info = Planner(4, _INDIGO, r'RCS*', (0,(0.25,2)), 'P') 
 
-rrt_spreading_info = Planner(5, _RED, r'RGRRT_s', '-', '.')
-aorrt_spreading_info = Planner(6, _RED, r'AORRT_s', '-', '.')
-rcs_spreading_info = Planner(7, _RED, r'RCS_s', '-', '.')
+aorrt_imp_info = Planner(5, _BLUSH, r'AORRT_i', (0,(2,2)), 'v')
 
-planners = [rrt_info, aorrt_info, rcs_info, rcsstar_info] #, rrt_spreading_info, aorrt_spreading_info, rcs_spreading_info]
+# rrt_spreading_info = Planner(5, _RED, r'RGRRT_s', '-', '.')
+# aorrt_spreading_info = Planner(6, _RED, r'AORRT_s', '-', '.')
+# rcs_spreading_info = Planner(7, _RED, r'RCS_s', '-', '.')
+
+planners = [rrt_info, aorrt_info, rcs_info, rcsstar_info, aorrt_imp_info] #, rrt_spreading_info, aorrt_spreading_info, rcs_spreading_info]
 
 
 

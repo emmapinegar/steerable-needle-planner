@@ -1252,8 +1252,8 @@ def get_statistics(data, time_data):
 def get_all_data(directory, file_spec):
     files = fnmatch.filter(os.listdir(directory), file_spec)
 
-    data = np.empty((0,15))
-    file_data = np.empty((0,1))
+    data = np.empty((0,20))
+    file_data = np.empty((0,2))
     time_data = np.empty((0,4))
     for file in files:
 
@@ -1271,8 +1271,8 @@ def get_all_data(directory, file_spec):
 
 def get_data(file):
 
-    data = np.empty((0,15))
-    file_data = np.empty((0,1))
+    data = np.empty((0,20))
+    file_data = np.empty((0,2))
     time_data = np.empty((0,4))
 
     def conv(x):
@@ -1285,11 +1285,11 @@ def get_data(file):
         
     convs = {0: lambda x: conv(x), 1: lambda x: conv(x), 2: lambda x: conv(x), 3: lambda x: conv(x)}
 
-    next_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14))
-    next_file_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(15), dtype=str)
-    next_time_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(16,17,18,19), converters=conv, dtype=object, quotechar='"')
+    next_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19))
+    next_file_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(20,21), dtype=str)
+    next_time_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(22,23,24,25), converters=conv, dtype=object, quotechar='"')
 
-    next_file_data = np.reshape(next_file_data, (-1, 1))
+    next_file_data = np.reshape(next_file_data, (-1, 2))
     data = np.vstack((data, next_data))
     file_data = np.vstack((file_data, next_file_data))
     time_data = np.vstack((time_data, next_time_data))
@@ -1301,6 +1301,9 @@ if __name__=='__main__':
 
     data, file_data, time_data = get_all_data('./../data/output/', '*_stats_multi.txt')
 
+    new_aorrt_inds = np.where(np.char.rfind(file_data[:,1], "aorrt_improved") > -1)[0]
+    data[new_aorrt_inds,stats_indices['planner']] = 5
+
     pairs_mins = get_min_ell(data, time_data)
 
     data, time_data = scale_distances(data, time_data, pairs_mins)
@@ -1310,18 +1313,18 @@ if __name__=='__main__':
     # single_inds = np.where(np.logical_and(data[:,stats_indices['varcurv']] == 0,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))[0]
     # make_generic_test_figures(data[single_inds,:], time_data[single_inds,:], make_success_time_figure, r'Success vs. Time', r'Time (seconds)', r'Success Percentage', stats_indices['lengths'], 0.0001, 100, -1, 100, True, False)
 
-    print(file_data[:,0])
-    file_matches = np.char.rfind(file_data[:,0], "aorrt_improved")
+    # print(file_data[:,0])
+    # file_matches = np.char.rfind(file_data[:,0], "aorrt_improved")
 
     # find the mutli threaded 180 degree set of dynamic and non dynamic limits and plot them like the common planning problems
-    mutli_inds = np.where(np.logical_and(file_matches == -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
+    mutli_inds = np.where(np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))[0]
     make_generic_test_figures(data[mutli_inds,:], time_data[mutli_inds,:], make_success_time_figure, r'Success vs. Time', r'Time (seconds)', r'Success Percentage', stats_indices['lengths'], 0.0001, 100, -1, 100, True, False)
 
-    get_statistics(data[mutli_inds,:], time_data[mutli_inds,:])
+    # get_statistics(data[mutli_inds,:], time_data[mutli_inds,:])
 
-    aorrt_imp_inds = np.where(np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
-    get_statistics(data[aorrt_imp_inds, :], time_data[aorrt_imp_inds, :])
-    make_generic_test_figures(data[aorrt_imp_inds, :], time_data[aorrt_imp_inds, :], make_success_time_figure, r'Success vs. Time', r'Time (seconds)', r'Success Percentage', stats_indices['lengths'], 0.0001, 100, -1, 100, True, False)
+    # aorrt_imp_inds = np.where(np.logical_and(file_matches > -1 , np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
+    # get_statistics(data[aorrt_imp_inds, :], time_data[aorrt_imp_inds, :])
+    # make_generic_test_figures(data[aorrt_imp_inds, :], time_data[aorrt_imp_inds, :], make_success_time_figure, r'Success vs. Time', r'Time (seconds)', r'Success Percentage', stats_indices['lengths'], 0.0001, 100, -1, 100, True, False)
 
     # files = fnmatch.filter(os.listdir('./../data/output/'), '*_stats*.txt')
     # for file in files:

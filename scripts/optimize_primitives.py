@@ -352,8 +352,8 @@ def get_statistics(data, time_data):
 def get_all_data(directory, file_spec):
     files = fnmatch.filter(os.listdir(directory), file_spec)
 
-    data = np.empty((0,15))
-    file_data = np.empty((0,1))
+    data = np.empty((0,20))
+    file_data = np.empty((0,2))
     action_data = np.empty((0,3))
     radius_data = []
     for file in files:
@@ -373,8 +373,8 @@ def get_all_data(directory, file_spec):
 
 def get_data(file):
 
-    data = np.empty((0,15))
-    file_data = np.empty((0,1))
+    data = np.empty((0,20))
+    file_data = np.empty((0,2))
     action_data = np.empty((0,3))
     radius_data = []
     
@@ -389,11 +389,11 @@ def get_data(file):
         
     convs = {0: lambda x: conv(x), 1: lambda x: conv(x), 2: lambda x: conv(x), 3: lambda x: conv(x)}
 
-    next_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14))
-    next_file_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(15), dtype=str)
-    next_file_data = np.reshape(next_file_data, (-1,1))
-    next_action_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(16,17,18), converters=conv, dtype=object, quotechar='"')
-    next_file_matches = np.char.rfind(next_file_data[:,0], "aorrt_improved")
+    next_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19))
+    next_file_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(20,21), dtype=str)
+    next_file_data = np.reshape(next_file_data, (-1,2))
+    next_action_data = np.loadtxt(file, delimiter=',', comments='#', usecols=(22,23,24), converters=conv, dtype=object, quotechar='"')
+    next_file_matches = np.char.rfind(next_file_data[:,1], "aorrt_improved")
 
     
 
@@ -627,19 +627,21 @@ def plot_all_data():
 
 if __name__=='__main__':
 
-    data, file_data, action_data, radius_data = get_all_data('./../data/output/', '*planner_best_actions*.txt')
-    file_matches = np.char.rfind(file_data[:,0], "aorrt_improved")
+    data, file_data, action_data, radius_data = get_all_data('./../data/output/', 'planner_best_actions.txt')
+    new_aorrt_inds = np.where(np.char.rfind(file_data[:,1], "aorrt_improved") > -1)[0]
+    data[new_aorrt_inds,stats_indices['planner']] = 5
     radius_data = np.array(radius_data, dtype=object)
 
 
     rrt_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
-    aorrt_imp_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(file_matches > -1, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
-    rcs_inds = np.where(np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
-    rcss_inds = np.where(np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180))))[0]
-
+    aorrt_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 2, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+    aorrt_imp_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 5, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+    rcs_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 3, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
+    rcss_inds = np.where(np.logical_and(data[:,stats_indices['minrad']] == 15, np.logical_and(data[:,stats_indices['planner']] == 4, np.logical_and(data[:,stats_indices['varcurv']] == 1,np.logical_and(data[:,stats_indices['multi']] == 1, data[:,stats_indices['maxphi']] == 180)))))[0]
 
     rrt_radius_data = get_radius_data(radius_data, rrt_inds)
-    aorrt_radius_data = get_radius_data(radius_data, aorrt_imp_inds)
+    aorrt_radius_data = get_radius_data(radius_data, aorrt_inds)
+    aorrt_imp_radius_data = get_radius_data(radius_data, aorrt_imp_inds)
     rcs_radius_data = get_radius_data(radius_data, rcs_inds)
     rcss_radius_data = get_radius_data(radius_data, rcss_inds)
 
@@ -656,8 +658,10 @@ if __name__=='__main__':
     mmd_init, mmd_grad_init = max_mean_discrepancy([0, 67], particle_rad_data)
     print(f"primitives: {[15, 88]} mmd: {mmd_init} mmd grad: {mmd_grad_init}")
 
-    plotter.figure()
-    plotter.hist([rrt_radius_data, aorrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color, planners[1].color], rwidth=0.9, stacked=True)
+    # plotter.figure()
+    # plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)
+
+
 
 
     print(f"radius data: {len(particle_rad_data)}")
@@ -671,26 +675,58 @@ if __name__=='__main__':
         kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, particle_rad_data)
         # kmeans_mmd_grad = max_mean_discrepancy_grad(codebook, radius_data)
         
+        plotter.figure()
+        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)
         plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.06 + i*0.001, c='k', alpha=0.5, marker='+')
+        plotter.xlabel(r'Curvature (meters$^{-1}$)')
+        plotter.ylabel("Curvature Probability")
+        plotter.title("KMeans Curvature Clusters with Best Plans")
 
-        bkmeans = BisectingKMeans(n_clusters=num_particles[i]).fit(np.array(particle_rad_data).reshape((-1,1)))
-        bkmeans_centers = np.array(bkmeans.cluster_centers_).reshape((-1,))
-        bkmeans_centers = np.array([0, bkmeans_centers[0], bkmeans_centers[1], 67])      
-        plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.0625 + i*0.001, c='k', alpha=0.5, marker='x')
+        # bkmeans = BisectingKMeans(n_clusters=num_particles[i]).fit(np.array(particle_rad_data).reshape((-1,1)))
+        # bkmeans_centers = np.array(bkmeans.cluster_centers_).reshape((-1,))
+        # bkmeans_centers = np.array([0, bkmeans_centers[0], bkmeans_centers[1], 67])      
+        # plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.0625 + i*0.001, c='k', alpha=0.5, marker='x')
 
         even = np.linspace(0, 67, num_particles[i]+2).reshape((-1,))
-        plotter.scatter(even, 0*even + 0.065 + i*0.001, c='k', alpha=0.1)
+
+        plotter.figure()
+        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)        
+        plotter.scatter(even, 0*even + 0.06 + i*0.001, c='k', alpha=0.1)
 
         even_mmd, even_mmd_grad = max_mean_discrepancy(even, particle_rad_data)
 
 
-        # print(bkmeans_centers)
-        bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, particle_rad_data)
-        # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
-        print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans {bkmeans_centers} mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
+        # # print(bkmeans_centers)
+        # bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, particle_rad_data)
+        # # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
+        # print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans {bkmeans_centers} mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
 
-        
-        for j in range(50):
+        plotter.figure()
+        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)
+        plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.06 + i*0.001, c='k', alpha=0.5, marker='+')
+        for j in range(10):
+            kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
+            plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.061 + i*0.01, c=colors[i], alpha=min(1, 0.125+j*0.025))
+            kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, particle_rad_data)
+
+            # bkmeans_centers = bkmeans_centers + bkmeans_mmd_grad
+            # plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.03 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
+            # bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, particle_rad_data)
+
+            # even[1:-1] = even[1:-1] + even_mmd_grad[1:-1]
+            # plotter.scatter(even, 0*even + 0.061 + j*0.001, c='k', alpha=min(1, 0.125+j*0.025))
+            # even_mmd, even_mmd_grad = max_mean_discrepancy(even, particle_rad_data)            
+            # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
+            # print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad}")            
+        plotter.xlabel(r'Curvature (meters$^{-1}$)')
+        plotter.ylabel("Curvature Probability")
+        plotter.title("MMD Gradient Descent of KMeans Curvature Clusters with Best Plans")
+
+
+        plotter.figure()
+        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)
+        plotter.scatter(even, 0*even + 0.06 + i*0.001, c='k', alpha=0.1)
+        for j in range(10):
             # kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
             # plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.02 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
             # kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, particle_rad_data)
@@ -700,11 +736,17 @@ if __name__=='__main__':
             # bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, particle_rad_data)
 
             even[1:-1] = even[1:-1] + even_mmd_grad[1:-1]
-            plotter.scatter(even, 0*even + 0.066 + j*0.001, c='k', alpha=min(1, 0.125+j*0.025))
+            plotter.scatter(even, 0*even + 0.061 + j*0.001, c='k', alpha=min(1, 0.125+j*0.025))
             even_mmd, even_mmd_grad = max_mean_discrepancy(even, particle_rad_data)            
             # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
-            print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad}")            
+            # print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad}")            
+        plotter.xlabel(r'Curvature (meters$^{-1}$)')
+        plotter.ylabel("Curvature Probability")
+        plotter.title("MMD Gradient Descent of Evenly Spaced Curvature Values with Best Plans")
 
+    # plotter.xlabel(r'Curvature (meters$^{-1}$)')
+    # plotter.ylabel("Curvature Probability")
+    # plotter.title("MMD Gradient Descent of Evenly Spaced Curvature Values with Best Plans")
     plotter.show()
 
 
