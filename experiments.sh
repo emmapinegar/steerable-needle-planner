@@ -6,15 +6,15 @@ cd ./build
 # seed_array=(8972 1784 7583 3829 6784 8392 7489 8753 4637 9874 4812 13242 9238 16458 5435 1658 535 4326 4389 6532 3063 2164 1167 7890 6114 2631 9296 1743 8294 4326 4439 7010 3880 3423 5432 2349) #(4545 3746 4654 8796 1564 3034 8653 4854 1318 5624)
 seed_array=(8965)
 scan_array=(1)                  # https://www.digitalocean.com/community/tutorials/arrays-in-shell-scripts
-phi_arr=(180)
-rads=(15) # 25 50 100 15 25 50 100 250)
-sgs=(1500) # 1500 1500 1500 0 500 1000 1500 2000)
+phi_arr=(180 90)
+rads=(15 15 15 15 15) #25 50 100 250) # 15 25 50 100)
+sgs=(0 500 1000 1500 2000) # 1500 1500 1500 1500)
 seed=8965
 scan=1
 ell=100
 timeout=100000
 multi_timeout=10000
-test_timeout=200000
+test_timeout=1000
 bias=0.05
 num_sg=500
 stats_file="./../data/output/planner_stats.txt"
@@ -22,10 +22,10 @@ multi_file="./../data/output/planner_stats_multi.txt"
 test_file="./../data/output/planner_stats_multi_test.txt"
 i=0
 test_sg_pairs=false
-test_planners=false
+test_planners=true
 
 # run tests to check that all sg pairs work with planner checks
-if [$test_sg_pairs]; then
+if [[ "$test_sg_pairs" == true ]]; then
     for j in ${scan_array[@]}
     do
 
@@ -66,7 +66,7 @@ if [$test_sg_pairs]; then
 fi
 
 # saving to test file to not mess up existing data
-if [$test_planners]; then
+if [[ "$test_planners" == true ]]; then
     for j in ${scan_array[@]}
     do
 
@@ -162,7 +162,7 @@ fi
 
 
 
-
+# dynamic and static curvature experiments
 for j in ${scan_array[@]}
 do
 
@@ -183,18 +183,18 @@ do
         done
 
 
-        # for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
-        # do
-        #     echo ""
-        #     echo "seed $i scan $j radius ${rads[$i]}"
-        #     echo ""
+        for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
+        do
+            echo ""
+            echo "seed $i scan $j radius ${rads[$i]}"
+            echo ""
  
-        #     ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-        #     ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-        #     ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-        #     ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-        #     ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-        # done
+            ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+            ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+            ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+            ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+            ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        done
         
     done
 

@@ -263,7 +263,7 @@ class MotionPrimitivePropagator {
         //     rad_str_ += std::to_string(rad_sequence_[i]);
         //     rad_str_ += ";";
         // }
-        std::cout << rad_str_ << std::endl;
+        // std::cout << rad_str_ << std::endl;
 
         max_length_i_ = std::ceil(std::log2(delta_ell_max_/delta_ell_min_));
         max_angle_i_ = std::ceil(std::log2(delta_theta_max_/delta_theta_min_));
