@@ -14,7 +14,7 @@ scan=1
 ell=100
 timeout=100000
 multi_timeout=10000
-test_timeout=1000
+test_timeout=200000
 bias=0.05
 num_sg=500
 stats_file="./../data/output/planner_stats.txt"
@@ -160,25 +160,14 @@ fi
 
 
 
+
+
+
 for j in ${scan_array[@]}
 do
 
     for p in ${phi_arr[@]}
     do
-
-        # for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
-        # do
-        #     echo ""
-        #     echo "seed $i scan $j radius ${rads[$i]}"
-        #     echo ""
- 
-        #     ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
-        #     ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
-        #     ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
-        #     ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
-        #     ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
-        # done
-
 
         for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
         do
@@ -186,13 +175,69 @@ do
             echo "seed $i scan $j radius ${rads[$i]}"
             echo ""
  
-            ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-            ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-            ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-            ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
-            ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+            ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+            ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+            ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+            ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+            ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
         done
+
+
+        # for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
+        # do
+        #     echo ""
+        #     echo "seed $i scan $j radius ${rads[$i]}"
+        #     echo ""
+ 
+        #     ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        #     ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        #     ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        #     ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        #     ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+        # done
         
     done
 
 done
+
+ 
+
+
+
+
+# for j in ${scan_array[@]}
+# do
+
+#     for p in ${phi_arr[@]}
+#     do
+
+#         for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
+#         do
+#             echo ""
+#             echo "seed $i scan $j radius ${rads[$i]}"
+#             echo ""
+ 
+#             # ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+#             # ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+#             # ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -var_curve -multi
+#             ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $test_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+#             # ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $test_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $test_file -var_curve -multi
+#         done
+
+
+#         # for ((i=0;i<${#rads[@]};i++));                                        # https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
+#         # do
+#         #     echo ""
+#         #     echo "seed $i scan $j radius ${rads[$i]}"
+#         #     echo ""
+ 
+#         #     ./app/rrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+#         #     ./app/aorrt -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+#         #     ./app/aorrt_improved -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+#         #     ./app/rcs -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+#         #     ./app/rcs_star -seed $seed -scan $j -r ${rads[$i]} -l $ell -phi $p -timeout $multi_timeout -bias $bias -sg_index ${sgs[$i]} -num_sg $num_sg -stats_file $multi_file -multi
+#         # done
+        
+#     done
+
+# done

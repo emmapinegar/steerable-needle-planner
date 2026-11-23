@@ -672,16 +672,17 @@ if __name__=='__main__':
         # print(codebook)
         # print(distortion)
         kmeans_clusters = np.array([0, codebook[0], codebook[1], 67])
+        # kmeans_clusters = np.array([0, codebook[0], 67])
         kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, particle_rad_data)
         # kmeans_mmd_grad = max_mean_discrepancy_grad(codebook, radius_data)
         
         plotter.figure()
-        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)
-        plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.06 + i*0.001, c='k', alpha=0.5, marker='+')
+        plotter.hist([rrt_radius_data], bins=140, density=True, range=(0,70), color=[planners[0].color], rwidth=1, stacked=True)
+        plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.06 + i*0.001, c='k', alpha=0.5)
         plotter.xlabel(r'Curvature (meters$^{-1}$)')
         plotter.ylabel("Curvature Probability")
-        plotter.title("KMeans Curvature Clusters with Best Plans")
-
+        plotter.title("KMeans Curvature Clusters with Best Plan Data")
+        print(f"n: {num_particles[i]} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad}") 
         # bkmeans = BisectingKMeans(n_clusters=num_particles[i]).fit(np.array(particle_rad_data).reshape((-1,1)))
         # bkmeans_centers = np.array(bkmeans.cluster_centers_).reshape((-1,))
         # bkmeans_centers = np.array([0, bkmeans_centers[0], bkmeans_centers[1], 67])      
@@ -690,11 +691,13 @@ if __name__=='__main__':
         even = np.linspace(0, 67, num_particles[i]+2).reshape((-1,))
 
         plotter.figure()
-        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)        
-        plotter.scatter(even, 0*even + 0.06 + i*0.001, c='k', alpha=0.1)
-
+        plotter.hist([rrt_radius_data], bins=70, density=True, range=(0,70), color=[planners[0].color], rwidth=1, stacked=True)        
+        plotter.scatter(even, 0*even + 0.06 + i*0.001, c='k', alpha=0.5)
+        plotter.xlabel(r'Curvature (meters$^{-1}$)')
+        plotter.ylabel("Curvature Probability")
+        plotter.title("Evenly Spaced Curvatures with Best Plan Data")
         even_mmd, even_mmd_grad = max_mean_discrepancy(even, particle_rad_data)
-
+        print(f"n: {num_particles[i]} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad}") 
 
         # # print(bkmeans_centers)
         # bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, particle_rad_data)
@@ -702,11 +705,11 @@ if __name__=='__main__':
         # print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad} bkmeans {bkmeans_centers} mmd: {bkmeans_mmd} {bkmeans_mmd_grad}")
 
         plotter.figure()
-        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)
-        plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.06 + i*0.001, c='k', alpha=0.5, marker='+')
-        for j in range(10):
+        plotter.hist([rrt_radius_data], bins=35, density=True, range=(0,70), color=[planners[0].color], rwidth=1, stacked=True)
+        plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.06 + i*0.001, c='k', alpha=0.15)
+        for j in range(2):
             kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
-            plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.061 + i*0.01, c=colors[i], alpha=min(1, 0.125+j*0.025))
+            plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.06, c='k', alpha=0.15)
             kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, particle_rad_data)
 
             # bkmeans_centers = bkmeans_centers + bkmeans_mmd_grad
@@ -717,16 +720,16 @@ if __name__=='__main__':
             # plotter.scatter(even, 0*even + 0.061 + j*0.001, c='k', alpha=min(1, 0.125+j*0.025))
             # even_mmd, even_mmd_grad = max_mean_discrepancy(even, particle_rad_data)            
             # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
-            # print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad}")            
+            print(f"n: {num_particles[i]} kmeans {kmeans_clusters} mmd: {kmeans_mmd} {kmeans_mmd_grad}")            
         plotter.xlabel(r'Curvature (meters$^{-1}$)')
         plotter.ylabel("Curvature Probability")
-        plotter.title("MMD Gradient Descent of KMeans Curvature Clusters with Best Plans")
+        plotter.title("MMD Gradient Descent of KMeans Curvature Clusters with Best Plan Data")
 
 
         plotter.figure()
-        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=0.9, stacked=True)
-        plotter.scatter(even, 0*even + 0.06 + i*0.001, c='k', alpha=0.1)
-        for j in range(10):
+        plotter.hist([rrt_radius_data], bins='doane', density=True, range=(0,70), color=[planners[0].color], rwidth=1, stacked=True)
+        plotter.scatter(even, 0*even + 0.06 + i*0.001, c='k', alpha=0.15)
+        for j in range(2):
             # kmeans_clusters = kmeans_clusters + kmeans_mmd_grad
             # plotter.scatter(kmeans_clusters, 0*kmeans_clusters + 0.02 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
             # kmeans_mmd, kmeans_mmd_grad = max_mean_discrepancy(kmeans_clusters, particle_rad_data)
@@ -735,14 +738,15 @@ if __name__=='__main__':
             # plotter.scatter(bkmeans_centers, 0*bkmeans_centers + 0.03 + i*0.01, c=colors[i], alpha=min(1, 0.2+j*0.1))
             # bkmeans_mmd, bkmeans_mmd_grad = max_mean_discrepancy(bkmeans_centers, particle_rad_data)
 
-            even[1:-1] = even[1:-1] + even_mmd_grad[1:-1]
-            plotter.scatter(even, 0*even + 0.061 + j*0.001, c='k', alpha=min(1, 0.125+j*0.025))
+            # even[1:-1] = even[1:-1] + even_mmd_grad[1:-1]
+            even = even + even_mmd_grad
+            plotter.scatter(even, 0*even + 0.06, c='k', alpha=0.15)
             even_mmd, even_mmd_grad = max_mean_discrepancy(even, particle_rad_data)            
             # bkmeans_mmd_grad = max_mean_discrepancy_grad(bkmeans_centers, radius_data)
-            # print(f"n: {num_particles[i]} {len(codebook)} {len(bkmeans_centers)} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad}")            
+            print(f"n: {num_particles[i]} evenly spaced {even} mmd: {even_mmd} {even_mmd_grad}")            
         plotter.xlabel(r'Curvature (meters$^{-1}$)')
         plotter.ylabel("Curvature Probability")
-        plotter.title("MMD Gradient Descent of Evenly Spaced Curvature Values with Best Plans")
+        plotter.title("MMD Gradient Descent of Evenly Spaced Curvatures with Best Plan Data")
 
     # plotter.xlabel(r'Curvature (meters$^{-1}$)')
     # plotter.ylabel("Curvature Probability")

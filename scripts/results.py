@@ -36,7 +36,7 @@ def get_kappa_alpha(kappa_index, kappas):
     return alpha 
 
 def get_kappa_linewidth(kappa_index, kappas):
-    linewidth = 6*((np.shape(kappas)[0]-kappa_index-1)/(np.shape(kappas)[0])) + 1.5
+    linewidth = 6*((np.shape(kappas)[0]-kappa_index-1)/(np.shape(kappas)[0])) + 1.5 + 2
     return linewidth
 
 
@@ -593,9 +593,9 @@ def make_generic_test_figures(data, time_data, figure_function, figure_title, xa
                             plotter.tick_params(labelsize=viz_params['ticksize'])
 
                             if np.shape(pair_kappas)[0] > 1:
-                                plotter.legend(ncols=8, columnspacing=1.25, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.2, 1.095), loc='lower left', fontsize=viz_params['legendsize'])
+                                plotter.legend(ncols=1, columnspacing=1.25, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.2, 1.095), loc='lower left', fontsize=viz_params['legendsize'])
                             else:
-                                plotter.legend(ncols=8, columnspacing=1.5, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(-0.1, 1.085), loc='lower left', fontsize=viz_params['legendsize'])
+                                plotter.legend(ncols=1, columnspacing=1.5, handlelength=2, handletextpad=0.5, borderpad=0.3, bbox_to_anchor=(2.5, -1.5), loc='lower left', fontsize=viz_params['legendsize'])
 
                             plotter.subplot(2,3,2)
                             plotter.plot(length, success, color=planners[p].color, label=planners[p].label + roc_str, linestyle=planners[p].linestyle, alpha=get_kappa_alpha(i, kappas), linewidth=get_kappa_linewidth(i, kappas), dash_capstyle=viz_params['capstyle'], dash_joinstyle=viz_params['dashjoinstyle'])
@@ -1303,6 +1303,18 @@ if __name__=='__main__':
 
     new_aorrt_inds = np.where(np.char.rfind(file_data[:,1], "aorrt_improved") > -1)[0]
     data[new_aorrt_inds,stats_indices['planner']] = 5
+
+    new_rcs_inds = np.where(np.logical_and(data[:,stats_indices['planner']] == 3, np.char.rfind(file_data[:,0], "even") > -1))[0]
+    data[new_rcs_inds,stats_indices['planner']] = 6
+
+    new_rcss_inds = np.where(np.logical_and(data[:,stats_indices['planner']] == 4, np.char.rfind(file_data[:,0], "even") > -1))[0]
+    data[new_rcss_inds,stats_indices['planner']] = 7
+
+    kmean_rcs_inds = np.where(np.logical_and(data[:,stats_indices['planner']] == 3, np.char.rfind(file_data[:,0], "kmeans") > -1))[0]
+    data[kmean_rcs_inds,stats_indices['planner']] = 8
+
+    kmean_rcss_inds = np.where(np.logical_and(data[:,stats_indices['planner']] == 4, np.char.rfind(file_data[:,0], "kmeans") > -1))[0]
+    data[kmean_rcss_inds,stats_indices['planner']] = 9
 
     pairs_mins = get_min_ell(data, time_data)
 

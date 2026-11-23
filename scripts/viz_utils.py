@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 _INDIGO = '#332288'
 _PURPLE = '#7031BD'
+_LAVENDER = "#BB83FF"
 _GREEN = '#368E04'
 _TEAL = '#44AA99'
 _BLUE = '#40B3EC'
@@ -37,13 +38,17 @@ aorrt_info = Planner(2, _ORANGE, r'AORRT', (0,(2,2)), 'v')
 rcs_info = Planner(3, _BLUE, r'RCS', (0,(1,2)), 'x') #
 rcsstar_info = Planner(4, _INDIGO, r'RCS*', (0,(0.25,2)), 'P') 
 
-aorrt_imp_info = Planner(5, _BLUSH, r'AORRT_i', (0,(2,2)), 'v')
+aorrt_imp_info = Planner(5, _BLUSH, r'AORRT$_{direct}$', (0,(2,2)), 'v')
+rcs_even_info = Planner(6, _TEAL, r'RCS$_{even}$', (0,(1,2)), 'x') #
+rcsstar_even_info = Planner(7, _GREEN, r'RCS*$_{even}$', (0,(0.25,2)), 'P') 
+rcs_kmean_info = Planner(8, _LAVENDER, r'RCS$_{kmeans}$', (0,(1,2)), 'x') #
+rcsstar_kmean_info = Planner(9, _PURPLE, r'RCS*$_{kmeans}$', (0,(0.25,2)), 'P') 
 
 # rrt_spreading_info = Planner(5, _RED, r'RGRRT_s', '-', '.')
 # aorrt_spreading_info = Planner(6, _RED, r'AORRT_s', '-', '.')
 # rcs_spreading_info = Planner(7, _RED, r'RCS_s', '-', '.')
 
-planners = [rrt_info, aorrt_info, rcs_info, rcsstar_info, aorrt_imp_info] #, rrt_spreading_info, aorrt_spreading_info, rcs_spreading_info]
+planners = [rrt_info, aorrt_info, rcs_info, rcsstar_info, aorrt_imp_info, rcs_even_info, rcsstar_even_info,rcs_kmean_info,rcsstar_kmean_info] #, rrt_spreading_info, aorrt_spreading_info, rcs_spreading_info]
 
 
 

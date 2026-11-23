@@ -257,6 +257,14 @@ class MotionPrimitivePropagator {
         , delta_theta_min_(cfg->delta_theta_min) {
         rad_sequence_.assign({rad_curv_, R_INF});
 
+        rad_str_ = "15.0;inf;";
+        // rad_str_ = "";
+        // for (unsigned i = 0; i < rad_sequence_.size(); i++) {
+        //     rad_str_ += std::to_string(rad_sequence_[i]);
+        //     rad_str_ += ";";
+        // }
+        std::cout << rad_str_ << std::endl;
+
         max_length_i_ = std::ceil(std::log2(delta_ell_max_/delta_ell_min_));
         max_angle_i_ = std::ceil(std::log2(delta_theta_max_/delta_theta_min_));
         min_length_step_ = delta_ell_max_/(std::pow(2, max_length_i_));
@@ -302,11 +310,7 @@ class MotionPrimitivePropagator {
             }
         }
 
-        rad_str_ = "";
-        for (unsigned i = 0; i < rad_sequence_.size(); i++) {
-            rad_str_ += std::to_string(rad_sequence_[i]);
-            rad_str_ += ";";
-        }
+
     }
 
     /**
