@@ -22,7 +22,7 @@ multi_file="./../data/output/planner_stats_multi.txt"
 test_file="./../data/output/planner_stats_multi_test.txt"
 i=0
 test_sg_pairs=false
-test_planners=true
+test_planners=false
 
 # run tests to check that all sg pairs work with planner checks
 if [[ "$test_sg_pairs" == true ]]; then
